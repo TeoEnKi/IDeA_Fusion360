@@ -52,23 +52,20 @@
                     <p id="stepDetailedText" class="detailed-text"></p>
                 </details>
 
-                <!-- Visual Step Area - Shows Fusion UI with highlights -->
+                <!-- Visual Step Area - Shows Fusion UI with highlights and cursor overlay -->
                 <div id="visualStepArea" class="visual-step-area hidden">
-                    <div class="visual-step-container">
+                    <div id="animationArea" class="visual-step-container">
                         <img id="visualStepImage" src="" alt="Fusion 360 UI" class="visual-step-image">
                         <div id="visualStepHighlights" class="visual-step-highlights"></div>
+                        <!-- Cursor overlay elements -->
+                        <div id="cursorElement" class="cursor-element hidden">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M4 4L12 20L14 14L20 12L4 4Z" fill="#333" stroke="#fff" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div id="clickRipple" class="click-ripple hidden"></div>
                     </div>
                     <div id="visualStepCaption" class="visual-step-caption"></div>
-                </div>
-
-                <!-- Animation Demo Area -->
-                <div id="animationArea" class="animation-area">
-                    <div id="cursorElement" class="cursor-element hidden">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 4L12 20L14 14L20 12L4 4Z" fill="#333" stroke="#fff" stroke-width="1"/>
-                        </svg>
-                    </div>
-                    <div id="clickRipple" class="click-ripple hidden"></div>
                 </div>
 
                 <!-- Expanded Content Section -->

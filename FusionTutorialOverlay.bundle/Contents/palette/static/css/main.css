@@ -314,16 +314,6 @@ body {
     border-top: 1px solid var(--border);
 }
 
-/* Animation Area */
-.animation-area {
-    position: relative;
-    height: 150px;
-    background-color: var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-md);
-    overflow: hidden;
-}
-
 .cursor-element {
     position: absolute;
     width: 24px;
