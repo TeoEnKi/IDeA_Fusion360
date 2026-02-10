@@ -1,0 +1,168 @@
+{
+  "tutorialId": "existing_model",
+  "title": "Exploring an Existing 3D Model",
+  "description": "Learn how to navigate and understand an existing 3D model in Fusion 360. This tutorial works with any model you already have open.",
+  "metadata": {
+    "author": "IDeA Tutorial System",
+    "version": "1.0",
+    "difficulty": "beginner",
+    "estimatedTime": "10 minutes",
+    "requiresModel": true
+  },
+  "steps": [
+    {
+      "stepId": "explore-1",
+      "stepNumber": 1,
+      "title": "View the Model from Different Angles",
+      "instruction": "Use the ViewCube in the top-right corner to rotate your view. Click on 'Front', 'Top', and 'Right' to see different orthographic views.",
+      "detailedText": "Understanding your model from multiple angles is crucial. Orthographic views (Front, Top, Right) show exact proportions without perspective distortion. The isometric view helps you see the overall 3D shape.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Can see the model from front view" },
+        { "symbol": "\u2705", "text": "Can see the model from top view" },
+        { "symbol": "\u2705", "text": "Can see the model from isometric view" }
+      ],
+      "warnings": [],
+      "uiAnimations": [
+        { "type": "move", "from": { "x": 50, "y": 50 }, "to": { "x": 85, "y": 15 }, "duration": 500 },
+        { "type": "click", "at": { "x": 85, "y": 15 } },
+        { "type": "pause", "duration": 800 }
+      ],
+      "fusionActions": [
+        { "type": "camera.orient", "orientation": "iso" },
+        { "type": "camera.fit" }
+      ]
+    },
+    {
+      "stepId": "explore-2",
+      "stepNumber": 2,
+      "title": "Examine the Timeline",
+      "instruction": "Look at the timeline at the bottom of the screen. Each icon represents a feature in the model's history.",
+      "detailedText": "The timeline shows how the model was built, step by step. This is called 'parametric history' - you can go back and edit any step, and changes will propagate forward. This is one of Fusion 360's most powerful features.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Timeline is visible at the bottom of the screen" },
+        { "symbol": "\u2705", "text": "Can identify different feature types (sketch, extrude, fillet, etc.)" }
+      ],
+      "warnings": [
+        { "symbol": "\u26A0\uFE0F", "text": "If timeline is hidden, right-click and select 'Show Timeline'" }
+      ],
+      "uiAnimations": [
+        { "type": "move", "from": { "x": 50, "y": 50 }, "to": { "x": 50, "y": 90 }, "duration": 500 },
+        { "type": "click", "at": { "x": 30, "y": 90 } },
+        { "type": "move", "from": { "x": 30, "y": 90 }, "to": { "x": 50, "y": 90 }, "duration": 400 },
+        { "type": "click", "at": { "x": 50, "y": 90 } }
+      ],
+      "fusionActions": []
+    },
+    {
+      "stepId": "explore-3",
+      "stepNumber": 3,
+      "title": "Inspect a Feature",
+      "instruction": "Double-click on any feature in the timeline to edit it. This reveals the parameters used to create it.",
+      "detailedText": "By inspecting features, you can understand the designer's intent. Look at dimensions, constraints, and relationships. This helps you learn good modeling practices from existing designs.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Feature dialog opens showing parameters" },
+        { "symbol": "\u2705", "text": "Can see dimension values and options" }
+      ],
+      "warnings": [
+        { "symbol": "\u26A0\uFE0F", "text": "Press Escape to cancel without making changes" }
+      ],
+      "uiAnimations": [
+        { "type": "move", "from": { "x": 50, "y": 50 }, "to": { "x": 40, "y": 90 }, "duration": 400 },
+        { "type": "click", "at": { "x": 40, "y": 90 } },
+        { "type": "click", "at": { "x": 40, "y": 90 } }
+      ],
+      "fusionActions": []
+    },
+    {
+      "stepId": "explore-4",
+      "stepNumber": 4,
+      "title": "Check the Browser Panel",
+      "instruction": "Look at the browser panel on the left side. Expand 'Bodies' and 'Sketches' to see all elements.",
+      "detailedText": "The browser shows the hierarchical structure of your design. Bodies are the solid 3D shapes. Sketches contain the 2D profiles used to create features. Components organize related geometry together.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Browser panel is visible on the left" },
+        { "symbol": "\u2705", "text": "Can expand/collapse categories" },
+        { "symbol": "\u2705", "text": "Bodies and sketches are listed" }
+      ],
+      "warnings": [],
+      "uiAnimations": [
+        { "type": "move", "from": { "x": 50, "y": 50 }, "to": { "x": 10, "y": 30 }, "duration": 500 },
+        { "type": "click", "at": { "x": 10, "y": 30 } },
+        { "type": "move", "from": { "x": 10, "y": 30 }, "to": { "x": 10, "y": 45 }, "duration": 300 },
+        { "type": "click", "at": { "x": 10, "y": 45 } }
+      ],
+      "fusionActions": [
+        { "type": "camera.orient", "orientation": "iso" }
+      ]
+    },
+    {
+      "stepId": "explore-5",
+      "stepNumber": 5,
+      "title": "Measure the Model",
+      "instruction": "Press 'I' to open the Inspect tool, then click on faces or edges to measure distances and angles.",
+      "detailedText": "The Inspect tool is essential for understanding existing designs. You can measure: distances between faces, edge lengths, hole diameters, angles between surfaces, and more. This information is crucial when modifying or replicating designs.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Inspect tool is active" },
+        { "symbol": "\u2705", "text": "Measurements appear when clicking geometry" }
+      ],
+      "warnings": [],
+      "uiAnimations": [
+        { "type": "click", "at": { "x": 50, "y": 40 } },
+        { "type": "pause", "duration": 500 },
+        { "type": "move", "from": { "x": 50, "y": 40 }, "to": { "x": 60, "y": 55 }, "duration": 400 },
+        { "type": "click", "at": { "x": 60, "y": 55 } }
+      ],
+      "fusionActions": [
+        { "type": "camera.fit" }
+      ]
+    },
+    {
+      "stepId": "explore-6",
+      "stepNumber": 6,
+      "title": "Section Analysis",
+      "instruction": "Go to Inspect > Section Analysis to see a cross-section of the model. This reveals internal features.",
+      "detailedText": "Section analysis cuts through the model to show internal structure. This is essential for understanding: wall thicknesses, hidden cavities, internal threads, and how parts fit together. Move the section plane to explore different areas.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Section plane is visible" },
+        { "symbol": "\u2705", "text": "Can see internal structure of the model" }
+      ],
+      "warnings": [
+        { "symbol": "\u26A0\uFE0F", "text": "Section analysis is temporary - it won't affect your model" }
+      ],
+      "uiAnimations": [
+        { "type": "move", "from": { "x": 50, "y": 50 }, "to": { "x": 30, "y": 15 }, "duration": 400 },
+        { "type": "click", "at": { "x": 30, "y": 15 } },
+        { "type": "pause", "duration": 600 }
+      ],
+      "fusionActions": [
+        { "type": "camera.orient", "orientation": "iso" }
+      ]
+    },
+    {
+      "stepId": "explore-7",
+      "stepNumber": 7,
+      "title": "Model Exploration Complete",
+      "instruction": "You now know the essential tools for exploring any 3D model in Fusion 360.",
+      "detailedText": "These exploration skills are fundamental: 1) Viewing from multiple angles, 2) Reading the timeline, 3) Inspecting features, 4) Using the browser, 5) Measuring geometry, 6) Section analysis. Practice these on different models to become proficient.",
+      "annotations": [],
+      "qcChecks": [
+        { "symbol": "\u2705", "text": "Completed all exploration steps" },
+        { "symbol": "\u2705", "text": "Understand how to navigate the Fusion 360 interface" }
+      ],
+      "warnings": [],
+      "uiAnimations": [
+        { "type": "drag", "from": { "x": 30, "y": 50 }, "to": { "x": 70, "y": 50 }, "duration": 1200 }
+      ],
+      "fusionActions": [
+        { "type": "camera.orient", "orientation": "iso" },
+        { "type": "camera.fit" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ApplicationPackage
+    SchemaVersion="1.0"
+    AutodeskProduct="Fusion360"
+    ProductType="Application"
+    Name="AI Tutorial Overlay"
+    Description="AI-driven step-by-step tutorial overlay for Fusion 360"
+    Author="IDeA"
+    Version="1.0.0"
+    AppVersion="1.0.0"
+    HelpFile="./Contents/help.html">
+
+    <CompanyDetails
+        Name="IDeA"
+        Email="support@idea.edu"
+        Url="https://github.com/teoen/IDeA_Fusion360" />
+
+    <RuntimeRequirements
+        OS="Win64|Mac64"
+        Platform="Fusion"
+        SeriesMin="2020" />
+
+    <Components>
+        <RuntimeRequirements OS="Win64|Mac64" Platform="Fusion" SeriesMin="2020" />
+        <ComponentEntry
+            AppName="FusionTutorialOverlay"
+            ModuleName="./Contents/FusionTutorialOverlay.py"
+            AppType="AddIn"
+            LoadOnStartUp="True">
+            <Commands>
+                <Command Local="showTutorialPanel" />
+            </Commands>
+        </ComponentEntry>
+    </Components>
+</ApplicationPackage>

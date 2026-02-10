@@ -1,0 +1,13 @@
+{
+    "autodeskProduct": "Fusion",
+    "type": "addin",
+    "id": "com.idea.tutorialoverlay",
+    "author": "IDeA",
+    "description": {
+        "": "AI-driven step-by-step tutorial overlay for Fusion 360"
+    },
+    "version": "1.0.0",
+    "runOnStartup": false,
+    "supportedOS": "windows|mac",
+    "editEnabled": true
+}

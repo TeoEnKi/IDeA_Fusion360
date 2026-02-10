@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutorial Overlay</title>
+    <link rel="stylesheet" href="static/css/main.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1 id="tutorialTitle">AI Tutorial</h1>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <span id="stepCounter" class="step-counter">Step 0 of 0</span>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading tutorial...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-state hidden">
+            <div class="error-icon">&#x26D4;</div>
+            <p id="errorMessage">An error occurred</p>
+            <button id="retryBtn" class="btn btn-secondary">Retry</button>
+        </div>
+
+        <!-- Tutorial Content -->
+        <main id="tutorialContent" class="tutorial-content hidden">
+            <!-- Step Card -->
+            <section class="step-card">
+                <div class="step-header">
+                    <span id="stepNumber" class="step-number">1</span>
+                    <h2 id="stepTitle" class="step-title">Step Title</h2>
+                </div>
+
+                <!-- Instruction -->
+                <div class="instruction-box">
+                    <p id="stepInstruction" class="instruction"></p>
+                </div>
+
+                <!-- Detailed Text (expandable) -->
+                <details class="details-section">
+                    <summary>Why this matters</summary>
+                    <p id="stepDetailedText" class="detailed-text"></p>
+                </details>
+
+                <!-- Visual Step Area - Shows Fusion UI with highlights -->
+                <div id="visualStepArea" class="visual-step-area hidden">
+                    <div class="visual-step-container">
+                        <img id="visualStepImage" src="" alt="Fusion 360 UI" class="visual-step-image">
+                        <div id="visualStepHighlights" class="visual-step-highlights"></div>
+                    </div>
+                    <div id="visualStepCaption" class="visual-step-caption"></div>
+                </div>
+
+                <!-- Animation Demo Area -->
+                <div id="animationArea" class="animation-area">
+                    <div id="cursorElement" class="cursor-element hidden">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 4L12 20L14 14L20 12L4 4Z" fill="#333" stroke="#fff" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <div id="clickRipple" class="click-ripple hidden"></div>
+                </div>
+
+                <!-- Expanded Content Section -->
+                <details id="expandedSection" class="expanded-section hidden">
+                    <summary>More Details & Tips</summary>
+                    <div id="expandedContent" class="expanded-content"></div>
+                </details>
+
+                <!-- QC Checks -->
+                <div id="qcSection" class="qc-section hidden">
+                    <h3>Quality Checks</h3>
+                    <ul id="qcList" class="qc-list"></ul>
+                </div>
+
+                <!-- Warnings -->
+                <div id="warningsSection" class="warnings-section hidden">
+                    <h3>Warnings</h3>
+                    <ul id="warningsList" class="warnings-list"></ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation -->
+        <nav id="navigation" class="navigation hidden">
+            <button id="prevBtn" class="btn btn-nav" disabled>
+                <span class="btn-icon">&larr;</span>
+                <span>Previous</span>
+            </button>
+            <button id="replayBtn" class="btn btn-secondary">
+                <span class="btn-icon">&#x21BB;</span>
+                <span>Replay</span>
+            </button>
+            <button id="nextBtn" class="btn btn-primary btn-nav">
+                <span>Next</span>
+                <span class="btn-icon">&rarr;</span>
+            </button>
+        </nav>
+
+        <!-- Step Navigator (optional thumbnail view) -->
+        <div id="stepNavigator" class="step-navigator hidden">
+            <div id="stepDots" class="step-dots"></div>
+        </div>
+
+        <!-- Consent Overlay -->
+        <div id="consentOverlay" class="consent-overlay hidden">
+            <div class="consent-card">
+                <div class="consent-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </div>
+                <h3 class="consent-title">AI Guidance</h3>
+                <p class="consent-description">
+                    Want guided help when you're in the wrong workspace or environment?
+                </p>
+                <p class="consent-subdescription">
+                    The tutorial will show you how to navigate to the right place in Fusion 360.
+                </p>
+                <div class="consent-buttons">
+                    <button id="consentYes" class="btn btn-primary consent-btn">
+                        Yes, help me navigate
+                    </button>
+                    <button id="consentNo" class="btn btn-secondary consent-btn">
+                        No thanks
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redirect Card (injected when needed) -->
+        <div id="redirectCard" class="redirect-card hidden">
+            <div class="redirect-header">
+                <span class="redirect-icon">&#x1F50D;</span>
+                <h3 class="redirect-title">Navigate to Correct Location</h3>
+            </div>
+            <div class="context-indicators">
+                <div class="context-indicator current">
+                    <span class="context-symbol">&#x26D4;</span>
+                    <span class="context-label">Current:</span>
+                    <span class="context-value" id="currentContext">Surface</span>
+                </div>
+                <div class="context-arrow">&#x27A1;</div>
+                <div class="context-indicator required">
+                    <span class="context-symbol">&#x2705;</span>
+                    <span class="context-label">Required:</span>
+                    <span class="context-value" id="requiredContext">Solid</span>
+                </div>
+            </div>
+            <div id="referenceImageArea" class="reference-image-area">
+                <img id="redirectImage" src="" alt="Fusion UI Reference">
+            </div>
+            <p class="redirect-instruction" id="redirectInstruction">Click the SOLID tab in the toolbar</p>
+            <div class="redirect-actions">
+                <button id="skipRedirectBtn" class="btn btn-secondary">Skip</button>
+            </div>
+        </div>
+
+        <!-- Ask Redirect Dialog -->
+        <div id="askRedirectOverlay" class="ask-redirect-overlay hidden">
+            <div class="ask-redirect-card">
+                <h3>Wrong Environment Detected</h3>
+                <p id="askRedirectMessage">You're currently in Surface mode, but this step requires Solid mode.</p>
+                <div class="ask-redirect-buttons">
+                    <button id="askRedirectYes" class="btn btn-primary">Show me how</button>
+                    <button id="askRedirectNo" class="btn btn-secondary">I'll do it myself</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="static/js/renderers/BaseRenderer.js"></script>
+    <script src="static/js/renderers/StaticRenderer.js"></script>
+    <script src="static/js/renderers/AnimatedRenderer.js"></script>
+    <script src="static/js/renderers/RedirectRenderer.js"></script>
+    <script src="static/js/consentDialog.js"></script>
+    <script src="static/js/stepper.js"></script>
+    <script src="static/js/main.js"></script>
+</body>
+</html>
