@@ -17,15 +17,24 @@
       "detailedText": "Sketches are 2D drawings that define the profile of your 3D shapes. The XY plane (also called the 'Origin' plane) is a good starting point because it's at the center of your design space. Starting here makes it easier to add features symmetrically later.",
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Sketch is created on the XY plane" },
-        { "symbol": "\u2705", "text": "You are now in sketch editing mode" }
+        { "symbol": "\u2705", "text": "Sketch is created on the XY plane", "condition": { "type": "sketch_exists" } },
+        { "symbol": "\u2705", "text": "You are now in sketch editing mode", "condition": { "type": "in_sketch" } }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "If you select a different plane, your orientation will be different" }
       ],
+      "visualStep": {
+        "image": "navbar",
+        "useNavbar": true,
+        "caption": "Click Create Sketch in the toolbar, then select the XY plane",
+        "highlights": [
+          { "component": "createSketch", "label": "Create Sketch" },
+          { "x": 5, "y": 55, "width": 5, "height": 3, "label": "Origin" }
+        ]
+      },
       "uiAnimations": [
-        { "type": "move", "from": { "x": 50, "y": 20 }, "to": { "x": 30, "y": 50 }, "duration": 600 },
-        { "type": "click", "at": { "x": 30, "y": 50 } },
+        { "type": "move", "from": { "x": 50, "y": 20 }, "to": { "x": 13.5, "y": 16 }, "duration": 600 },
+        { "type": "click", "at": { "x": 13.5, "y": 16 } },
         { "type": "pause", "duration": 500 }
       ],
       "fusionActions": [
@@ -89,15 +98,24 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Extrusion distance is 20mm" },
+        { "symbol": "\u2705", "text": "Extrusion distance is 20mm", "condition": { "type": "body_exists" } },
         { "symbol": "\u2705", "text": "Direction is symmetric or one-sided as intended" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "Check the direction - the arrow should point away from the plane" }
       ],
+      "visualStep": {
+        "image": "navbar",
+        "useNavbar": true,
+        "caption": "Select Extrude from the Create dropdown, then click the sketch profile",
+        "highlights": [
+          { "component": "extrude", "label": "Extrude" }
+        ]
+      },
+      "captureViewport": true,
       "uiAnimations": [
-        { "type": "move", "from": { "x": 20, "y": 20 }, "to": { "x": 50, "y": 50 }, "duration": 400 },
-        { "type": "click", "at": { "x": 50, "y": 50 } },
+        { "type": "move", "from": { "x": 20, "y": 20 }, "to": { "x": 17, "y": 16 }, "duration": 400 },
+        { "type": "click", "at": { "x": 17, "y": 16 } },
         { "type": "pause", "duration": 400 },
         { "type": "drag", "from": { "x": 50, "y": 50 }, "to": { "x": 50, "y": 30 }, "duration": 600 }
       ],
@@ -120,17 +138,26 @@
       "annotations": [],
       "qcChecks": [
         { "symbol": "\u2705", "text": "All 4 top edges are selected" },
-        { "symbol": "\u2705", "text": "Fillet radius is 3mm" },
+        { "symbol": "\u2705", "text": "Fillet radius is 3mm", "condition": { "type": "feature_count_gte", "expected": 2 } },
         { "symbol": "\u2705", "text": "Preview shows smooth rounded edges" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "If the fillet fails, try a smaller radius" },
         { "symbol": "\u26D4", "text": "Radius cannot exceed half the smallest edge dimension" }
       ],
+      "visualStep": {
+        "image": "navbar",
+        "useNavbar": true,
+        "caption": "Select Fillet from the Modify dropdown, then select the edges to round",
+        "highlights": [
+          { "component": "fillet", "label": "Fillet" }
+        ]
+      },
+      "captureViewport": true,
       "uiAnimations": [
-        { "type": "move", "from": { "x": 30, "y": 30 }, "to": { "x": 60, "y": 25 }, "duration": 400 },
-        { "type": "click", "at": { "x": 60, "y": 25 } },
-        { "type": "move", "from": { "x": 60, "y": 25 }, "to": { "x": 70, "y": 30 }, "duration": 300 },
+        { "type": "move", "from": { "x": 30, "y": 30 }, "to": { "x": 35, "y": 16 }, "duration": 400 },
+        { "type": "click", "at": { "x": 35, "y": 16 } },
+        { "type": "move", "from": { "x": 35, "y": 16 }, "to": { "x": 70, "y": 30 }, "duration": 300 },
         { "type": "click", "at": { "x": 70, "y": 30 } },
         { "type": "move", "from": { "x": 70, "y": 30 }, "to": { "x": 65, "y": 40 }, "duration": 300 },
         { "type": "click", "at": { "x": 65, "y": 40 } }

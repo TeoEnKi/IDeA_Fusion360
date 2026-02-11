@@ -7,6 +7,23 @@ class BaseRenderer {
     constructor(container) {
         this.container = container;
         this.currentStep = null;
+        this.navbarConfig = null;
+        this.loadNavbarConfig();
+    }
+
+    /**
+     * Load navbar configuration JSON
+     */
+    async loadNavbarConfig() {
+        try {
+            const response = await fetch('../core/Fusion360_SolidNavbar.json');
+            if (response.ok) {
+                this.navbarConfig = await response.json();
+                console.log('Navbar config loaded:', this.navbarConfig);
+            }
+        } catch (e) {
+            console.warn('Could not load navbar config:', e);
+        }
     }
 
     /**
@@ -20,6 +37,16 @@ class BaseRenderer {
         this.renderExpandedContent(step);
         this.renderQCChecks(step);
         this.renderWarnings(step);
+
+        // Request viewport capture if step wants it
+        if (step.captureViewport && window.requestViewportCapture) {
+            setTimeout(() => window.requestViewportCapture(), 500);
+        }
+
+        // Reset tracking for new step
+        if (window.sendToBridge) {
+            window.sendToBridge({ action: 'resetTracking' });
+        }
     }
 
     /**
@@ -35,7 +62,14 @@ class BaseRenderer {
         if (!visualArea || !visualImage || !visualHighlights) return;
 
         const visualStep = step.visualStep;
+
+        // If no visual step data, check if we should use navbar config
         if (!visualStep || !visualStep.image) {
+            // Use default navbar image if step has UI targets
+            if (step.uiTargets && step.uiTargets.length > 0 && this.navbarConfig) {
+                this.renderNavbarWithTargets(step.uiTargets, visualArea, visualImage, visualHighlights, visualCaption);
+                return;
+            }
             visualArea.classList.add('hidden');
             return;
         }
@@ -43,20 +77,27 @@ class BaseRenderer {
         // Show the visual step area
         visualArea.classList.remove('hidden');
 
-        // Set the image source (adjust path - palette is in Contents/palette/, images are in Contents/)
+        // Determine image path - use new navbar image as default for toolbar references
         let imagePath = visualStep.image;
-        if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('../')) {
+
+        // Check if this is a navbar/toolbar reference and use the new image
+        if (visualStep.useNavbar || imagePath === 'navbar' || imagePath === 'toolbar') {
+            imagePath = '../assets/UI Images/Fusion360SolidNavbar.png';
+        } else if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('../')) {
             imagePath = '../' + imagePath;
         }
+
         visualImage.src = imagePath;
         visualImage.alt = visualStep.alt || 'Fusion 360 UI Reference';
 
         // Clear existing highlights
         visualHighlights.innerHTML = '';
 
-        // Add highlights
-        if (visualStep.highlights && visualStep.highlights.length > 0) {
-            visualStep.highlights.forEach((highlight, index) => {
+        // Add highlights - check for navbar component references
+        const highlights = this.resolveHighlights(visualStep.highlights);
+
+        if (highlights && highlights.length > 0) {
+            highlights.forEach((highlight, index) => {
                 const highlightEl = document.createElement('div');
                 highlightEl.className = 'visual-highlight' + (highlight.shape === 'circle' ? ' circle' : '');
 
@@ -67,7 +108,7 @@ class BaseRenderer {
                 highlightEl.style.height = highlight.height + '%';
 
                 // Add number indicator
-                if (visualStep.highlights.length > 1) {
+                if (highlights.length > 1) {
                     const numberEl = document.createElement('span');
                     numberEl.className = 'visual-highlight-number';
                     numberEl.textContent = (index + 1).toString();
@@ -91,6 +132,108 @@ class BaseRenderer {
             visualCaption.textContent = visualStep.caption || '';
             visualCaption.style.display = visualStep.caption ? 'block' : 'none';
         }
+    }
+
+    /**
+     * Render navbar image with specific UI targets highlighted
+     */
+    renderNavbarWithTargets(targets, visualArea, visualImage, visualHighlights, visualCaption) {
+        visualArea.classList.remove('hidden');
+        visualImage.src = '../assets/UI Images/Fusion360SolidNavbar.png';
+        visualImage.alt = 'Fusion 360 Toolbar';
+
+        visualHighlights.innerHTML = '';
+
+        targets.forEach((target, index) => {
+            const position = this.getNavbarComponentPosition(target);
+            if (position) {
+                const highlightEl = document.createElement('div');
+                highlightEl.className = 'visual-highlight';
+
+                highlightEl.style.left = position.x + '%';
+                highlightEl.style.top = position.y + '%';
+                highlightEl.style.width = position.width + '%';
+                highlightEl.style.height = position.height + '%';
+
+                if (targets.length > 1) {
+                    const numberEl = document.createElement('span');
+                    numberEl.className = 'visual-highlight-number';
+                    numberEl.textContent = (index + 1).toString();
+                    highlightEl.appendChild(numberEl);
+                }
+
+                const labelEl = document.createElement('span');
+                labelEl.className = 'visual-highlight-label';
+                labelEl.textContent = target.label || target.component;
+                highlightEl.appendChild(labelEl);
+
+                visualHighlights.appendChild(highlightEl);
+            }
+        });
+
+        if (visualCaption) {
+            visualCaption.textContent = '';
+            visualCaption.style.display = 'none';
+        }
+    }
+
+    /**
+     * Resolve highlight definitions - convert component references to positions
+     */
+    resolveHighlights(highlights) {
+        if (!highlights) return [];
+
+        return highlights.map(h => {
+            // If highlight references a navbar component by name
+            if (h.component && this.navbarConfig) {
+                const position = this.getNavbarComponentPosition({ component: h.component });
+                if (position) {
+                    return {
+                        ...position,
+                        label: h.label || position.label,
+                        shape: h.shape || 'rect'
+                    };
+                }
+            }
+            return h;
+        });
+    }
+
+    /**
+     * Get position of a navbar component from config
+     */
+    getNavbarComponentPosition(target) {
+        if (!this.navbarConfig || !target.component) return null;
+
+        const componentPath = target.component.split('.');
+        let component = this.navbarConfig.components;
+
+        for (const part of componentPath) {
+            if (component && component[part]) {
+                component = component[part];
+            } else {
+                // Try common actions
+                if (this.navbarConfig.commonActions && this.navbarConfig.commonActions[target.component]) {
+                    const action = this.navbarConfig.commonActions[target.component];
+                    if (action.positions && action.positions[0]) {
+                        return {
+                            ...action.positions[0],
+                            label: action.label
+                        };
+                    }
+                }
+                return null;
+            }
+        }
+
+        if (component && component.position) {
+            return {
+                ...component.position,
+                label: component.label
+            };
+        }
+
+        return null;
     }
 
     /**

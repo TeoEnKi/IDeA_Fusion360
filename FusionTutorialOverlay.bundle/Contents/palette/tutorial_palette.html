@@ -54,6 +54,10 @@
 
                 <!-- Visual Step Area - Shows Fusion UI with highlights and cursor overlay -->
                 <div id="visualStepArea" class="visual-step-area hidden">
+                    <div id="viewportScreenshot" class="viewport-screenshot hidden">
+                        <img id="viewportScreenshotImg" src="" alt="Current model viewport">
+                        <button id="refreshViewportBtn" class="viewport-refresh-btn" title="Refresh">&#x21BB;</button>
+                    </div>
                     <div id="animationArea" class="visual-step-container">
                         <img id="visualStepImage" src="" alt="Fusion 360 UI" class="visual-step-image">
                         <div id="visualStepHighlights" class="visual-step-highlights"></div>
@@ -87,6 +91,18 @@
                 </div>
             </section>
         </main>
+
+        <!-- Persistent Warning Footer (replaces blocking modals) -->
+        <div id="warningFooter" class="warning-footer hidden">
+            <div class="warning-footer-content">
+                <span class="warning-footer-icon">&#x26A0;</span>
+                <span id="warningFooterMessage" class="warning-footer-message">Warning message here</span>
+                <button id="warningFooterDismiss" class="warning-footer-dismiss" title="Dismiss">&times;</button>
+            </div>
+            <div id="warningFooterAction" class="warning-footer-action hidden">
+                <button id="warningFooterBtn" class="btn btn-sm btn-warning">Show me how</button>
+            </div>
+        </div>
 
         <!-- Navigation -->
         <nav id="navigation" class="navigation hidden">

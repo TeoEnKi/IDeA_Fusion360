@@ -7,6 +7,7 @@ Main add-in entry point
 import os
 import sys
 import traceback
+import base64
 
 # Get the directory for logging BEFORE any other imports
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -71,6 +72,7 @@ try:
     from core.consent_manager import ConsentManager, AIGuidanceMode
     from core.redirect_templates import RedirectTemplateLibrary
     from core.context_poller import ContextPollingManager
+    from core.completion_detector import CompletionDetector, CompletionEvent, CompletionEventType
     CORE_MODULES_LOADED = True
     debug_log("Core modules loaded successfully")
 except Exception as e:
@@ -90,6 +92,10 @@ _consent_manager = None
 _context_poller = None
 _is_redirecting = False
 _pending_step_index = None
+
+# Completion detection system
+_completion_detector = None
+_screenshot_dir = None
 
 # Add-in metadata
 ADDIN_NAME = "AI Tutorial Overlay"
@@ -279,6 +285,29 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
     def __init__(self):
         super().__init__()
+        self._setup_completion_callback()
+
+    def _setup_completion_callback(self):
+        """Setup completion detector callback to notify palette of events."""
+        global _completion_detector, _palette
+
+        if CORE_MODULES_LOADED and _completion_detector:
+            _completion_detector.add_callback(self._on_completion_event)
+
+    def _on_completion_event(self, event):
+        """Called when a completion event is detected."""
+        global _palette
+
+        if _palette:
+            try:
+                event_data = {
+                    "action": "completionEvent",
+                    "event": event.to_dict()
+                }
+                _palette.sendInfoToHTML("response", json.dumps(event_data))
+                debug_log(f" Completion event sent: {event.event_type.value}")
+            except Exception as e:
+                debug_log(f" Error sending completion event: {e}")
 
     def notify(self, args: adsk.core.HTMLEventArgs):
         global _tutorial_manager, _palette, _consent_manager, _context_detector
@@ -351,6 +380,20 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
             elif action == "skipRedirect":
                 response = self._handle_skip_redirect()
+
+            # Completion detection and screenshot actions
+            elif action == "captureViewport":
+                response = self._handle_capture_viewport(data.get("filename", "viewport.png"))
+
+            elif action == "checkQCConditions":
+                conditions = data.get("conditions", [])
+                response = self._handle_check_qc(conditions)
+
+            elif action == "getDesignState":
+                response = self._handle_get_design_state()
+
+            elif action == "resetTracking":
+                response = self._handle_reset_tracking()
 
             # Send response back to palette
             if _palette:
@@ -699,6 +742,86 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         return {"action": "redirectSkipped", "success": True}
 
+    def _handle_capture_viewport(self, filename: str) -> dict:
+        """Capture the current viewport as an image and return as base64 data URL."""
+        global _completion_detector, _screenshot_dir
+
+        if not CORE_MODULES_LOADED or not _completion_detector:
+            return {"action": "viewportCaptured", "success": False, "message": "Completion detector not available"}
+
+        try:
+            # Ensure screenshot directory exists
+            if not _screenshot_dir:
+                _screenshot_dir = get_resource_path("screenshots")
+                os.makedirs(_screenshot_dir, exist_ok=True)
+
+            # Generate full path
+            output_path = os.path.join(_screenshot_dir, filename)
+
+            # Capture the viewport
+            success = _completion_detector.capture_viewport_screenshot(output_path)
+
+            if success:
+                # Read and encode as base64 for reliable display in Qt WebEngine
+                with open(output_path, 'rb') as f:
+                    image_data = base64.b64encode(f.read()).decode('utf-8')
+
+                return {
+                    "action": "viewportCaptured",
+                    "success": True,
+                    "imageData": f"data:image/png;base64,{image_data}",
+                    "path": f"screenshots/{filename}",
+                    "fullPath": output_path
+                }
+            else:
+                return {"action": "viewportCaptured", "success": False, "message": "Failed to capture viewport"}
+
+        except Exception as e:
+            return {"action": "viewportCaptured", "success": False, "message": str(e)}
+
+    def _handle_check_qc(self, conditions: list) -> dict:
+        """Check QC conditions against current design state."""
+        global _completion_detector
+
+        if not CORE_MODULES_LOADED or not _completion_detector:
+            return {"action": "qcResults", "success": False, "results": []}
+
+        try:
+            results = _completion_detector.check_qc_conditions(conditions)
+            return {
+                "action": "qcResults",
+                "success": True,
+                "results": results
+            }
+        except Exception as e:
+            return {"action": "qcResults", "success": False, "message": str(e), "results": []}
+
+    def _handle_get_design_state(self) -> dict:
+        """Get the current state of the design."""
+        global _completion_detector
+
+        if not CORE_MODULES_LOADED or not _completion_detector:
+            return {"action": "designState", "success": False, "state": {}}
+
+        try:
+            state = _completion_detector.get_current_state()
+            return {
+                "action": "designState",
+                "success": True,
+                "state": state
+            }
+        except Exception as e:
+            return {"action": "designState", "success": False, "message": str(e), "state": {}}
+
+    def _handle_reset_tracking(self) -> dict:
+        """Reset the completion tracking (for new step)."""
+        global _completion_detector
+
+        if CORE_MODULES_LOADED and _completion_detector:
+            _completion_detector.reset_tracking()
+
+        return {"action": "trackingReset", "success": True}
+
 
 class PaletteCloseEventHandler(adsk.core.UserInterfaceGeneralEventHandler):
     """Handles palette close event."""
@@ -805,6 +928,7 @@ def run(context):
     """Add-in entry point - called when add-in is started."""
     global _app, _ui, _tutorial_manager, _handlers
     global _context_detector, _consent_manager, _context_poller
+    global _completion_detector, _screenshot_dir
 
     debug_log("=== run() called - add-in starting ===")
 
@@ -825,6 +949,15 @@ def run(context):
 
                 # Context poller for redirect enforcement
                 _context_poller = ContextPollingManager(_context_detector)
+
+                # Completion detector for checklist toggling
+                _completion_detector = CompletionDetector()
+                _completion_detector.start()
+                debug_log(" Completion detector initialized and started")
+
+                # Screenshot directory
+                _screenshot_dir = get_resource_path("screenshots")
+                os.makedirs(_screenshot_dir, exist_ok=True)
             except Exception as e:
                 # Log but continue - basic tutorial functionality will still work
                 debug_log(f"Warning: Could not initialize redirect modules: {e}")
@@ -872,8 +1005,17 @@ def stop(context):
     """Add-in cleanup - called when add-in is stopped."""
     global _app, _ui, _palette, _handlers
     global _context_detector, _consent_manager, _context_poller, _is_redirecting
+    global _completion_detector, _screenshot_dir
 
     try:
+        # Stop completion detector if active
+        if CORE_MODULES_LOADED and _completion_detector:
+            try:
+                _completion_detector.stop()
+            except Exception:
+                pass
+            _completion_detector = None
+
         # Stop context polling if active
         if CORE_MODULES_LOADED and _context_poller:
             try:
@@ -885,6 +1027,7 @@ def stop(context):
         _context_detector = None
         _consent_manager = None
         _is_redirecting = False
+        _screenshot_dir = None
 
         # Remove palette
         if _palette:

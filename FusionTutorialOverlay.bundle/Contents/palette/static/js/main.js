@@ -25,7 +25,12 @@
         prevBtn: null,
         nextBtn: null,
         replayBtn: null,
-        retryBtn: null
+        retryBtn: null,
+        warningFooter: null,
+        warningFooterMessage: null,
+        warningFooterDismiss: null,
+        warningFooterAction: null,
+        warningFooterBtn: null
     };
 
     /**
@@ -65,6 +70,12 @@
         elements.nextBtn = document.getElementById('nextBtn');
         elements.replayBtn = document.getElementById('replayBtn');
         elements.retryBtn = document.getElementById('retryBtn');
+        // Warning footer elements
+        elements.warningFooter = document.getElementById('warningFooter');
+        elements.warningFooterMessage = document.getElementById('warningFooterMessage');
+        elements.warningFooterDismiss = document.getElementById('warningFooterDismiss');
+        elements.warningFooterAction = document.getElementById('warningFooterAction');
+        elements.warningFooterBtn = document.getElementById('warningFooterBtn');
     }
 
     /**
@@ -116,6 +127,17 @@
         }
         if (elements.retryBtn) {
             elements.retryBtn.addEventListener('click', retryLoad);
+        }
+
+        // Warning footer dismiss button
+        if (elements.warningFooterDismiss) {
+            elements.warningFooterDismiss.addEventListener('click', hideWarningFooter);
+        }
+
+        // Viewport screenshot refresh button
+        const refreshViewportBtn = document.getElementById('refreshViewportBtn');
+        if (refreshViewportBtn) {
+            refreshViewportBtn.addEventListener('click', requestViewportCapture);
         }
 
         // Keyboard navigation (when palette has focus)
@@ -228,6 +250,8 @@
                     }
                     // Clear any context warnings from previous navigation attempts
                     clearContextWarnings();
+                    // Clear viewport screenshot from previous step
+                    clearViewportPreview();
                     showTutorial();
                     stepper.loadStep(payload.step);
                     break;
@@ -264,7 +288,30 @@
                     break;
 
                 case 'contextWarning':
-                    showContextWarning(payload.mismatch, payload.message);
+                    // Use persistent footer instead of blocking warning
+                    showWarningFooter(payload.message || getContextWarningMessage(payload.mismatch), 'warning', {
+                        showAction: true,
+                        actionLabel: 'Show me how',
+                        onAction: () => {
+                            sendToBridge({ action: 'showRedirectHelp' });
+                        }
+                    });
+                    break;
+
+                case 'completionEvent':
+                    handleCompletionEvent(payload.event);
+                    break;
+
+                case 'viewportCaptured':
+                    handleViewportCaptured(payload);
+                    break;
+
+                case 'qcResults':
+                    handleQCResults(payload.results);
+                    break;
+
+                case 'designState':
+                    handleDesignState(payload.state);
                     break;
 
                 case 'redirectSkipped':
@@ -421,41 +468,29 @@
     }
 
     /**
-     * Show ask redirect dialog (ASK mode)
+     * Show ask redirect dialog (ASK mode) - now uses persistent footer
      */
     function showAskRedirectDialog(mismatch, targetIndex) {
-        const overlay = document.getElementById('askRedirectOverlay');
-        const message = document.getElementById('askRedirectMessage');
-        const yesBtn = document.getElementById('askRedirectYes');
-        const noBtn = document.getElementById('askRedirectNo');
-
-        if (!overlay) return;
-
-        // Update message
-        if (message && mismatch.mismatches && mismatch.mismatches.length > 0) {
+        let message = 'Wrong environment detected.';
+        if (mismatch && mismatch.mismatches && mismatch.mismatches.length > 0) {
             const m = mismatch.mismatches[0];
-            message.textContent = `You're currently in ${m.current} mode, but this step requires ${m.required} mode.`;
+            message = `You're in ${m.current} mode, but this step requires ${m.required} mode.`;
         }
 
-        // Setup buttons
-        if (yesBtn) {
-            yesBtn.onclick = () => {
-                overlay.classList.add('hidden');
-                // Start redirect
+        // Use persistent warning footer instead of blocking overlay
+        showWarningFooter(message, 'warning', {
+            showAction: true,
+            actionLabel: 'Show me how',
+            onAction: () => {
                 sendToBridge({ action: 'showRedirectHelp', targetIndex: targetIndex });
-                // The bridge will respond with a redirectStep
-            };
-        }
+            }
+        });
 
-        if (noBtn) {
-            noBtn.onclick = () => {
-                overlay.classList.add('hidden');
-                // Skip redirect and navigate anyway
-                sendToBridge({ action: 'skipRedirectHelp', targetIndex: targetIndex });
-            };
+        // Also keep the old overlay for backwards compatibility (hidden by default)
+        const overlay = document.getElementById('askRedirectOverlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
         }
-
-        overlay.classList.remove('hidden');
     }
 
     /**
@@ -476,38 +511,229 @@
     }
 
     /**
-     * Show context warning (OFF mode or after skip)
+     * Show context warning (OFF mode or after skip) - now uses persistent footer
      */
     function showContextWarning(mismatch, customMessage) {
-        // Show a warning message in the warnings section
-        const warningsSection = document.getElementById('warningsSection');
-        const warningsList = document.getElementById('warningsList');
+        const message = customMessage ||
+                       (mismatch && mismatch.mismatches && mismatch.mismatches[0]?.message) ||
+                       'Context mismatch detected';
+        showWarningFooter(message + ' Click Next to retry.', 'warning');
+    }
 
-        if (warningsSection && warningsList) {
-            warningsSection.classList.remove('hidden');
-
-            // Clear previous context warnings (keep other warnings)
-            const existingContextWarnings = warningsList.querySelectorAll('.context-warning');
-            existingContextWarnings.forEach(el => el.remove());
-
-            // Add context warning
-            const li = document.createElement('li');
-            li.className = 'context-warning';
-
-            const symbol = document.createElement('span');
-            symbol.className = 'symbol symbol-warning';
-            symbol.textContent = '\u26A0\uFE0F';
-
-            const text = document.createElement('span');
-            const message = customMessage ||
-                           (mismatch && mismatch.mismatches && mismatch.mismatches[0]?.message) ||
-                           'Context mismatch detected';
-            text.textContent = message + ' Click Next to retry.';
-
-            li.appendChild(symbol);
-            li.appendChild(text);
-            warningsList.insertBefore(li, warningsList.firstChild);
+    /**
+     * Get context warning message from mismatch data
+     */
+    function getContextWarningMessage(mismatch) {
+        if (mismatch && mismatch.mismatches && mismatch.mismatches.length > 0) {
+            const m = mismatch.mismatches[0];
+            return `You're in ${m.current} mode, but this step requires ${m.required} mode.`;
         }
+        return 'Context mismatch detected. Please switch to the correct environment.';
+    }
+
+    /**
+     * Show warning footer with message
+     * @param {string} message - The warning message to display
+     * @param {string} type - 'warning', 'error', or 'info'
+     * @param {Object} options - Optional settings
+     */
+    function showWarningFooter(message, type = 'warning', options = {}) {
+        if (!elements.warningFooter) return;
+
+        // Set message
+        if (elements.warningFooterMessage) {
+            elements.warningFooterMessage.textContent = message;
+        }
+
+        // Set type class
+        elements.warningFooter.classList.remove('error', 'info');
+        if (type === 'error') {
+            elements.warningFooter.classList.add('error');
+        } else if (type === 'info') {
+            elements.warningFooter.classList.add('info');
+        }
+
+        // Handle action button
+        if (options.showAction && elements.warningFooterAction && elements.warningFooterBtn) {
+            elements.warningFooterAction.classList.remove('hidden');
+            elements.warningFooterBtn.textContent = options.actionLabel || 'Take action';
+
+            // Remove old listener and add new one
+            const newBtn = elements.warningFooterBtn.cloneNode(true);
+            elements.warningFooterBtn.parentNode.replaceChild(newBtn, elements.warningFooterBtn);
+            elements.warningFooterBtn = newBtn;
+
+            if (options.onAction) {
+                elements.warningFooterBtn.addEventListener('click', () => {
+                    hideWarningFooter();
+                    options.onAction();
+                });
+            }
+        } else if (elements.warningFooterAction) {
+            elements.warningFooterAction.classList.add('hidden');
+        }
+
+        // Show the footer
+        elements.warningFooter.classList.remove('hidden');
+
+        // Auto-hide after delay if specified
+        if (options.autoHide) {
+            setTimeout(hideWarningFooter, options.autoHide);
+        }
+    }
+
+    /**
+     * Hide warning footer
+     */
+    function hideWarningFooter() {
+        if (elements.warningFooter) {
+            elements.warningFooter.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Handle completion event from Fusion 360
+     */
+    function handleCompletionEvent(event) {
+        console.log('Completion event received:', event);
+
+        // Update QC checks based on the event
+        updateQCChecksFromEvent(event);
+
+        // Request viewport capture for visual feedback
+        if (event.eventType === 'extrude_created' ||
+            event.eventType === 'fillet_created' ||
+            event.eventType === 'sketch_finished') {
+            requestViewportCapture();
+        }
+    }
+
+    /**
+     * Update QC check items based on completion event
+     */
+    function updateQCChecksFromEvent(event) {
+        const qcList = document.getElementById('qcList');
+        if (!qcList) return;
+
+        const items = qcList.querySelectorAll('li');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+
+            // Match event types to QC check text
+            let shouldComplete = false;
+
+            if (event.eventType === 'sketch_created' && text.includes('sketch')) {
+                shouldComplete = true;
+            } else if (event.eventType === 'sketch_finished' && text.includes('finish')) {
+                shouldComplete = true;
+            } else if (event.eventType === 'extrude_created' && text.includes('extru')) {
+                shouldComplete = true;
+            } else if (event.eventType === 'fillet_created' && text.includes('fillet')) {
+                shouldComplete = true;
+            } else if (event.eventType === 'body_created' && text.includes('body')) {
+                shouldComplete = true;
+            }
+
+            if (shouldComplete) {
+                item.classList.remove('pending', 'checking');
+                item.classList.add('completed');
+
+                // Update symbol to checkmark
+                const symbol = item.querySelector('.symbol');
+                if (symbol) {
+                    symbol.textContent = '\u2705';
+                    symbol.className = 'symbol symbol-success';
+                }
+            }
+        });
+    }
+
+    /**
+     * Request viewport screenshot capture
+     */
+    function requestViewportCapture() {
+        const timestamp = Date.now();
+        sendToBridge({
+            action: 'captureViewport',
+            filename: `viewport_${timestamp}.png`
+        });
+    }
+
+    /**
+     * Handle viewport captured response
+     */
+    function handleViewportCaptured(payload) {
+        if (payload.success && payload.imageData) {
+            console.log('Viewport captured with base64 data');
+            updateViewportPreview(payload.imageData);
+        } else if (payload.success && payload.path) {
+            // Fallback for file path (may not work in Qt WebEngine sandbox)
+            console.log('Viewport captured:', payload.path);
+            updateViewportPreview('../' + payload.path + '?' + Date.now());
+        }
+    }
+
+    /**
+     * Update viewport preview in visual step area using base64 data URL
+     */
+    function updateViewportPreview(imageDataUrl) {
+        const container = document.getElementById('viewportScreenshot');
+        const img = document.getElementById('viewportScreenshotImg');
+        const visualArea = document.getElementById('visualStepArea');
+
+        if (container && img) {
+            img.src = imageDataUrl;
+            container.classList.remove('hidden');
+        }
+
+        if (visualArea) {
+            visualArea.classList.remove('hidden');
+        }
+    }
+
+    /**
+     * Clear viewport preview (called on step change)
+     */
+    function clearViewportPreview() {
+        const container = document.getElementById('viewportScreenshot');
+        const img = document.getElementById('viewportScreenshotImg');
+
+        if (container) {
+            container.classList.add('hidden');
+        }
+        if (img) {
+            img.src = '';
+        }
+    }
+
+    /**
+     * Handle QC results from bridge
+     */
+    function handleQCResults(results) {
+        const qcList = document.getElementById('qcList');
+        if (!qcList || !results) return;
+
+        results.forEach((result, index) => {
+            const item = qcList.children[index];
+            if (item) {
+                item.classList.remove('pending', 'checking');
+                item.classList.add(result.passed ? 'completed' : 'failed');
+
+                const symbol = item.querySelector('.symbol');
+                if (symbol) {
+                    symbol.textContent = result.passed ? '\u2705' : '\u274C';
+                    symbol.className = 'symbol ' + (result.passed ? 'symbol-success' : 'symbol-error');
+                }
+            }
+        });
+    }
+
+    /**
+     * Handle design state from bridge
+     */
+    function handleDesignState(state) {
+        console.log('Design state:', state);
+        // Could update UI indicators based on state
     }
 
     /**
@@ -645,6 +871,12 @@
 
         }, 100);
     }
+
+    // Expose functions globally for use by renderers
+    window.sendToBridge = sendToBridge;
+    window.requestViewportCapture = requestViewportCapture;
+    window.showWarningFooter = showWarningFooter;
+    window.hideWarningFooter = hideWarningFooter;
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
