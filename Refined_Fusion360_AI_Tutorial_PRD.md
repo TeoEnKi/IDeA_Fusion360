@@ -1,0 +1,160 @@
+# Refined PRD: Fusion 360 AI Tutorial Plugin (Cloud‑Generated Tutorial System)
+
+## 1. Product Overview
+
+The Fusion 360 AI Tutorial Plugin is an Autodesk Fusion 360 add‑in that
+connects to a cloud‑based AI tutorial generation system. The plugin
+captures user context (screenshots and workspace state), sends it to the
+cloud, receives AI‑generated tutorials and optional CAD models, and
+plays them interactively inside Fusion 360.
+
+The system separates responsibilities into:
+
+-   Cloud: Tutorial generation
+-   Plugin: Tutorial playback and Fusion interaction
+
+This ensures scalability, reliability, and maintainability.
+
+------------------------------------------------------------------------
+
+## 2. Problem Statement
+
+Beginner CAD users face a large research tax --- time spent searching
+tutorials instead of designing.
+
+Hidden design intent exists in past models but is not accessible as
+step‑by‑step guidance.
+
+Goal: Allow beginners to build functional CAD models efficiently by
+providing real‑time, AI‑generated tutorial guidance inside Fusion 360.
+
+------------------------------------------------------------------------
+
+## 3. Product Goals
+
+Primary goals:
+
+-   Reduce tutorial research time
+-   Provide contextual, interactive tutorials
+-   Enable users to complete CAD workflows faster
+-   Integrate seamlessly into Fusion 360
+
+Secondary goals:
+
+-   Allow tutorial generation from screenshots and prompts
+-   Support AI‑generated CAD models
+-   Provide reusable tutorial manifests
+
+------------------------------------------------------------------------
+
+## 4. System Responsibilities
+
+Cloud System:
+
+-   Accept screenshots and prompts
+-   Generate tutorial manifest
+-   Generate optional CAD models
+-   Store tutorial assets
+
+Plugin:
+
+-   Capture screenshots
+-   Upload images
+-   Request tutorial generation
+-   Download tutorial manifest
+-   Play tutorial interactively
+-   Execute Fusion actions
+
+------------------------------------------------------------------------
+
+## 5. User Flow
+
+Step 1: User opens plugin
+
+Step 2: User clicks Generate Tutorial
+
+Step 3: Plugin captures screenshots
+
+Step 4: Plugin uploads screenshots
+
+Step 5: Plugin requests tutorial generation
+
+Step 6: Cloud generates tutorial
+
+Step 7: Plugin downloads tutorial
+
+Step 8: Plugin plays tutorial
+
+------------------------------------------------------------------------
+
+## 6. Tutorial Manifest Structure
+
+Each tutorial contains:
+
+-   tutorialId
+-   title
+-   steps
+
+Each step contains:
+
+-   title
+-   instruction
+-   detailedText
+-   uiAnimations
+-   fusionActions
+-   completionTrigger
+-   qcChecks
+-   warnings
+
+------------------------------------------------------------------------
+
+## 7. Completion Trigger Schema
+
+Defines how steps complete automatically.
+
+Example:
+
+{ "type": "featureCreated", "featureType": "ExtrudeFeature" }
+
+------------------------------------------------------------------------
+
+## 8. Functional Requirements
+
+Plugin must:
+
+-   Upload screenshots
+-   Create tutorial jobs
+-   Poll job status
+-   Download tutorial manifest
+-   Execute tutorial steps
+
+Cloud must:
+
+-   Accept uploads
+-   Generate tutorial manifest
+-   Store tutorial outputs
+
+------------------------------------------------------------------------
+
+## 9. Non‑Functional Requirements
+
+Performance:
+
+-   Tutorial generation: \<120 seconds
+-   Tutorial playback startup: \<2 seconds
+
+Reliability:
+
+-   Retry failed jobs
+-   Handle network errors
+
+Security:
+
+-   No API keys exposed in plugin
+-   Secure upload and download
+
+------------------------------------------------------------------------
+
+## 10. Deployment
+
+Plugin distributed via Autodesk App Store as .bundle package.
