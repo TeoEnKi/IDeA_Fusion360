@@ -40,8 +40,8 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Sketch created on XZ (Front) plane" },
-        { "symbol": "\u2705", "text": "You are in sketch editing mode" }
+        { "symbol": "\u2705", "text": "Sketch created on XZ (Front) plane", "expectedCommand": "SketchCreate" },
+        { "symbol": "\u2705", "text": "You are in sketch editing mode", "expectedCommand": "SketchActivate" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "Make sure to select XZ plane, not XY plane" }
@@ -91,9 +91,9 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Profile starts at origin (0,0)" },
-        { "symbol": "\u2705", "text": "Height is 90mm" },
-        { "symbol": "\u2705", "text": "Width is 35mm" }
+        { "symbol": "\u2705", "text": "Profile starts at origin (0,0)", "expectedCommand": "SketchLine" },
+        { "symbol": "\u2705", "text": "Height is 90mm", "expectedCommand": "SketchLine" },
+        { "symbol": "\u2705", "text": "Width is 35mm", "expectedCommand": "SketchLine" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "Draw on the RIGHT side of the Y-axis only" }
@@ -121,8 +121,8 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Profile is fully closed" },
-        { "symbol": "\u2705", "text": "Profile shows as shaded region" }
+        { "symbol": "\u2705", "text": "Profile is fully closed", "expectedCommand": "SketchLine" },
+        { "symbol": "\u2705", "text": "Profile shows as shaded region", "expectedCommand": "SketchLine" }
       ],
       "warnings": [],
       "uiAnimations": [
@@ -145,8 +145,8 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Sketch is finished" },
-        { "symbol": "\u2705", "text": "Sketch appears in browser/timeline" }
+        { "symbol": "\u2705", "text": "Sketch is finished", "expectedCommand": "FinishSketch" },
+        { "symbol": "\u2705", "text": "Sketch appears in browser/timeline", "expectedCommand": "FinishSketch" }
       ],
       "warnings": [],
       "uiAnimations": [
@@ -203,9 +203,9 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Profile is selected (highlighted)" },
-        { "symbol": "\u2705", "text": "Y-axis selected as revolution axis" },
-        { "symbol": "\u2705", "text": "Angle is set to 360 degrees" }
+        { "symbol": "\u2705", "text": "Profile is selected (highlighted)", "expectedCommand": "Revolve" },
+        { "symbol": "\u2705", "text": "Y-axis selected as revolution axis", "expectedCommand": "Revolve" },
+        { "symbol": "\u2705", "text": "Angle is set to 360 degrees", "expectedCommand": "Revolve" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "If revolve fails, check that profile doesn't cross the axis" }
@@ -248,7 +248,7 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "New sketch started on XZ plane" }
+        { "symbol": "\u2705", "text": "New sketch started on XZ plane", "expectedCommand": "SketchCreate" }
       ],
       "warnings": [],
       "uiAnimations": [
@@ -296,9 +296,9 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Arc starts at mug surface level" },
-        { "symbol": "\u2705", "text": "Arc ends at mug surface level" },
-        { "symbol": "\u2705", "text": "Enough finger clearance (~25mm)" }
+        { "symbol": "\u2705", "text": "Arc starts at mug surface level", "expectedCommand": "Sketch3PointArc" },
+        { "symbol": "\u2705", "text": "Arc ends at mug surface level", "expectedCommand": "Sketch3PointArc" },
+        { "symbol": "\u2705", "text": "Enough finger clearance (~25mm)", "expectedCommand": "Sketch3PointArc" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "Path should not intersect the mug body" }
@@ -333,8 +333,8 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Profile is perpendicular to path" },
-        { "symbol": "\u2705", "text": "Rounded rectangle is closed" }
+        { "symbol": "\u2705", "text": "Profile is perpendicular to path", "expectedCommand": "SketchCreate" },
+        { "symbol": "\u2705", "text": "Rounded rectangle is closed", "expectedCommand": "SketchCenterRectangle" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "Profile must be on a plane perpendicular to the path" }
@@ -394,9 +394,9 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Profile selected (rounded rectangle)" },
-        { "symbol": "\u2705", "text": "Path selected (arc)" },
-        { "symbol": "\u2705", "text": "Operation set to Join" }
+        { "symbol": "\u2705", "text": "Profile selected (rounded rectangle)", "expectedCommand": "Sweep" },
+        { "symbol": "\u2705", "text": "Path selected (arc)", "expectedCommand": "Sweep" },
+        { "symbol": "\u2705", "text": "Operation set to Join", "expectedCommand": "Sweep" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "If sweep fails, ensure profile is perpendicular to path" }
@@ -444,9 +444,9 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Inner rim edge selected" },
-        { "symbol": "\u2705", "text": "Outer rim edge selected" },
-        { "symbol": "\u2705", "text": "Fillet radius is 2mm" }
+        { "symbol": "\u2705", "text": "Inner rim edge selected", "expectedCommand": "FilletEdge" },
+        { "symbol": "\u2705", "text": "Outer rim edge selected", "expectedCommand": "FilletEdge" },
+        { "symbol": "\u2705", "text": "Fillet radius is 2mm", "expectedCommand": "FilletEdge" }
       ],
       "warnings": [],
       "uiAnimations": [
@@ -473,9 +473,9 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Top handle joint filleted" },
-        { "symbol": "\u2705", "text": "Bottom handle joint filleted" },
-        { "symbol": "\u2705", "text": "Fillet radius is 5mm" }
+        { "symbol": "\u2705", "text": "Top handle joint filleted", "expectedCommand": "FilletEdge" },
+        { "symbol": "\u2705", "text": "Bottom handle joint filleted", "expectedCommand": "FilletEdge" },
+        { "symbol": "\u2705", "text": "Fillet radius is 5mm", "expectedCommand": "FilletEdge" }
       ],
       "warnings": [
         { "symbol": "\u26A0\uFE0F", "text": "If fillet fails, try a smaller radius" }
@@ -502,8 +502,8 @@
       },
       "annotations": [],
       "qcChecks": [
-        { "symbol": "\u2705", "text": "Bottom outer edge selected" },
-        { "symbol": "\u2705", "text": "Fillet radius is 3mm" }
+        { "symbol": "\u2705", "text": "Bottom outer edge selected", "expectedCommand": "FilletEdge" },
+        { "symbol": "\u2705", "text": "Fillet radius is 3mm", "expectedCommand": "FilletEdge" }
       ],
       "warnings": [],
       "uiAnimations": [

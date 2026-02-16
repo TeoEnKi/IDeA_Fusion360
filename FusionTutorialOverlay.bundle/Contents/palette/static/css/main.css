@@ -397,6 +397,8 @@ body {
 .symbol-success { color: var(--success); }
 .symbol-warning { color: var(--warning); }
 .symbol-error { color: var(--error); }
+.symbol-pending { color: var(--text-muted); }
+.symbol-checking { color: var(--accent-primary); }
 
 /* Navigation */
 .navigation {
@@ -1079,6 +1081,7 @@ body {
 }
 
 .qc-list li.checking .symbol {
+    color: var(--accent-primary);
     animation: pulse 1s ease-in-out infinite;
 }
 
@@ -1089,6 +1092,13 @@ body {
 
 .qc-list li.completed .symbol {
     color: var(--success);
+    animation: completePop 0.3s ease-out;
+}
+
+@keyframes completePop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
 }
 
 .qc-list li.failed .symbol {

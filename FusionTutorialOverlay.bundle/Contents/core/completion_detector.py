@@ -5,9 +5,24 @@ Uses Fusion 360's event system to track when actions are completed.
 
 import adsk.core
 import adsk.fusion
+import os
 from typing import Callable, Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+
+# Import debug_log from parent module, with fallback
+def _debug_log(message: str):
+    """Write debug message to both print and log file."""
+    try:
+        print(f"[CompletionDetector] {message}")
+    except:
+        pass
+    try:
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "debug.log")
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(f"[CompletionDetector] {message}\n")
+    except:
+        pass
 
 
 class CompletionEventType(Enum):
@@ -46,6 +61,57 @@ class CompletionEvent:
         }
 
 
+# Map Fusion command IDs to event types for command_started detection
+COMMAND_MAP = {
+    'SketchCreate': 'sketch',
+    'SketchActivate': 'sketch',
+    'SketchCenterRectangle': 'sketch_rectangle',
+    'SketchRectangle': 'sketch_rectangle',
+    'SketchLine': 'sketch_line',
+    'SketchCircle': 'sketch_circle',
+    'SketchArc': 'sketch_arc',
+    'Sketch3PointArc': 'sketch_arc',
+    'SketchFittedSpline': 'sketch_spline',
+    'SketchSpline': 'sketch_spline',
+    'SketchDimension': 'sketch_dimension',
+    'SketchConstraint': 'sketch_constraint',
+    'FinishSketch': 'finish_sketch',
+    'Extrude': 'extrude',
+    'FilletEdge': 'fillet',
+    'ChamferEdge': 'chamfer',
+    'Revolve': 'revolve',
+    'Sweep': 'sweep',
+    'Shell': 'shell',
+    'Loft': 'loft',
+    'Hole': 'hole',
+}
+
+
+class CommandStartingHandler(adsk.core.ApplicationCommandEventHandler):
+    """Handles commandStarting events to detect when the user clicks a tool."""
+
+    def __init__(self, on_completion: Callable[[CompletionEvent], None]):
+        super().__init__()
+        self.on_completion = on_completion
+
+    def notify(self, args: adsk.core.ApplicationCommandEventArgs):
+        try:
+            command_id = args.commandId
+            mapped_type = COMMAND_MAP.get(command_id, '')
+            _debug_log(f"USER ACTION: command_started -> commandId='{command_id}', mappedType='{mapped_type}'")
+            event = CompletionEvent(
+                event_type=CompletionEventType.COMMAND_STARTED,
+                entity_name=COMMAND_MAP.get(command_id, command_id),
+                additional_info={
+                    'commandId': command_id,
+                    'mappedType': mapped_type
+                }
+            )
+            self.on_completion(event)
+        except Exception as e:
+            _debug_log(f"ERROR in CommandStartingHandler.notify: {e}")
+
+
 class TimelineEventHandler(adsk.core.ApplicationCommandEventHandler):
     """Handles command termination events to detect feature creation."""
 
@@ -60,11 +126,18 @@ class TimelineEventHandler(adsk.core.ApplicationCommandEventHandler):
             design = adsk.fusion.Design.cast(app.activeProduct)
 
             if not design:
+                _debug_log("USER ACTION: command_terminated but no active design")
                 return
+
+            # Pass the command ID through in additional_info
+            command_id = args.commandId if hasattr(args, 'commandId') else ''
+            _debug_log(f"USER ACTION: command_terminated -> commandId='{command_id}'")
 
             # Check timeline for new features
             timeline = design.timeline
             current_count = timeline.count if timeline else 0
+
+            _debug_log(f"  Timeline count: previous={self._last_timeline_count}, current={current_count}")
 
             if current_count > self._last_timeline_count:
                 # New feature was added
@@ -73,22 +146,46 @@ class TimelineEventHandler(adsk.core.ApplicationCommandEventHandler):
                         item = timeline.item(i)
                         entity = item.entity
                         event_type = self._get_event_type(entity)
+                        entity_type_name = type(entity).__name__
+                        entity_name = getattr(entity, 'name', entity_type_name)
+
+                        _debug_log(f"  New timeline item [{i}]: entityType='{entity_type_name}', name='{entity_name}', eventType='{event_type.value if event_type else 'None'}'")
 
                         if event_type:
+                            info = self._get_entity_info(entity)
+                            info['commandId'] = command_id
                             event = CompletionEvent(
                                 event_type=event_type,
-                                entity_name=getattr(entity, 'name', str(type(entity).__name__)),
+                                entity_name=entity_name,
                                 entity_id=str(i),
-                                additional_info=self._get_entity_info(entity)
+                                additional_info=info
                             )
                             self.on_completion(event)
-                    except:
-                        pass
+                    except Exception as e:
+                        _debug_log(f"  ERROR processing timeline item [{i}]: {e}")
 
                 self._last_timeline_count = current_count
+            else:
+                # No new timeline items — but if this was a recognized command
+                # (e.g. SketchLine, Sketch3PointArc), fire a command_terminated
+                # event so JS can still complete checklist items for sketch tools
+                # that don't create their own timeline entries.
+                if command_id in COMMAND_MAP:
+                    _debug_log(f"  No new timeline items, but '{command_id}' is a known command — firing command_terminated event")
+                    event = CompletionEvent(
+                        event_type=CompletionEventType.COMMAND_TERMINATED,
+                        entity_name=COMMAND_MAP.get(command_id, command_id),
+                        additional_info={
+                            'commandId': command_id,
+                            'mappedType': COMMAND_MAP.get(command_id, '')
+                        }
+                    )
+                    self.on_completion(event)
+                else:
+                    _debug_log(f"  No new timeline items (command '{command_id}' is not a tracked command)")
 
         except Exception as e:
-            pass  # Silently handle errors to not disrupt Fusion
+            _debug_log(f"ERROR in TimelineEventHandler.notify: {e}")
 
     def _get_event_type(self, entity) -> Optional[CompletionEventType]:
         """Map entity type to completion event type."""
@@ -153,17 +250,21 @@ class SketchEventHandler(adsk.core.ActiveSelectionEventHandler):
 
             if self._was_in_sketch and not is_in_sketch:
                 # Sketch was finished
+                _debug_log("USER ACTION: sketch_finished (exited sketch mode)")
                 event = CompletionEvent(
                     event_type=CompletionEventType.SKETCH_FINISHED,
                     entity_name="Sketch",
                     additional_info={"action": "finished"}
                 )
                 self.on_completion(event)
+            elif not self._was_in_sketch and is_in_sketch:
+                sketch_name = getattr(design.activeEditObject, 'name', 'unknown')
+                _debug_log(f"USER ACTION: entered sketch mode -> sketch='{sketch_name}'")
 
             self._was_in_sketch = is_in_sketch
 
         except Exception as e:
-            pass
+            _debug_log(f"ERROR in SketchEventHandler.notify: {e}")
 
 
 class CompletionDetector:
@@ -177,24 +278,35 @@ class CompletionDetector:
         self._callbacks: List[Callable[[CompletionEvent], None]] = []
         self._is_active = False
         self._timeline_handler: Optional[TimelineEventHandler] = None
+        self._command_starting_handler: Optional[CommandStartingHandler] = None
         self._app = adsk.core.Application.get()
 
     def start(self):
         """Start listening for completion events."""
         if self._is_active:
+            _debug_log("start() called but already active")
             return
 
         try:
+            ui = self._app.userInterface
+
             # Subscribe to command terminated event (fires after any command completes)
-            command_terminated_event = self._app.userInterface.commandTerminated
             self._timeline_handler = TimelineEventHandler(self._on_event)
-            command_terminated_event.add(self._timeline_handler)
+            ui.commandTerminated.add(self._timeline_handler)
             self._handlers.append(self._timeline_handler)
+            _debug_log("Subscribed to commandTerminated event")
+
+            # Subscribe to command starting event (fires when user clicks a tool)
+            self._command_starting_handler = CommandStartingHandler(self._on_event)
+            ui.commandStarting.add(self._command_starting_handler)
+            self._handlers.append(self._command_starting_handler)
+            _debug_log("Subscribed to commandStarting event")
 
             self._is_active = True
+            _debug_log("CompletionDetector is now active and listening for events")
 
         except Exception as e:
-            pass
+            _debug_log(f"ERROR in CompletionDetector.start: {e}")
 
     def stop(self):
         """Stop listening for completion events."""
@@ -202,13 +314,17 @@ class CompletionDetector:
 
         # Clean up handlers
         try:
+            ui = self._app.userInterface
             if self._timeline_handler:
-                self._app.userInterface.commandTerminated.remove(self._timeline_handler)
+                ui.commandTerminated.remove(self._timeline_handler)
+            if self._command_starting_handler:
+                ui.commandStarting.remove(self._command_starting_handler)
         except:
             pass
 
         self._handlers.clear()
         self._timeline_handler = None
+        self._command_starting_handler = None
 
     def add_callback(self, callback: Callable[[CompletionEvent], None]):
         """Add a callback to be notified of completion events."""
@@ -226,11 +342,12 @@ class CompletionDetector:
 
     def _on_event(self, event: CompletionEvent):
         """Internal handler that dispatches to all callbacks."""
+        _debug_log(f"Dispatching event '{event.event_type.value}' to {len(self._callbacks)} callback(s)")
         for callback in self._callbacks:
             try:
                 callback(event)
             except Exception as e:
-                pass
+                _debug_log(f"ERROR in completion callback: {e}")
 
     def capture_viewport_screenshot(self, output_path: str) -> bool:
         """

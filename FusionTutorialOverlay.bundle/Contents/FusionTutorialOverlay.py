@@ -8,6 +8,7 @@ import os
 import sys
 import traceback
 import base64
+import time
 
 # Get the directory for logging BEFORE any other imports
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -296,7 +297,44 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
     def _on_completion_event(self, event):
         """Called when a completion event is detected."""
-        global _palette
+        global _palette, _tutorial_manager
+
+        # Log what the user actually did vs what the current step expects
+        current_step = _tutorial_manager.get_current_step() if _tutorial_manager else None
+        step_title = current_step.get('title', '?') if current_step else '(no step loaded)'
+        step_index = current_step.get('currentIndex', '?') if current_step else '?'
+
+        debug_log(f"")
+        debug_log(f" === COMPLETION EVENT (Step {step_index}: {step_title}) ===")
+        debug_log(f" USER'S CURRENT ACTIVITY: eventType='{event.event_type.value}', entityName='{event.entity_name}', info={event.additional_info}")
+
+        if current_step:
+            qc_checks = current_step.get('qcChecks', [])
+            if qc_checks:
+                expected_commands = []
+                for qc in qc_checks:
+                    cmd = qc.get('expectedCommand', '(none)')
+                    text = qc.get('text', qc.get('message', ''))
+                    expected_commands.append(f"'{cmd}' ({text})")
+                debug_log(f" EXPECTED ACTIVITY: {', '.join(expected_commands)}")
+
+                # Check if any expected command matches the user's actual activity
+                user_command_id = (event.additional_info or {}).get('commandId', '')
+                matched = False
+                for qc in qc_checks:
+                    exp_cmd = qc.get('expectedCommand', '')
+                    if exp_cmd and exp_cmd == user_command_id:
+                        matched = True
+                        debug_log(f" MATCH FOUND: expectedCommand='{exp_cmd}' matches user commandId='{user_command_id}'")
+                        break
+
+                if not matched and user_command_id:
+                    debug_log(f" NO MATCH: user commandId='{user_command_id}' does not match any expectedCommand")
+                elif not user_command_id:
+                    debug_log(f" NO COMMAND ID in event — text-based fallback matching will be attempted in JS")
+            else:
+                debug_log(f" EXPECTED ACTIVITY: (no qcChecks defined for this step)")
+        debug_log(f" ==========================================")
 
         if _palette:
             try:
@@ -305,9 +343,11 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                     "event": event.to_dict()
                 }
                 _palette.sendInfoToHTML("response", json.dumps(event_data))
-                debug_log(f" Completion event sent: {event.event_type.value}")
+                debug_log(f" Completion event sent to palette: {event.event_type.value}")
             except Exception as e:
-                debug_log(f" Error sending completion event: {e}")
+                debug_log(f" Error sending completion event to palette: {e}")
+        else:
+            debug_log(f" WARNING: _palette is None, cannot send completion event to JS")
 
     def notify(self, args: adsk.core.HTMLEventArgs):
         global _tutorial_manager, _palette, _consent_manager, _context_detector
@@ -356,11 +396,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             elif action == "goToStep":
                 index = data.get("index", 0)
                 response = self._handle_navigation("goToStep", index)
-
-            elif action == "replay":
-                step = _tutorial_manager.get_current_step()
-                if step:
-                    response = {"action": "replayStep", "step": step, "success": True}
 
             # Consent system actions
             elif action == "getConsent":
@@ -445,6 +480,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 if step:
                     debug_log(" Tutorial loaded, executing fusion actions...")
                     self._execute_fusion_actions(step)
+                    self._auto_capture_viewport(step)
                     debug_log(" Returning tutorialLoaded response")
                     return {
                         "action": "tutorialLoaded",
@@ -475,6 +511,43 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             runner = FusionActionsRunner()
             runner.execute_actions(actions)
 
+    def _auto_capture_viewport(self, step: dict):
+        """Auto-capture viewport screenshot if the step requests it."""
+        global _completion_detector, _screenshot_dir, _palette
+
+        if not step.get("captureViewport"):
+            return
+
+        if not CORE_MODULES_LOADED or not _completion_detector or not _palette:
+            return
+
+        try:
+            # Brief delay so Fusion renders camera changes first
+            time.sleep(0.3)
+
+            if not _screenshot_dir:
+                _screenshot_dir = get_resource_path("screenshots")
+                os.makedirs(_screenshot_dir, exist_ok=True)
+
+            filename = f"viewport_auto_{int(time.time() * 1000)}.png"
+            output_path = os.path.join(_screenshot_dir, filename)
+
+            success = _completion_detector.capture_viewport_screenshot(output_path)
+            if success:
+                with open(output_path, 'rb') as f:
+                    image_data = base64.b64encode(f.read()).decode('utf-8')
+
+                capture_response = {
+                    "action": "viewportCaptured",
+                    "success": True,
+                    "imageData": f"data:image/png;base64,{image_data}",
+                    "path": f"screenshots/{filename}"
+                }
+                _palette.sendInfoToHTML("response", json.dumps(capture_response))
+                debug_log(f" Auto-captured viewport for step: {step.get('stepId', 'unknown')}")
+        except Exception as e:
+            debug_log(f" Auto-capture viewport failed: {e}")
+
     def _handle_navigation(self, direction: str, index: int = None) -> dict:
         """Handle navigation with optional context checking."""
         global _tutorial_manager, _context_detector, _consent_manager
@@ -501,10 +574,15 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         target_step = steps[target_index]
         requires = target_step.get("requires", {})
 
-        # Check if context matches requirements (optional feature)
+        # Stop any context polling left over from a previous mismatch warning
+        if _context_poller and _context_poller.is_polling:
+            _context_poller.stop_polling()
+
+        # Check context requirements and warn if mismatched (non-blocking)
         try:
             if requires and _context_detector and CORE_MODULES_LOADED:
                 debug_log(f" Step requires: {requires}")
+                # Fresh API call to Fusion 360 for current context
                 current_context = _context_detector.get_current_context()
                 debug_log(f" Current context: workspace={current_context.workspace.value}, environment={current_context.environment.value}")
 
@@ -512,17 +590,32 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 debug_log(f" Context matches requirements: {matches}")
 
                 if not matches:
-                    # Context doesn't match - handle based on consent mode
-                    debug_log(" Context mismatch detected, handling...")
-                    result = self._handle_context_mismatch(requires, target_index)
-                    if result:
-                        return result
+                    # Context doesn't match - send warning but don't block navigation
+                    debug_log(" Context mismatch detected, sending non-blocking warning...")
+                    mismatch_details = _context_detector.get_mismatch_details(requires)
+                    if _palette:
+                        warning_msg = {
+                            "action": "contextWarning",
+                            "mismatch": mismatch_details,
+                            "targetIndex": target_index,
+                            "success": True
+                        }
+                        _palette.sendInfoToHTML("response", json.dumps(warning_msg))
+
+                    # Poll for context resolution so the warning auto-hides
+                    # when the user switches to the correct environment
+                    if _context_poller:
+                        _context_poller.start_polling(
+                            required=requires,
+                            on_matched=self._on_warning_context_resolved,
+                            interval_ms=1000
+                        )
                 else:
                     debug_log(" Context matches, proceeding with navigation")
         except Exception as e:
             debug_log(f" Context check error (proceeding anyway): {e}")
 
-        # Context matches or no requirements - proceed with navigation
+        # Always proceed with navigation regardless of context match
         if direction == "next":
             step = _tutorial_manager.next_step()
         elif direction == "prev":
@@ -532,6 +625,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         if step:
             self._execute_fusion_actions(step)
+            self._auto_capture_viewport(step)
             return {"action": "updateStep", "step": step, "success": True}
 
         return {"action": "error", "message": "Navigation failed", "success": False}
@@ -619,6 +713,19 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         # Auto-advance to pending step after a brief delay
         # (The palette will handle this based on the message)
+
+    def _on_warning_context_resolved(self, resolved_context: dict):
+        """Callback when context matches after a mismatch warning — dismiss the warning in JS."""
+        global _palette
+
+        debug_log(f" Context resolved — dismissing warning in palette")
+        if _palette:
+            try:
+                _palette.sendInfoToHTML("response", json.dumps({
+                    "action": "contextResolved"
+                }))
+            except Exception as e:
+                debug_log(f" Error sending contextResolved: {e}")
 
     def _handle_get_consent(self) -> dict:
         """Get current consent/guidance mode."""

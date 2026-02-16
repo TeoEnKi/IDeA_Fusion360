@@ -389,10 +389,19 @@ class BaseRenderer {
 
         checks.forEach(check => {
             const li = document.createElement('li');
+            li.classList.add('pending');
+
+            // Add data attributes for event matching
+            if (check.expectedCommand) {
+                li.dataset.expectedCommand = check.expectedCommand;
+            }
+            if (check.condition && check.condition.type) {
+                li.dataset.conditionType = check.condition.type;
+            }
 
             const symbol = document.createElement('span');
-            symbol.className = 'symbol ' + this.getSymbolClass(check.symbol);
-            symbol.textContent = check.symbol || '\u2705'; // Default to checkmark
+            symbol.className = 'symbol symbol-pending';
+            symbol.textContent = '\u25CB'; // Empty circle for pending state
 
             const text = document.createElement('span');
             text.textContent = check.text || check.message || '';
@@ -455,7 +464,7 @@ class BaseRenderer {
         if (symbol === '\u26D4' || symbol === '\u274C' || symbol === '\u2716') {
             return 'symbol-error';
         }
-        return 'symbol-success';
+        return 'symbol-pending';
     }
 
     /**

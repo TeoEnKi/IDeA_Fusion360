@@ -146,19 +146,22 @@ class FusionContextDetector:
             return Workspace.UNKNOWN
 
     def _detect_environment(self) -> Environment:
-        """Detect the current environment within the Design workspace."""
-        try:
-            # Check if we're in sketch edit mode
-            if self._has_active_sketch():
-                return Environment.SKETCH
+        """Detect the current environment within the Design workspace.
 
+        Priority order:
+        1. Active toolbar tab (most reliable — updates immediately on tab click)
+        2. Active sketch check (secondary — activeEditObject can lag behind UI)
+        3. Workspace ID fallback
+        4. Default to SOLID if in Design workspace
+        """
+        try:
             ui = self._app.userInterface
             active_workspace = ui.activeWorkspace
 
             if not active_workspace:
                 return Environment.UNKNOWN
 
-            # Method 1: Check the active toolbar tab (most reliable)
+            # Primary: check active toolbar tab (most reliable indicator)
             try:
                 toolbar_tabs = active_workspace.toolbarTabs
                 if toolbar_tabs:
@@ -198,7 +201,12 @@ class FusionContextDetector:
             except Exception as e:
                 _debug_log(f"Error checking toolbar tabs: {e}")
 
-            # Method 2: Check workspace ID for non-Design environments
+            # Secondary: if actively editing a sketch, report SKETCH
+            if self._has_active_sketch():
+                _debug_log("Detected: SKETCH environment (active sketch, no toolbar tab match)")
+                return Environment.SKETCH
+
+            # Fallback: check workspace ID for non-Design environments
             try:
                 workspace_id = active_workspace.id.lower()
 

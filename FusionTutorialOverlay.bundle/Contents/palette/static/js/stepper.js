@@ -186,7 +186,6 @@ class Stepper {
     updateNavigation() {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
-        const replayBtn = document.getElementById('replayBtn');
 
         if (prevBtn) {
             // Disable prev during redirect mode
@@ -205,10 +204,6 @@ class Stepper {
             }
         }
 
-        if (replayBtn) {
-            // Keep replay enabled - it can replay redirect animations too
-            replayBtn.disabled = false;
-        }
     }
 
     /**

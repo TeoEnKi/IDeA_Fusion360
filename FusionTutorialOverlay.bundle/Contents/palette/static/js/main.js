@@ -24,7 +24,6 @@
         errorMessage: null,
         prevBtn: null,
         nextBtn: null,
-        replayBtn: null,
         retryBtn: null,
         warningFooter: null,
         warningFooterMessage: null,
@@ -68,7 +67,6 @@
         elements.errorMessage = document.getElementById('errorMessage');
         elements.prevBtn = document.getElementById('prevBtn');
         elements.nextBtn = document.getElementById('nextBtn');
-        elements.replayBtn = document.getElementById('replayBtn');
         elements.retryBtn = document.getElementById('retryBtn');
         // Warning footer elements
         elements.warningFooter = document.getElementById('warningFooter');
@@ -122,9 +120,6 @@
         if (elements.nextBtn) {
             elements.nextBtn.addEventListener('click', () => stepper.next());
         }
-        if (elements.replayBtn) {
-            elements.replayBtn.addEventListener('click', () => stepper.replay());
-        }
         if (elements.retryBtn) {
             elements.retryBtn.addEventListener('click', retryLoad);
         }
@@ -154,10 +149,6 @@
                 break;
             case 'ArrowRight':
                 stepper.next();
-                break;
-            case 'r':
-            case 'R':
-                stepper.replay();
                 break;
         }
     }
@@ -256,10 +247,6 @@
                     stepper.loadStep(payload.step);
                     break;
 
-                case 'replayStep':
-                    stepper.replay();
-                    break;
-
                 case 'error':
                     showError(payload.message);
                     break;
@@ -284,18 +271,24 @@
                     break;
 
                 case 'askRedirect':
-                    showAskRedirectDialog(payload.mismatch, payload.targetIndex);
+                    // Show dismissible warning - does not block navigation
+                    showWarningFooter(
+                        getContextWarningMessage(payload.mismatch),
+                        'warning',
+                        { autoHide: 5000 }
+                    );
                     break;
 
                 case 'contextWarning':
-                    // Use persistent footer instead of blocking warning
+                    // Show dismissible warning - does not block navigation
                     showWarningFooter(payload.message || getContextWarningMessage(payload.mismatch), 'warning', {
-                        showAction: true,
-                        actionLabel: 'Show me how',
-                        onAction: () => {
-                            sendToBridge({ action: 'showRedirectHelp' });
-                        }
+                        autoHide: 5000
                     });
+                    break;
+
+                case 'contextResolved':
+                    // User switched to the correct environment — dismiss warning
+                    hideWarningFooter();
                     break;
 
                 case 'completionEvent':
@@ -597,41 +590,125 @@
     function handleCompletionEvent(event) {
         console.log('Completion event received:', event);
 
-        // Update QC checks based on the event
-        updateQCChecksFromEvent(event);
+        if (event.eventType === 'command_started') {
+            // User clicked a tool - transition matching items to "checking" (pulsing)
+            markQCChecksAsChecking(event);
+        } else {
+            // Command completed - transition matching items to "completed" (green check)
+            updateQCChecksFromEvent(event);
+        }
 
-        // Request viewport capture for visual feedback
-        if (event.eventType === 'extrude_created' ||
-            event.eventType === 'fillet_created' ||
-            event.eventType === 'sketch_finished') {
+        // Request viewport capture for visual feedback on feature completion
+        const captureEvents = [
+            'extrude_created', 'fillet_created', 'sketch_finished',
+            'chamfer_created', 'revolve_created', 'shell_created', 'sweep_created'
+        ];
+        if (captureEvents.includes(event.eventType)) {
             requestViewportCapture();
         }
     }
 
     /**
-     * Update QC check items based on completion event
+     * Mark QC check items as "checking" (in-progress) when a command starts.
+     * Matches event's commandId to items' data-expected-command attribute.
+     */
+    function markQCChecksAsChecking(event) {
+        const qcList = document.getElementById('qcList');
+        if (!qcList) return;
+
+        const commandId = (event.additionalInfo && event.additionalInfo.commandId) || '';
+        if (!commandId) return;
+
+        const items = qcList.querySelectorAll('li');
+        items.forEach(item => {
+            // Only transition pending items
+            if (!item.classList.contains('pending')) return;
+
+            const expectedCommand = item.dataset.expectedCommand;
+            if (expectedCommand && expectedCommand === commandId) {
+                item.classList.remove('pending');
+                item.classList.add('checking');
+
+                // Update symbol to filled circle (pulsing)
+                const symbol = item.querySelector('.symbol');
+                if (symbol) {
+                    symbol.textContent = '\u25CF'; // Filled circle
+                    symbol.className = 'symbol symbol-checking';
+                }
+            }
+        });
+    }
+
+    /**
+     * Update QC check items based on completion event.
+     * Matches by data-expected-command first, then falls back to text-based matching.
+     *
+     * Handles two kinds of events:
+     * - Feature events (extrude_created, fillet_created, etc.) from timeline changes
+     * - command_terminated events for tools that don't create timeline items (sketch tools)
      */
     function updateQCChecksFromEvent(event) {
         const qcList = document.getElementById('qcList');
         if (!qcList) return;
 
+        const commandId = (event.additionalInfo && event.additionalInfo.commandId) || '';
+
+        // Map feature event types to the command IDs that produce them
+        const eventToCommandMap = {
+            'sketch_created': ['SketchCreate', 'SketchActivate'],
+            'sketch_finished': ['FinishSketch'],
+            'extrude_created': ['Extrude'],
+            'fillet_created': ['FilletEdge'],
+            'chamfer_created': ['ChamferEdge'],
+            'revolve_created': ['Revolve'],
+            'sweep_created': ['Sweep'],
+            'shell_created': ['Shell']
+        };
+        const matchingCommands = eventToCommandMap[event.eventType] || [];
+
+        // For command_terminated events (sketch tools that don't add timeline items),
+        // complete the first pending/checking item whose expectedCommand matches
+        const isCommandTerminated = event.eventType === 'command_terminated';
+        let completedOneForTerminated = false;
+
         const items = qcList.querySelectorAll('li');
         items.forEach(item => {
-            const text = item.textContent.toLowerCase();
+            // Skip already completed items
+            if (item.classList.contains('completed')) return;
 
-            // Match event types to QC check text
+            // For command_terminated, only complete one item at a time for progressive feedback
+            if (isCommandTerminated && completedOneForTerminated) return;
+
             let shouldComplete = false;
+            const expectedCommand = item.dataset.expectedCommand;
 
-            if (event.eventType === 'sketch_created' && text.includes('sketch')) {
-                shouldComplete = true;
-            } else if (event.eventType === 'sketch_finished' && text.includes('finish')) {
-                shouldComplete = true;
-            } else if (event.eventType === 'extrude_created' && text.includes('extru')) {
-                shouldComplete = true;
-            } else if (event.eventType === 'fillet_created' && text.includes('fillet')) {
-                shouldComplete = true;
-            } else if (event.eventType === 'body_created' && text.includes('body')) {
-                shouldComplete = true;
+            // Primary: match by data-expected-command attribute
+            if (expectedCommand) {
+                if (commandId && expectedCommand === commandId) {
+                    shouldComplete = true;
+                } else if (matchingCommands.includes(expectedCommand)) {
+                    shouldComplete = true;
+                }
+            }
+
+            // Fallback: text-based matching for items without expectedCommand
+            if (!shouldComplete && !expectedCommand) {
+                const text = item.textContent.toLowerCase();
+                if (event.eventType === 'sketch_created' && text.includes('sketch')) {
+                    shouldComplete = true;
+                } else if (event.eventType === 'sketch_finished' && (text.includes('finish') || text.includes('constrained'))) {
+                    shouldComplete = true;
+                } else if (event.eventType === 'extrude_created' && text.includes('extru')) {
+                    shouldComplete = true;
+                } else if (event.eventType === 'fillet_created' && text.includes('fillet')) {
+                    shouldComplete = true;
+                } else if (event.eventType === 'revolve_created' && text.includes('revolve')) {
+                    shouldComplete = true;
+                } else if (event.eventType === 'sweep_created' && text.includes('sweep')) {
+                    shouldComplete = true;
+                } else if (event.eventType === 'body_created' && text.includes('body')) {
+                    shouldComplete = true;
+                }
             }
 
             if (shouldComplete) {
@@ -643,6 +720,10 @@
                 if (symbol) {
                     symbol.textContent = '\u2705';
                     symbol.className = 'symbol symbol-success';
+                }
+
+                if (isCommandTerminated) {
+                    completedOneForTerminated = true;
                 }
             }
         });
@@ -778,98 +859,67 @@
             elements.loadingState.classList.add('hidden');
         }
 
-        // Load test tutorial directly
-        const testTutorial = {
-            tutorialId: 'test',
-            title: 'Test Tutorial (Standalone Mode)',
-            steps: [
-                {
-                    stepId: 'step1',
-                    stepNumber: 1,
-                    title: 'Welcome to the Tutorial',
-                    instruction: 'This is a test step running in standalone mode (no Fusion 360 connection).',
-                    detailedText: 'The palette is running without the Fusion 360 bridge. This allows you to test the UI independently.',
-                    qcChecks: [
-                        { symbol: '\u2705', text: 'UI loaded successfully' },
-                        { symbol: '\u2705', text: 'Animations are working' }
-                    ],
-                    warnings: [
-                        { symbol: '\u26A0\uFE0F', text: 'Running in standalone test mode' }
-                    ],
-                    uiAnimations: [
-                        { type: 'move', from: { x: 20, y: 30 }, to: { x: 80, y: 70 }, duration: 800 },
-                        { type: 'click', at: { x: 80, y: 70 } },
-                        { type: 'pause', duration: 500 }
-                    ],
-                    currentIndex: 0,
-                    totalSteps: 3,
-                    tutorialTitle: 'Test Tutorial'
-                },
-                {
-                    stepId: 'step2',
-                    stepNumber: 2,
-                    title: 'Cursor Animation Demo',
-                    instruction: 'Watch the cursor demonstrate a drag operation.',
-                    detailedText: 'This step shows how cursor animations can guide users through drag operations.',
-                    qcChecks: [],
-                    warnings: [],
-                    uiAnimations: [
-                        { type: 'drag', from: { x: 25, y: 50 }, to: { x: 75, y: 50 }, duration: 1000 }
-                    ],
-                    currentIndex: 1,
-                    totalSteps: 3,
-                    tutorialTitle: 'Test Tutorial'
-                },
-                {
-                    stepId: 'step3',
-                    stepNumber: 3,
-                    title: 'Complete!',
-                    instruction: 'You have completed the standalone test tutorial.',
-                    detailedText: 'To test with Fusion 360, install the add-in and run it from within Fusion.',
-                    qcChecks: [
-                        { symbol: '\u2705', text: 'Tutorial completed successfully' }
-                    ],
-                    warnings: [],
-                    uiAnimations: [
-                        { type: 'click', at: { x: 50, y: 50 } }
-                    ],
-                    currentIndex: 2,
-                    totalSteps: 3,
-                    tutorialTitle: 'Test Tutorial'
-                }
-            ]
+        // Try to fetch the real mug tutorial JSON
+        fetch('../test_data/mug_tutorial.json')
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(tutorial => {
+                console.log('Standalone: loaded', tutorial.title, '(' + tutorial.steps.length + ' steps)');
+                loadStandaloneTutorial(tutorial);
+            })
+            .catch(err => {
+                console.warn('Standalone: could not fetch tutorial JSON (' + err.message + '), using fallback');
+                loadStandaloneTutorial({
+                    tutorialId: 'fallback',
+                    title: 'Standalone Mode (No Tutorial Loaded)',
+                    steps: [{
+                        stepId: 'fallback-1',
+                        stepNumber: 1,
+                        title: 'No Tutorial Data',
+                        instruction: 'Could not load tutorial JSON. Serve from a local HTTP server to load the full tutorial.',
+                        detailedText: 'Run "python -m http.server" from the Contents/ directory, then open http://localhost:8000/palette/tutorial_palette.html',
+                        qcChecks: [{ symbol: '\u26A0\uFE0F', text: 'Fetch failed — likely a file:// CORS restriction' }],
+                        warnings: [],
+                        uiAnimations: [{ type: 'click', at: { x: 50, y: 50 } }]
+                    }]
+                });
+            });
+    }
+
+    /**
+     * Load a tutorial in standalone mode (no Fusion bridge)
+     */
+    function loadStandaloneTutorial(tutorial) {
+        const steps = tutorial.steps;
+
+        // Override step change handler for standalone navigation
+        stepper.onStepChange = (action, index) => {
+            let newIndex = stepper.currentIndex;
+
+            if (action === 'next' && newIndex < steps.length - 1) {
+                newIndex++;
+            } else if (action === 'prev' && newIndex > 0) {
+                newIndex--;
+            } else if (action === 'goToStep') {
+                newIndex = index;
+            }
+
+            const step = steps[newIndex];
+            step.currentIndex = newIndex;
+            step.totalSteps = steps.length;
+            step.tutorialTitle = tutorial.title;
+            stepper.loadStep(step);
         };
 
-        // Minimal delay for UI initialization
-        setTimeout(() => {
-            // Override step change handler for standalone mode
-            stepper.onStepChange = (action, index) => {
-                let newIndex = stepper.currentIndex;
-
-                if (action === 'next' && newIndex < testTutorial.steps.length - 1) {
-                    newIndex++;
-                } else if (action === 'prev' && newIndex > 0) {
-                    newIndex--;
-                } else if (action === 'goToStep') {
-                    newIndex = index;
-                }
-
-                const step = testTutorial.steps[newIndex];
-                step.currentIndex = newIndex;
-                step.totalSteps = testTutorial.steps.length;
-                step.tutorialTitle = testTutorial.title;
-                stepper.loadStep(step);
-            };
-
-            // Load first step
-            showTutorial();
-            const firstStep = testTutorial.steps[0];
-            firstStep.currentIndex = 0;
-            firstStep.totalSteps = testTutorial.steps.length;
-            firstStep.tutorialTitle = testTutorial.title;
-            stepper.loadStep(firstStep);
-
-        }, 100);
+        // Load first step
+        showTutorial();
+        const firstStep = steps[0];
+        firstStep.currentIndex = 0;
+        firstStep.totalSteps = steps.length;
+        firstStep.tutorialTitle = tutorial.title;
+        stepper.loadStep(firstStep);
     }
 
     // Expose functions globally for use by renderers
