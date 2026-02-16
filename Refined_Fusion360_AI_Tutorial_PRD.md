@@ -22,8 +22,7 @@ This ensures scalability, reliability, and maintainability.
 Beginner CAD users face a large research tax --- time spent searching
 tutorials instead of designing.
 
-Hidden design intent exists in past models but is not accessible as
-step‑by‑step guidance.
+Help students with **zero or minimal CAD background** to complete a **functional, interactive CAD component** within a \~6-hour session by **reducing the “research tax”** (time lost searching for tools, tutorials, and fragmented explanations).
 
 Goal: Allow beginners to build functional CAD models efficiently by
 providing real‑time, AI‑generated tutorial guidance inside Fusion 360.
@@ -67,15 +66,60 @@ Plugin:
 
 ------------------------------------------------------------------------
 
-## 5. User Flow
+## 5. Product Features
+
+### **A) Step-Based Tutorial Overlay**
+
+Each tutorial consists of **ordered steps**, shown one at a time:
+
+* What to do (short instruction)
+* Why it matters (design intent)
+* QC reminders (fit, clearance, manufacturability)
+* Common mistakes to avoid
+
+### **B) Automatic Step Progression (Action Detection)**
+
+The tutorial **automatically advances** when the user completes the required action:
+
+* **No manual "Next" button required** — reduces cognitive overhead
+* Add-in monitors Fusion 360 events (timeline changes, sketch completion, feature creation)
+* Each step defines **completion criteria** that trigger auto-advancement
+* Visual + audio feedback confirms step completion before moving forward
+
+**Fallback:** Manual "Skip" button available if detection fails or user wants to proceed without completing.
+
+### **C) Animated Cursor Guidance (UI-side)**
+
+Each step may include **cursor animation primitives**:
+
+* Move cursor from A → B
+* Click (expand/contract pulse)
+* Drag (click \+ move \+ release)
+* Pause / wait for user
+
+These animations **demonstrate intent**, not automate Fusion.
+
+### **D) Real 3D Model Interaction (Fusion-side)**
+
+For each step, the add-in may:
+
+* Move the camera to a clear viewpoint
+* Zoom or isolate relevant geometry
+* Prompt the user to select a face/edge/body
+* Validate the selection
+* Capture a viewport snapshot for reference
+
+------------------------------------------------------------------------
+
+## 6. User Flow
 
 Step 1: User opens plugin
 
-Step 2: User clicks Generate Tutorial
+Step 2: component stand captures screenshots
 
-Step 3: Plugin captures screenshots
+Step 3: User uploads screenshots to plugin
 
-Step 4: Plugin uploads screenshots
+Step 4: User clicks Generate Tutorial
 
 Step 5: Plugin requests tutorial generation
 
@@ -87,7 +131,7 @@ Step 8: Plugin plays tutorial
 
 ------------------------------------------------------------------------
 
-## 6. Tutorial Manifest Structure
+## 7. Tutorial Manifest Structure
 
 Each tutorial contains:
 
@@ -108,7 +152,7 @@ Each step contains:
 
 ------------------------------------------------------------------------
 
-## 7. Completion Trigger Schema
+## 8. Completion Trigger Schema
 
 Defines how steps complete automatically.
 
@@ -118,7 +162,7 @@ Example:
 
 ------------------------------------------------------------------------
 
-## 8. Functional Requirements
+## 9. Functional Requirements
 
 Plugin must:
 
@@ -136,7 +180,7 @@ Cloud must:
 
 ------------------------------------------------------------------------
 
-## 9. Non‑Functional Requirements
+## 10. Non‑Functional Requirements
 
 Performance:
 
@@ -155,6 +199,34 @@ Security:
 
 ------------------------------------------------------------------------
 
-## 10. Deployment
+## 11. Deployment
 
 Plugin distributed via Autodesk App Store as .bundle package.
+
+## **12\. Product Milestones (Updated)**
+
+### **Milestone 1 — Tutorial Player MVP**
+
+* Fusion add-in + palette
+* Static step cards
+* Symbol feedback
+* Manual test tutorial
+
+### **Milestone 2 — Animated Guidance**
+
+* Cursor move / click / drag animations
+* Replay per step
+
+### **Milestone 3 — 3D Model Interaction + Auto-Progression**
+
+* Camera control
+* Selection prompts
+* Validation feedback
+* **Fusion event monitoring (timeline, sketches, features)**
+* **Automatic step advancement on action completion**
+* Skip button fallback
+
+### **Milestone 4 — AI Integration**
+
+* Replace test data with AI-generated manifests
+* AI-generated completion triggers per step
