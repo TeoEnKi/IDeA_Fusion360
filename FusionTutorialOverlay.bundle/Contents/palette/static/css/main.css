@@ -199,31 +199,6 @@ body {
     font-size: var(--font-size-md);
 }
 
-/* Details Section */
-.details-section {
-    margin-bottom: var(--spacing-md);
-}
-
-.details-section summary {
-    cursor: pointer;
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-sm) 0;
-}
-
-.details-section summary:hover {
-    color: var(--accent-primary);
-}
-
-.detailed-text {
-    padding: var(--spacing-md);
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    background-color: var(--bg-tertiary);
-    border-radius: var(--radius-sm);
-    margin-top: var(--spacing-sm);
-}
-
 /* Visual Step Area - Shows Fusion UI with highlights */
 .visual-step-area {
     margin-bottom: var(--spacing-md);
@@ -259,8 +234,6 @@ body {
     border: 3px solid var(--accent-primary);
     border-radius: var(--radius-sm);
     background-color: rgba(0, 120, 212, 0.15);
-    animation: highlightPulse 2s ease-in-out infinite;
-    box-shadow: 0 0 10px rgba(0, 120, 212, 0.5);
 }
 
 .visual-highlight.circle {
@@ -294,15 +267,6 @@ body {
     justify-content: center;
     font-size: var(--font-size-sm);
     font-weight: 600;
-}
-
-@keyframes highlightPulse {
-    0%, 100% {
-        box-shadow: 0 0 5px rgba(0, 120, 212, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(0, 120, 212, 0.8);
-    }
 }
 
 .visual-step-caption {
@@ -1174,6 +1138,11 @@ body {
 
 .viewport-refresh-btn:hover {
     background: rgba(0, 0, 0, 0.8);
+}
+
+/* Suppress CSS bullet when tip has its own symbol */
+.tips-list li.has-symbol::before {
+    content: none;
 }
 
 /* Responsive */

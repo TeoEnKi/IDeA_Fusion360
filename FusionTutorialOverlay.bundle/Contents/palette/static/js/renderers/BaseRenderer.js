@@ -244,8 +244,6 @@ class BaseRenderer {
         const stepNumber = document.getElementById('stepNumber');
         const stepTitle = document.getElementById('stepTitle');
         const stepInstruction = document.getElementById('stepInstruction');
-        const stepDetailedText = document.getElementById('stepDetailedText');
-
         if (stepNumber) {
             stepNumber.textContent = (step.currentIndex || 0) + 1;
         }
@@ -254,9 +252,6 @@ class BaseRenderer {
         }
         if (stepInstruction) {
             stepInstruction.textContent = step.instruction || '';
-        }
-        if (stepDetailedText) {
-            stepDetailedText.textContent = step.detailedText || step.why || 'This step helps you progress in the tutorial.';
         }
     }
 
@@ -271,7 +266,10 @@ class BaseRenderer {
         if (!expandedSection || !expandedContent) return;
 
         const expanded = step.expandedContent;
-        if (!expanded) {
+        const topLevelTips = step.tips || [];
+
+        // Hide if no expandedContent AND no top-level tips
+        if (!expanded && topLevelTips.length === 0) {
             expandedSection.classList.add('hidden');
             return;
         }
@@ -280,23 +278,44 @@ class BaseRenderer {
         expandedContent.innerHTML = '';
 
         // Why this matters
-        if (expanded.whyThisMatters) {
+        if (expanded && expanded.whyThisMatters) {
             const whyDiv = document.createElement('div');
             whyDiv.className = 'expanded-block';
             whyDiv.innerHTML = `<h4>Why This Matters</h4><p>${expanded.whyThisMatters}</p>`;
             expandedContent.appendChild(whyDiv);
         }
 
-        // Tips list
-        if (expanded.tips && expanded.tips.length > 0) {
+        // Merge tips: expandedContent.tips (plain strings) + step.tips ({symbol, text} or strings)
+        const mergedTips = [];
+        if (expanded && expanded.tips && expanded.tips.length > 0) {
+            expanded.tips.forEach(tip => {
+                mergedTips.push({ symbol: null, text: tip });
+            });
+        }
+        if (topLevelTips.length > 0) {
+            topLevelTips.forEach(tip => {
+                if (typeof tip === 'string') {
+                    mergedTips.push({ symbol: null, text: tip });
+                } else {
+                    mergedTips.push({ symbol: tip.symbol || null, text: tip.text || '' });
+                }
+            });
+        }
+
+        if (mergedTips.length > 0) {
             const tipsDiv = document.createElement('div');
             tipsDiv.className = 'expanded-block';
             tipsDiv.innerHTML = '<h4>Tips</h4>';
             const tipsList = document.createElement('ul');
             tipsList.className = 'tips-list';
-            expanded.tips.forEach(tip => {
+            mergedTips.forEach(tip => {
                 const li = document.createElement('li');
-                li.textContent = tip;
+                if (tip.symbol) {
+                    li.classList.add('has-symbol');
+                    li.textContent = tip.symbol + ' ' + tip.text;
+                } else {
+                    li.textContent = tip.text;
+                }
                 tipsList.appendChild(li);
             });
             tipsDiv.appendChild(tipsList);
@@ -304,7 +323,7 @@ class BaseRenderer {
         }
 
         // Dimensions/Parameters
-        if (expanded.dimensions || expanded.parameters) {
+        if (expanded && (expanded.dimensions || expanded.parameters)) {
             const data = expanded.dimensions || expanded.parameters;
             const dataDiv = document.createElement('div');
             dataDiv.className = 'expanded-block dimensions-block';
@@ -324,7 +343,7 @@ class BaseRenderer {
         }
 
         // Reference image
-        if (expanded.referenceImage) {
+        if (expanded && expanded.referenceImage) {
             let refImagePath = expanded.referenceImage;
             if (refImagePath && !refImagePath.startsWith('http') && !refImagePath.startsWith('/') && !refImagePath.startsWith('../')) {
                 refImagePath = '../' + refImagePath;
@@ -336,7 +355,7 @@ class BaseRenderer {
         }
 
         // Next steps (for final step)
-        if (expanded.nextSteps && expanded.nextSteps.length > 0) {
+        if (expanded && expanded.nextSteps && expanded.nextSteps.length > 0) {
             const nextDiv = document.createElement('div');
             nextDiv.className = 'expanded-block';
             nextDiv.innerHTML = '<h4>Next Steps</h4>';
@@ -352,7 +371,7 @@ class BaseRenderer {
         }
 
         // Skills learned (for final step)
-        if (expanded.skillsLearned && expanded.skillsLearned.length > 0) {
+        if (expanded && expanded.skillsLearned && expanded.skillsLearned.length > 0) {
             const skillsDiv = document.createElement('div');
             skillsDiv.className = 'expanded-block skills-block';
             skillsDiv.innerHTML = '<h4>Skills Learned</h4>';

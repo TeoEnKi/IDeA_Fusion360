@@ -4,170 +4,380 @@
     "description": "Fusion 360 Design workspace Solid environment navbar",
     "dimensions": {
       "width": 1567,
-      "height": 300,
-      "note": "Approximate dimensions for position calculations"
+      "height": 300
     }
   },
   "components": {
     "workspaceDropdown": {
       "id": "workspace-dropdown",
       "label": "DESIGN",
-      "position": { "x": 4.5, "y": 12, "width": 5, "height": 8 },
-      "description": "Workspace selection dropdown (Design, Render, Animation, etc.)"
+      "position": {
+        "x": 4.2,
+        "y": 12.0,
+        "width": 6.8,
+        "height": 8.5
+      },
+      "commandId": "SelectWorkspace"
     },
     "environmentTabs": {
       "solid": {
         "id": "env-solid",
         "label": "SOLID",
-        "position": { "x": 11, "y": 3, "width": 3.5, "height": 5 },
-        "description": "Solid modeling environment tab",
+        "position": {
+          "x": 12.5,
+          "y": 3.4,
+          "width": 4.5,
+          "height": 5.0
+        },
+        "commandId": "SolidTab",
         "active": true
       },
       "surface": {
         "id": "env-surface",
         "label": "SURFACE",
-        "position": { "x": 16, "y": 3, "width": 4.5, "height": 5 },
-        "description": "Surface modeling environment tab"
+        "position": {
+          "x": 18.2,
+          "y": 3.4,
+          "width": 5.5,
+          "height": 5.0
+        },
+        "commandId": "SurfaceTab"
       },
       "mesh": {
         "id": "env-mesh",
         "label": "MESH",
-        "position": { "x": 22, "y": 3, "width": 3, "height": 5 },
-        "description": "Mesh modeling environment tab"
+        "position": {
+          "x": 24.0,
+          "y": 3.4,
+          "width": 4.0,
+          "height": 5.0
+        },
+        "commandId": "MeshTab"
       },
       "sheetMetal": {
         "id": "env-sheet-metal",
         "label": "SHEET METAL",
-        "position": { "x": 26, "y": 3, "width": 6, "height": 5 },
-        "description": "Sheet metal environment tab"
+        "position": {
+          "x": 30.2,
+          "y": 3.4,
+          "width": 7.8,
+          "height": 5.0
+        },
+        "commandId": "SheetMetalTab"
       },
       "plastic": {
         "id": "env-plastic",
         "label": "PLASTIC",
-        "position": { "x": 34, "y": 3, "width": 4, "height": 5 },
-        "description": "Plastic modeling environment tab"
+        "position": {
+          "x": 38.0,
+          "y": 3.4,
+          "width": 5.2,
+          "height": 5.0
+        },
+        "commandId": "PlasticTab"
       },
       "utilities": {
         "id": "env-utilities",
         "label": "UTILITIES",
-        "position": { "x": 40, "y": 3, "width": 4.5, "height": 5 },
-        "description": "Utilities environment tab"
+        "position": {
+          "x": 45.0,
+          "y": 3.4,
+          "width": 5.8,
+          "height": 5.0
+        },
+        "commandId": "UtilitiesTab"
       }
     },
     "toolbarGroups": {
       "create": {
         "id": "toolbar-create",
         "label": "CREATE",
-        "position": { "x": 10, "y": 12, "width": 10, "height": 18 },
-        "description": "Create tools dropdown (New Component, Sketch, Extrude, etc.)",
+        "position": {
+          "x": 16.5,
+          "y": 14.5,
+          "width": 14.0,
+          "height": 18.0
+        },
+        "commandId": "SolidCreatePanel",
         "tools": [
-          { "id": "new-component", "icon": "component", "position": { "x": 10, "y": 12 } },
-          { "id": "create-sketch", "icon": "sketch", "position": { "x": 13.5, "y": 12 } },
-          { "id": "extrude", "icon": "extrude", "position": { "x": 17, "y": 12 } },
-          { "id": "revolve", "icon": "revolve", "position": { "x": 20, "y": 12 } }
+          {
+            "id": "new-component",
+            "icon": "component",
+            "position": {
+              "x": 10.5,
+              "y": 12.5
+            },
+            "commandId": "NewComponentCommand"
+          },
+          {
+            "id": "create-sketch",
+            "icon": "sketch",
+            "position": {
+              "x": 13.6,
+              "y": 12.5
+            },
+            "commandId": "SketchCreate"
+          },
+          {
+            "id": "extrude",
+            "icon": "extrude",
+            "position": {
+              "x": 17.6,
+              "y": 12.5
+            },
+            "commandId": "Extrude"
+          },
+          {
+            "id": "revolve",
+            "icon": "revolve",
+            "position": {
+              "x": 21.0,
+              "y": 12.5
+            },
+            "commandId": "Revolve"
+          }
         ]
       },
       "modify": {
         "id": "toolbar-modify",
         "label": "MODIFY",
-        "position": { "x": 32, "y": 12, "width": 14, "height": 18 },
-        "description": "Modify tools dropdown (Fillet, Chamfer, Shell, etc.)",
+        "position": {
+          "x": 39.0,
+          "y": 14.5,
+          "width": 17.0,
+          "height": 18.0
+        },
+        "commandId": "SolidModifyPanel",
         "tools": [
-          { "id": "press-pull", "icon": "press-pull", "position": { "x": 32, "y": 12 } },
-          { "id": "fillet", "icon": "fillet", "position": { "x": 35, "y": 12 } },
-          { "id": "chamfer", "icon": "chamfer", "position": { "x": 38, "y": 12 } },
-          { "id": "shell", "icon": "shell", "position": { "x": 41, "y": 12 } },
-          { "id": "move-copy", "icon": "move", "position": { "x": 44, "y": 12 } }
+          {
+            "id": "press-pull",
+            "icon": "press-pull",
+            "position": {
+              "x": 32.8,
+              "y": 12.5
+            },
+            "commandId": "PressPull"
+          },
+          {
+            "id": "fillet",
+            "icon": "fillet",
+            "position": {
+              "x": 36.4,
+              "y": 12.5
+            },
+            "commandId": "Fillet"
+          },
+          {
+            "id": "chamfer",
+            "icon": "chamfer",
+            "position": {
+              "x": 39.8,
+              "y": 12.5
+            },
+            "commandId": "Chamfer"
+          },
+          {
+            "id": "shell",
+            "icon": "shell",
+            "position": {
+              "x": 43.4,
+              "y": 12.5
+            },
+            "commandId": "Shell"
+          },
+          {
+            "id": "move-copy",
+            "icon": "move",
+            "position": {
+              "x": 47.0,
+              "y": 12.5
+            },
+            "commandId": "MoveCommand"
+          }
         ]
       },
       "configure": {
         "id": "toolbar-configure",
-        "label": "CONFIGURE",
-        "position": { "x": 50, "y": 12, "width": 7, "height": 18 },
-        "description": "Configuration tools"
+        "position": {
+          "x": 52.2,
+          "y": 14.5,
+          "width": 7.5,
+          "height": 18.0
+        },
+        "commandId": "ConfigurePanel"
       },
       "construct": {
         "id": "toolbar-construct",
-        "label": "CONSTRUCT",
-        "position": { "x": 58, "y": 12, "width": 6, "height": 18 },
-        "description": "Construction geometry tools (Planes, Axes, Points)"
+        "position": {
+          "x": 61.0,
+          "y": 14.5,
+          "width": 8.0,
+          "height": 18.0
+        },
+        "commandId": "SolidConstructPanel"
       },
       "inspect": {
         "id": "toolbar-inspect",
-        "label": "INSPECT",
-        "position": { "x": 65, "y": 12, "width": 5, "height": 18 },
-        "description": "Inspection and measurement tools"
+        "position": {
+          "x": 69.2,
+          "y": 14.5,
+          "width": 6.5,
+          "height": 18.0
+        },
+        "commandId": "SolidInspectPanel"
       },
       "insert": {
         "id": "toolbar-insert",
-        "label": "INSERT",
-        "position": { "x": 72, "y": 12, "width": 8, "height": 18 },
-        "description": "Insert external files and components"
+        "position": {
+          "x": 77.0,
+          "y": 14.5,
+          "width": 8.5,
+          "height": 18.0
+        },
+        "commandId": "SolidInsertPanel"
       },
       "assemble": {
         "id": "toolbar-assemble",
-        "label": "ASSEMBLE",
-        "position": { "x": 82, "y": 12, "width": 5, "height": 18 },
-        "description": "Assembly tools (Joint, As-built Joint, etc.)"
+        "position": {
+          "x": 85.0,
+          "y": 14.5,
+          "width": 7.0,
+          "height": 18.0
+        },
+        "commandId": "SolidAssemblePanel"
       },
       "select": {
         "id": "toolbar-select",
-        "label": "SELECT",
-        "position": { "x": 89, "y": 12, "width": 4, "height": 18 },
-        "description": "Selection mode and filters"
+        "position": {
+          "x": 92.5,
+          "y": 14.5,
+          "width": 6.5,
+          "height": 18.0
+        },
+        "commandId": "SelectPanel"
+      }
+    },
+    "navigationBar": {
+      "orbit": {
+        "id": "nav-orbit",
+        "position": {
+          "x": 42.5,
+          "y": 89.5,
+          "width": 2.5,
+          "height": 4.0
+        },
+        "commandId": "OrbitCommand"
+      },
+      "lookAt": {
+        "id": "nav-lookat",
+        "position": {
+          "x": 45.0,
+          "y": 89.5,
+          "width": 2.5,
+          "height": 4.0
+        },
+        "commandId": "LookAtCommand"
+      },
+      "pan": {
+        "id": "nav-pan",
+        "position": {
+          "x": 47.5,
+          "y": 89.5,
+          "width": 2.5,
+          "height": 4.0
+        },
+        "commandId": "PanCommand"
+      },
+      "zoom": {
+        "id": "nav-zoom",
+        "position": {
+          "x": 50.0,
+          "y": 89.5,
+          "width": 2.5,
+          "height": 4.0
+        },
+        "commandId": "ZoomCommand"
+      },
+      "displaySettings": {
+        "id": "nav-display",
+        "position": {
+          "x": 52.5,
+          "y": 89.5,
+          "width": 2.5,
+          "height": 4.0
+        },
+        "commandId": "DisplaySettingsCommand"
       }
     },
     "browser": {
       "id": "browser-panel",
-      "label": "BROWSER",
-      "position": { "x": 1, "y": 40, "width": 15, "height": 50 },
-      "description": "Model browser tree showing document structure",
+      "position": {
+        "x": 10.0,
+        "y": 45.0,
+        "width": 20.0,
+        "height": 55.0
+      },
+      "commandId": "FusionBrowserCommand",
       "items": {
-        "documentSettings": { "position": { "x": 5, "y": 47, "width": 10, "height": 3 } },
-        "namedViews": { "position": { "x": 5, "y": 51, "width": 8, "height": 3 } },
-        "origin": { "position": { "x": 5, "y": 55, "width": 5, "height": 3 } },
-        "bodies": { "position": { "x": 5, "y": 59, "width": 5, "height": 3 } },
-        "sketches": { "position": { "x": 5, "y": 63, "width": 7, "height": 3 } }
+        "documentSettings": {
+          "position": {
+            "x": 8.0,
+            "y": 25.5,
+            "width": 14.0,
+            "height": 3.5
+          },
+          "commandId": "DocumentSettingsCommand"
+        },
+        "origin": {
+          "position": {
+            "x": 8.0,
+            "y": 36.5,
+            "width": 8.0,
+            "height": 3.5
+          },
+          "commandId": "OriginFolderCommand"
+        }
       }
     },
     "viewCube": {
       "id": "view-cube",
-      "label": "ViewCube",
-      "position": { "x": 90, "y": 55, "width": 8, "height": 12 },
-      "description": "3D navigation ViewCube"
+      "position": {
+        "x": 95.8,
+        "y": 23.5,
+        "width": 8.2,
+        "height": 11.5
+      },
+      "commandId": "ViewCubeCommand"
     }
   },
   "commonActions": {
     "createSketch": {
-      "path": ["toolbarGroups.create.tools[1]"],
-      "positions": [{ "x": 13.5, "y": 12, "width": 3, "height": 8 }],
-      "label": "Create Sketch"
+      "path": [
+        "toolbarGroups.create.tools[1]"
+      ],
+      "positions": [
+        {
+          "x": 13.6,
+          "y": 12.5,
+          "width": 3.2,
+          "height": 7.5
+        }
+      ],
+      "commandId": "SketchCreate"
     },
     "extrude": {
-      "path": ["toolbarGroups.create.tools[2]"],
-      "positions": [{ "x": 17, "y": 12, "width": 3, "height": 8 }],
-      "label": "Extrude"
-    },
-    "fillet": {
-      "path": ["toolbarGroups.modify.tools[1]"],
-      "positions": [{ "x": 35, "y": 12, "width": 3, "height": 8 }],
-      "label": "Fillet"
-    },
-    "switchToSolid": {
-      "path": ["environmentTabs.solid"],
-      "positions": [{ "x": 11, "y": 3, "width": 3.5, "height": 5 }],
-      "label": "Switch to Solid"
-    },
-    "switchToSurface": {
-      "path": ["environmentTabs.surface"],
-      "positions": [{ "x": 16, "y": 3, "width": 4.5, "height": 5 }],
-      "label": "Switch to Surface"
-    },
-    "finishSketch": {
-      "path": ["sketchToolbar.finishSketch"],
-      "positions": [{ "x": 85, "y": 12, "width": 4, "height": 5 }],
-      "label": "Finish Sketch",
-      "note": "Only visible when in sketch mode"
+      "path": [
+        "toolbarGroups.create.tools[2]"
+      ],
+      "positions": [
+        {
+          "x": 17.6,
+          "y": 12.5,
+          "width": 3.2,
+          "height": 7.5
+        }
+      ],
+      "commandId": "Extrude"
     }
   }
 }
