@@ -1,6 +1,6 @@
 """
 Fusion Actions Runner - Executes viewport actions in Fusion 360.
-Handles camera control, selection prompts, and entity highlighting.
+Handles selection prompts and entity highlighting.
 """
 
 import adsk.core
@@ -10,21 +10,6 @@ from typing import List, Dict, Optional
 
 class FusionActionsRunner:
     """Executes Fusion 360 viewport and model actions."""
-
-    # Standard view orientations
-    VIEW_ORIENTATIONS = {
-        "front": adsk.core.ViewOrientations.FrontViewOrientation,
-        "back": adsk.core.ViewOrientations.BackViewOrientation,
-        "top": adsk.core.ViewOrientations.TopViewOrientation,
-        "bottom": adsk.core.ViewOrientations.BottomViewOrientation,
-        "left": adsk.core.ViewOrientations.LeftViewOrientation,
-        "right": adsk.core.ViewOrientations.RightViewOrientation,
-        "iso": adsk.core.ViewOrientations.IsoTopRightViewOrientation,
-        "iso_top_right": adsk.core.ViewOrientations.IsoTopRightViewOrientation,
-        "iso_top_left": adsk.core.ViewOrientations.IsoTopLeftViewOrientation,
-        "iso_bottom_right": adsk.core.ViewOrientations.IsoBottomRightViewOrientation,
-        "iso_bottom_left": adsk.core.ViewOrientations.IsoBottomLeftViewOrientation,
-    }
 
     def __init__(self):
         self.app = adsk.core.Application.get()
@@ -43,9 +28,7 @@ class FusionActionsRunner:
         result = {"action": action_type, "success": False}
 
         try:
-            if action_type.startswith("camera."):
-                result = self._handle_camera_action(action)
-            elif action_type.startswith("prompt."):
+            if action_type.startswith("prompt."):
                 result = self._handle_prompt_action(action)
             elif action_type.startswith("highlight."):
                 result = self._handle_highlight_action(action)
@@ -57,63 +40,6 @@ class FusionActionsRunner:
         except Exception as e:
             result["message"] = str(e)
             result["success"] = False
-
-        return result
-
-    def _handle_camera_action(self, action: dict) -> dict:
-        """Handle camera-related actions."""
-        action_type = action.get("type", "")
-        result = {"action": action_type, "success": False}
-
-        viewport = self.app.activeViewport
-        if not viewport:
-            result["message"] = "No active viewport"
-            return result
-
-        if action_type == "camera.fit":
-            viewport.fit()
-            result["success"] = True
-
-        elif action_type == "camera.orient":
-            orientation = action.get("orientation", "iso").lower()
-            view_orient = self.VIEW_ORIENTATIONS.get(orientation)
-            if view_orient:
-                camera = viewport.camera
-                camera.viewOrientation = view_orient
-                viewport.camera = camera
-                viewport.fit()
-                result["success"] = True
-            else:
-                result["message"] = f"Unknown orientation: {orientation}"
-
-        elif action_type == "camera.focus":
-            # Focus on a specific point or entity
-            target = action.get("target", {})
-            if target.get("type") == "point":
-                # Focus on XYZ point
-                x = target.get("x", 0)
-                y = target.get("y", 0)
-                z = target.get("z", 0)
-                camera = viewport.camera
-                camera.target = adsk.core.Point3D.create(x, y, z)
-                viewport.camera = camera
-                result["success"] = True
-            elif target.get("type") == "entity":
-                # Would need entity selection - for now just fit
-                viewport.fit()
-                result["success"] = True
-            else:
-                viewport.fit()
-                result["success"] = True
-
-        elif action_type == "camera.zoom":
-            # Zoom to a specific level
-            factor = action.get("factor", 1.0)
-            camera = viewport.camera
-            # Adjust view extents
-            camera.viewExtents = camera.viewExtents / factor
-            viewport.camera = camera
-            result["success"] = True
 
         return result
 

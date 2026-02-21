@@ -1,0 +1,375 @@
+{
+    "navbar": {
+        "image": "assets/UI Images/Fusion360SketchNavbar.png",
+        "description": "Fusion 360 Design workspace Sketch environment navbar",
+        "dimensions": {
+            "width": 1567,
+            "height": 300
+        }
+    },
+    "components": {
+        "workspaceDropdown": {
+            "id": "workspace-dropdown",
+            "label": "DESIGN",
+            "imageIndex": 0,
+            "position": {
+                "x": 4.5,
+                "y": 10.5,
+                "width": 7.0,
+                "height": 8.0
+            },
+            "commandId": "SelectWorkspace",
+            "options": [
+                {
+                    "id": "ws-design",
+                    "label": "Design",
+                    "commandId": "DesignWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 22.0
+                    }
+                },
+                {
+                    "id": "ws-generative",
+                    "label": "Generative Design",
+                    "commandId": "GenerativeDesignWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 25.5
+                    }
+                },
+                {
+                    "id": "ws-render",
+                    "label": "Render",
+                    "commandId": "RenderWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 29.0
+                    }
+                },
+                {
+                    "id": "ws-animation",
+                    "label": "Animation",
+                    "commandId": "AnimationWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 32.5
+                    }
+                },
+                {
+                    "id": "ws-simulation",
+                    "label": "Simulation",
+                    "commandId": "SimulationWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 36.0
+                    }
+                },
+                {
+                    "id": "ws-manufacture",
+                    "label": "Manufacture",
+                    "commandId": "ManufactureWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 39.5
+                    }
+                },
+                {
+                    "id": "ws-drawing",
+                    "label": "Drawing",
+                    "commandId": "DrawingWorkspace",
+                    "position": {
+                        "x": 4.5,
+                        "y": 43.0
+                    }
+                }
+            ]
+        },
+        "environmentTabs": {
+            "solid": {
+                "id": "env-solid",
+                "label": "SOLID",
+                "imageIndex": 0,
+                "position": {
+                    "x": 11.2,
+                    "y": 3.4,
+                    "width": 4.0,
+                    "height": 4.5
+                },
+                "commandId": "SolidTab"
+            },
+            "surface": {
+                "id": "env-surface",
+                "label": "SURFACE",
+                "imageIndex": 0,
+                "position": {
+                    "x": 16.5,
+                    "y": 3.4,
+                    "width": 5.2,
+                    "height": 4.5
+                },
+                "commandId": "SurfaceTab"
+            },
+            "mesh": {
+                "id": "env-mesh",
+                "label": "MESH",
+                "imageIndex": 0,
+                "position": {
+                    "x": 22.0,
+                    "y": 3.4,
+                    "width": 3.5,
+                    "height": 4.5
+                },
+                "commandId": "MeshTab"
+            },
+            "sketch": {
+                "id": "env-sketch",
+                "label": "SKETCH",
+                "imageIndex": 0,
+                "position": {
+                    "x": 51.5,
+                    "y": 3.4,
+                    "width": 5.0,
+                    "height": 4.5
+                },
+                "commandId": "SketchTab",
+                "active": true
+            }
+        },
+        "toolbarGroups": {
+            "create": {
+                "id": "toolbar-create",
+                "label": "CREATE",
+                "imageIndex": 1,
+                "position": {
+                    "x": 16.5,
+                    "y": 14.0,
+                    "width": 15.0,
+                    "height": 18.0
+                },
+                "commandId": "SketchCreatePanel",
+                "tools": [
+                    {
+                        "id": "line",
+                        "label": "Line",
+                        "position": {
+                            "x": 10.5,
+                            "y": 10.0
+                        },
+                        "commandId": "LineCommand"
+                    },
+                    {
+                        "id": "2-point-rectangle",
+                        "label": "2-Point Rectangle",
+                        "position": {
+                            "x": 13.5,
+                            "y": 10.0
+                        },
+                        "commandId": "TwoPointRectangleCommand"
+                    },
+                    {
+                        "id": "center-diameter-circle",
+                        "label": "Center Diameter Circle",
+                        "position": {
+                            "x": 16.5,
+                            "y": 10.0
+                        },
+                        "commandId": "CenterDiameterCircleCommand"
+                    },
+                    {
+                        "id": "3-point-arc",
+                        "label": "3-Point Arc",
+                        "position": {
+                            "x": 19.5,
+                            "y": 10.0
+                        },
+                        "commandId": "Arc3PointCommand"
+                    },
+                    {
+                        "id": "mirror",
+                        "label": "Mirror",
+                        "position": {
+                            "x": 31.5,
+                            "y": 10.0
+                        },
+                        "commandId": "SketchMirror"
+                    },
+                    {
+                        "id": "sketch-dimension",
+                        "label": "Sketch Dimension",
+                        "position": {
+                            "x": 34.5,
+                            "y": 10.0
+                        },
+                        "commandId": "SketchDimension"
+                    }
+                ]
+            },
+            "modify": {
+                "id": "toolbar-modify",
+                "label": "MODIFY",
+                "imageIndex": 2,
+                "position": {
+                    "x": 31.0,
+                    "y": 14.0,
+                    "width": 8.0,
+                    "height": 18.0
+                },
+                "commandId": "SketchModifyPanel",
+                "tools": [
+                    {
+                        "id": "fillet",
+                        "label": "Fillet",
+                        "position": {
+                            "x": 38.0,
+                            "y": 10.0
+                        },
+                        "commandId": "SketchFillet"
+                    },
+                    {
+                        "id": "trim",
+                        "label": "Trim",
+                        "position": {
+                            "x": 38.0,
+                            "y": 13.5
+                        },
+                        "commandId": "SketchTrim"
+                    },
+                    {
+                        "id": "extend",
+                        "label": "Extend",
+                        "position": {
+                            "x": 38.0,
+                            "y": 17.0
+                        },
+                        "commandId": "SketchExtend"
+                    },
+                    {
+                        "id": "offset",
+                        "label": "Offset",
+                        "position": {
+                            "x": 41.0,
+                            "y": 10.0
+                        },
+                        "commandId": "SketchOffset"
+                    }
+                ]
+            },
+            "constraints": {
+                "id": "toolbar-constraints",
+                "label": "CONSTRAINTS",
+                "imageIndex": 3,
+                "position": {
+                    "x": 45.0,
+                    "y": 14.0,
+                    "width": 12.0,
+                    "height": 18.0
+                },
+                "commandId": "SketchConstraintsPanel",
+                "tools": [
+                    {
+                        "id": "horizontal-vertical",
+                        "label": "Horizontal/Vertical",
+                        "position": {
+                            "x": 48.0,
+                            "y": 10.0
+                        },
+                        "commandId": "ConstraintHorizontalVertical"
+                    },
+                    {
+                        "id": "coincident",
+                        "label": "Coincident",
+                        "position": {
+                            "x": 48.0,
+                            "y": 13.5
+                        },
+                        "commandId": "ConstraintCoincident"
+                    },
+                    {
+                        "id": "tangent",
+                        "label": "Tangent",
+                        "position": {
+                            "x": 51.0,
+                            "y": 10.0
+                        },
+                        "commandId": "ConstraintTangent"
+                    },
+                    {
+                        "id": "equal",
+                        "label": "Equal",
+                        "position": {
+                            "x": 51.0,
+                            "y": 13.5
+                        },
+                        "commandId": "ConstraintEqual"
+                    }
+                ]
+            }
+        },
+        "browser": {
+            "id": "browser-panel",
+            "imageIndex": 0,
+            "position": {
+                "x": 10.0,
+                "y": 45.0,
+                "width": 20.0,
+                "height": 55.0
+            },
+            "commandId": "FusionBrowserCommand",
+            "items": {
+                "documentSettings": {
+                    "id": "br-doc-settings",
+                    "label": "Document Settings",
+                    "imageIndex": 0,
+                    "position": {
+                        "x": 8.0,
+                        "y": 25.5
+                    },
+                    "commandId": "DocumentSettingsCommand"
+                },
+                "namedViews": {
+                    "id": "br-named-views",
+                    "label": "Named Views",
+                    "imageIndex": 0,
+                    "position": {
+                        "x": 8.0,
+                        "y": 29.0
+                    },
+                    "commandId": "NamedViewsFolderCommand"
+                },
+                "origin": {
+                    "id": "br-origin",
+                    "label": "Origin",
+                    "imageIndex": 0,
+                    "position": {
+                        "x": 8.0,
+                        "y": 32.5
+                    },
+                    "commandId": "OriginFolderCommand"
+                },
+                "sketches": {
+                    "id": "br-sketches",
+                    "label": "Sketches",
+                    "imageIndex": 0,
+                    "position": {
+                        "x": 8.0,
+                        "y": 36.0
+                    },
+                    "commandId": "SketchesFolderCommand"
+                }
+            }
+        },
+        "finishSketch": {
+            "id": "finish-sketch-btn",
+            "label": "FINISH SKETCH",
+            "imageIndex": 0,
+            "position": {
+                "x": 93.2,
+                "y": 10.5,
+                "width": 8.5,
+                "height": 15.0
+            },
+            "commandId": "SketchStop"
+        }
+    }
+}

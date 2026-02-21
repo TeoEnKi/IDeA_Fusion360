@@ -166,7 +166,7 @@ class TutorialManager:
 
 
 class FusionActionsRunner:
-    """Executes Fusion 360 viewport actions (camera, selection, etc.)."""
+    """Executes Fusion 360 viewport actions (selection, highlighting, etc.)."""
 
     def __init__(self):
         self.app = adsk.core.Application.get()
@@ -179,13 +179,7 @@ class FusionActionsRunner:
             result = {"action": action_type, "success": False}
 
             try:
-                if action_type == "camera.fit":
-                    result["success"] = self._camera_fit()
-                elif action_type == "camera.orient":
-                    result["success"] = self._camera_orient(action.get("orientation", "front"))
-                elif action_type == "camera.focus":
-                    result["success"] = self._camera_focus(action.get("target"))
-                elif action_type == "prompt.selectEntity":
+                if action_type == "prompt.selectEntity":
                     result["success"] = self._prompt_select(action.get("entityType", "face"))
                 elif action_type == "highlight.body":
                     result["success"] = self._highlight_body(action.get("bodyName"))
@@ -196,56 +190,6 @@ class FusionActionsRunner:
 
             results.append(result)
         return results
-
-    def _camera_fit(self) -> bool:
-        """Fit the camera to show all geometry."""
-        try:
-            viewport = self.app.activeViewport
-            if viewport:
-                viewport.fit()
-                return True
-        except:
-            pass
-        return False
-
-    def _camera_orient(self, orientation: str) -> bool:
-        """Orient camera to a standard view."""
-        try:
-            viewport = self.app.activeViewport
-            if not viewport:
-                return False
-
-            camera = viewport.camera
-            orientations = {
-                "front": adsk.core.ViewOrientations.FrontViewOrientation,
-                "back": adsk.core.ViewOrientations.BackViewOrientation,
-                "top": adsk.core.ViewOrientations.TopViewOrientation,
-                "bottom": adsk.core.ViewOrientations.BottomViewOrientation,
-                "left": adsk.core.ViewOrientations.LeftViewOrientation,
-                "right": adsk.core.ViewOrientations.RightViewOrientation,
-                "iso": adsk.core.ViewOrientations.IsoTopRightViewOrientation
-            }
-
-            view_orient = orientations.get(orientation.lower())
-            if view_orient:
-                camera.viewOrientation = view_orient
-                viewport.camera = camera
-                viewport.fit()
-                return True
-        except:
-            pass
-        return False
-
-    def _camera_focus(self, target: dict) -> bool:
-        """Focus camera on a specific point or entity."""
-        try:
-            viewport = self.app.activeViewport
-            if viewport:
-                viewport.fit()
-                return True
-        except:
-            pass
-        return False
 
     def _prompt_select(self, entity_type: str) -> bool:
         """Show a selection prompt for a specific entity type."""

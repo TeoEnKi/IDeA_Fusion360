@@ -1,197 +1,307 @@
-# Software Architecture: Fusion 360 AI Tutorial Plugin
+# Software Architecture (SAD Section)
 
-## 1. Architecture Overview
+Fusion 360 AI Tutorial Plugin
 
-The Fusion 360 AI Tutorial Plugin is a **local-only** Autodesk Fusion 360 add-in. A Python backend communicates with a vanilla JS/HTML frontend through Fusion 360's built-in palette bridge. There is no cloud backend, no external API, no HTTP server, and no external dependencies. All tutorial data is bundled as local JSON files and all assets are served as base64 data URLs.
+------------------------------------------------------------------------
 
----
+## 1. System Overview
 
-## 2. System Components
+The system consists of two operational planes:
 
-### Fusion 360 Host
-- Provides the palette (embedded Chromium) for the HTML/JS frontend
-- Exposes Python API for toolbar commands, viewport control, timeline monitoring, and entity selection
-- Manages add-in lifecycle (`run`/`stop`) and palette creation/destruction
-- Destroys palettes on workspace switch; the add-in recreates them as needed
+### Local Plane (Fusion 360 Plugin)
 
-### Python Backend (`FusionTutorialOverlay.py` + `core/`)
-- Registers toolbar commands and creates the HTML palette
-- Manages tutorial state and step navigation (`TutorialManager`)
-- Routes bridge messages from JS to action handlers
-- Executes Fusion API actions — camera orientation, entity highlighting, viewport capture (`FusionActionsRunner`)
-- Monitors Fusion events for completion detection (`CompletionDetector`)
-- Detects workspace/environment context and polls for changes (`ContextDetector`, `ContextPoller`)
-- Manages user consent preferences (`ConsentManager`)
-- Generates redirect step animations for environment switching (`RedirectTemplateLibrary`)
+Responsible for:
 
-### JS/HTML Frontend (`palette/`)
-- Bridge initialization and message routing (`main.js`)
-- Step navigation control with redirect mode management (`stepper.js`)
-- First-run consent dialog (`consentDialog.js`)
-- Step rendering via strategy pattern: `BaseRenderer` → `AnimatedRenderer`, `StaticRenderer`, `RedirectRenderer`
-- QC checklist management with three-tier event matching
-- Warning footer for non-blocking context mismatch alerts
+-   Loading tutorial manifests
+-   Rendering guided tutorials
+-   Playing UI animations
+-   Detecting completion of modeling steps
+-   Providing contextual guidance
 
----
+This plane operates independently and does not require cloud
+connectivity for tutorial playback.
 
-## 3. Module Map
+### Cloud Plane (Optional)
 
-### Python Modules
+Responsible for:
 
-| Module | Status | Description |
-|---|---|---|
-| `FusionTutorialOverlay.py` | **Active** | Entry point. Registers toolbar commands, creates palette, routes bridge messages. Contains **inline** `TutorialManager` and `FusionActionsRunner` classes used at runtime. |
-| `core/completion_detector.py` | **Active** | Monitors Fusion API events (commandStarting, commandTerminated, timeline changes) to detect step completion. Contains `COMMAND_MAP` for mapping Fusion command IDs to event types. |
-| `core/context_detector.py` | **Active** | Detects current workspace/environment (toolbar tab is primary signal, active sketch is secondary). |
-| `core/context_poller.py` | **Active** | Polls context periodically during redirect steps and after context warnings; fires `contextResolved` when the user switches to the correct environment. |
-| `core/consent_manager.py` | **Active** | Manages user consent for AI-guided redirect help (ON/ASK/OFF modes), persists preference to disk. |
-| `core/redirect_templates.py` | **Active** | Generates redirect step data (animated instructions for switching workspaces/environments). |
-| `core/assets.py` | **Not integrated** | `AssetManager` class for base64 data URL conversion with caching. Entry point uses inline `base64.b64encode` instead. |
-| `core/tutorial_manager.py` | **Not integrated** | More structured `TutorialManager` replacement with validation. The inline class in the entry point is used at runtime. |
-| `core/fusion_actions.py` | **Not integrated** | More structured `FusionActionsRunner` replacement. The inline class in the entry point is used at runtime. |
+-   Generating tutorial manifests using AI
+-   Processing screenshot uploads
+-   Managing tutorial generation jobs
+-   Storing manifests and CAD outputs
 
-### JavaScript Modules
+Cloud pipeline:
 
-| Module | Description |
-|---|---|
-| `palette/static/js/main.js` | Bridge initialization, message routing, standalone test mode (IIFE pattern). |
-| `palette/static/js/stepper.js` | Step navigation controller (Next/Previous/GoToStep), redirect mode management. |
-| `palette/static/js/consentDialog.js` | First-run consent dialog for AI guidance preference. |
-| `palette/static/js/renderers/BaseRenderer.js` | Base class — renders step info, visual steps, expanded content, QC checks, warnings. Loads `Fusion360_SolidNavbar.json` for component position resolution. |
-| `palette/static/js/renderers/AnimatedRenderer.js` | Extends BaseRenderer — cursor animations (move, click, drag, pause, highlight, tooltip, arrow, focusCamera). Contains hardcoded `FULL_UI_POSITIONS` map for animation target resolution. |
-| `palette/static/js/renderers/StaticRenderer.js` | Extends BaseRenderer — static step rendering without animations. |
-| `palette/static/js/renderers/RedirectRenderer.js` | Renders redirect/environment-switch guidance overlays. |
+Plugin → Backend API → n8n → AI Model → Object Storage
 
-### Data Files
+------------------------------------------------------------------------
 
-| File | Description |
-|---|---|
-| `core/Fusion360_SolidNavbar.json` | UI component position map (toolbar groups, environment tabs, browser items, ViewCube). Used by `BaseRenderer.resolveHighlights` for visual step highlights. |
-| `test_data/mug_tutorial.json` | Test tutorial (`mug_v2`, 10 steps). Used for both Fusion testing and standalone browser testing. |
-| `assets/UI Images/` | UI reference images (Fusion 360 toolbar screenshots) used by visual steps and animation overlays. |
+## 2. Plugin Runtime Architecture
 
----
+The Fusion 360 plugin uses a hybrid architecture:
 
-## 4. Data Flow
+Python backend (Fusion Add‑In) HTML/JS frontend (Palette UI)
 
-### Tutorial Load
-```
-Palette ready → JS sends "ready" → Python loads JSON file →
-TutorialManager.load_from_file() → sends "tutorialLoaded" + step data →
-JS Stepper.loadStep() → Renderer.render() → DOM
-```
+Communication occurs via Fusion 360's Palette bridge.
 
-### Step Navigation
-```
-User clicks Next/Prev → JS sends "next"/"prev" → Python checks context requirements →
-sends "contextWarning" if mismatch (non-blocking) → TutorialManager.next_step() →
-executes fusionActions (camera, highlights) → auto-captures viewport if requested →
-sends "updateStep" + step data → JS renders new step
-```
+Bridge interface:
 
-### Completion Detection
-```
-User performs action in Fusion → Fusion API event fires →
-CompletionDetector handles commandStarting/commandTerminated/timeline events →
-maps to CompletionEvent → sends "completionEvent" to JS →
-JS matches event to QC checklist items (three-tier: expectedCommand, eventToCommandMap, text fallback) →
-updates visual state: pending → checking → completed
-```
+JS → Python: window.adsk.fusionSendData(JSON.stringify(message))
 
-### Context Redirect
-```
-Step has "requires" field → Python detects context mismatch →
-sends non-blocking "contextWarning" → starts ContextPoller →
-user switches environment → poller detects match →
-sends "contextResolved" → JS dismisses warning footer
-```
+Python → JS: palette.sendInfoToHTML(JSON.stringify(message))
 
----
+This architecture ensures low‑latency communication without external
+servers.
 
-## 5. Communication Protocol
+------------------------------------------------------------------------
 
-All communication passes through Fusion 360's palette bridge as JSON strings. There are **no REST endpoints, WebSockets, or HTTP servers**.
+## 3. Tutorial Manifest Contract (Canonical Format)
 
-- **JS → Python:** `window.adsk.fusionSendData('cycleEvent', JSON.stringify(data))`
-- **Python → JS:** `palette.sendInfoToHTML('response', JSON.stringify(data))`
+The tutorial manifest is a JSON file that defines tutorial steps.
 
-### JS → Python Actions
+### Required fields
 
-| Action | Description |
-|---|---|
-| `ready` | Palette loaded, request initial tutorial |
-| `loadTutorial` | Load a specific tutorial by ID |
-| `next` | Navigate to next step |
-| `prev` | Navigate to previous step |
-| `goToStep` | Navigate to a specific step index |
-| `getConsent` | Query current consent/guidance mode |
-| `setConsent` | Set consent mode (ON/ASK/OFF) |
-| `showRedirectHelp` | User wants redirect guidance |
-| `skipRedirectHelp` | User declined redirect guidance |
-| `skipRedirect` | Skip active redirect animation |
-| `captureViewport` | Capture viewport as screenshot |
-| `checkQCConditions` | Check QC conditions against design state |
-| `getDesignState` | Query current design state |
-| `resetTracking` | Reset completion tracking for new step |
+Root level:
 
-### Python → JS Response Types
+-   tutorialId
+-   title
+-   description
+-   steps\[\]
 
-| Action | Description |
-|---|---|
-| `tutorialLoaded` | Tutorial loaded with first step data |
-| `updateStep` | Step data after navigation |
-| `error` | Error message |
-| `assets` | Preloaded asset data URLs |
-| `consentRequired` | First-run consent dialog trigger |
-| `consentSet` | Consent mode acknowledgment |
-| `contextWarning` | Non-blocking environment mismatch warning |
-| `contextResolved` | Environment now matches — dismiss warning |
-| `askRedirect` | Ask user about redirect guidance |
-| `redirectStep` | Redirect step animation data |
-| `redirectComplete` | Redirect resolved, auto-advance |
-| `redirectSkipped` | Redirect was skipped |
-| `completionEvent` | QC completion event from Fusion API |
-| `viewportCaptured` | Viewport screenshot as base64 data URL |
-| `qcResults` | QC condition check results |
-| `designState` | Current design state snapshot |
+Step level:
 
----
+-   stepId
+-   stepNumber
+-   title
+-   instruction
+-   detailedText (optional)
+-   expandedContent.whyThisMatters (optional)
+-   tips\[\]
+-   qcChecks\[\]
+-   uiAnimations\[\]
+-   fusionActions\[\]
 
-## 6. Key Architectural Patterns
+### Explicitly removed from schema
 
-### Strategy Pattern (Renderers)
-`BaseRenderer` defines the rendering interface. `AnimatedRenderer`, `StaticRenderer`, and `RedirectRenderer` extend it with specialized behavior. The `Stepper` holds a reference to the active renderer and delegates `render()` calls.
+These keys MUST NOT exist:
 
-### Handler Retention
-Python event handlers must be stored in the global `_handlers` list to prevent garbage collection by Fusion's API. Without this, handlers are silently collected and events stop firing.
+-   metadata
+-   warnings
+-   parameters
+-   expandedContent.parameters
 
-### Graceful Degradation
-Core modules (`core/`) are imported with error handling. If any module fails to load, basic tutorial playback (navigation, rendering, step display) continues to work. The `CORE_MODULES_LOADED` flag gates optional features like completion detection, context warnings, and redirect guidance.
+Warnings and tips are merged into:
 
-### Non-Blocking Context Warnings
-Context mismatches produce a dismissible `#warningFooter` with configurable type (`warning`/`error`/`info`), optional action button with callback, and auto-dismiss after 5 seconds. Navigation always proceeds regardless of context match.
+tips\[\]
 
-### Base64 Data URLs
-Viewport screenshots and images are encoded as base64 data URLs at runtime. This avoids file:// CORS restrictions in Qt WebEngine and eliminates the need for an HTTP server.
+Example:
 
-### Dual Position Resolution
-Two independent systems resolve UI element positions:
-1. **`Fusion360_SolidNavbar.json`** — loaded by `BaseRenderer.resolveHighlights()` for visual step highlight overlays on the navbar image.
-2. **`FULL_UI_POSITIONS` map** — hardcoded in `AnimatedRenderer.resolveAnimationTarget()` for cursor animation positioning on the full UI screenshot.
+tips: - 💡 Helpful guidance - ⚠️ Important caution
 
-### Progressive QC Feedback
-QC check items transition through visual states: `pending` (empty circle) → `checking` (filled circle, pulsing) → `completed` (checkmark). For `command_terminated` events (sketch tools that don't create timeline items), only one item completes at a time for progressive feedback. Feature events (extrude, fillet, etc.) can complete multiple matching items.
+This simplifies rendering and avoids UI fragmentation.
 
----
+------------------------------------------------------------------------
 
-## 7. Future — Cloud Integration (Milestone 4)
+## 4. Plugin Component Architecture
 
-Per the PRD, Milestone 4 envisions replacing local test tutorial data with AI-generated manifests. This would involve:
+### Core Python Modules
 
-- A cloud backend (API gateway) accepting screenshots and prompts
-- An orchestration layer (e.g., n8n) running AI model workflows
-- AI models generating tutorial manifests and optional CAD geometry
-- Object storage for generated assets
-- A `cloud_client.py` module in the plugin for job creation, polling, and manifest download
+FusionTutorialOverlay.py Entry point. Creates palette, initializes
+systems.
 
-**This architecture does not currently exist.** The current system is entirely local. Cloud integration is future work that would extend (not replace) the existing local playback architecture — the plugin would still use the same palette bridge, renderers, and step navigation; only the tutorial data source would change from local JSON files to cloud-generated manifests.
+tutorial_manager.py Responsible for:
+
+-   Loading manifests
+-   Normalizing manifests
+-   Managing step state
+-   Advancing tutorial progression
+
+Normalization rules:
+
+-   Merge warnings → tips
+-   Remove metadata
+-   Remove parameters
+-   Ensure tips exists
+-   Ensure uiAnimations exists
+
+completion_detector.py Responsible for:
+
+-   Listening to Fusion events
+-   Matching events to expectedCommand
+-   Emitting completionEvent to UI
+
+fusion_actions.py Responsible for:
+
+-   Camera control
+-   Selection highlighting
+-   View manipulation
+
+context_detector.py / context_poller.py Responsible for:
+
+-   Monitoring workspace context
+-   Warning user if wrong environment
+
+------------------------------------------------------------------------
+
+### Frontend (Palette)
+
+main.js Initializes bridge and routes messages.
+
+stepper.js Handles tutorial progression logic.
+
+renderers/ Responsible for rendering:
+
+-   Instruction text
+-   Tips section
+-   QC checklist
+-   Animations
+
+Removed UI elements:
+
+-   Parameters card
+-   Warnings card
+
+Only Tips section remains.
+
+------------------------------------------------------------------------
+
+## 5. Completion Tracking Architecture
+
+Each step contains qcChecks with expectedCommand.
+
+Example:
+
+expectedCommand: "Sweep"
+
+Completion detector listens for:
+
+-   command termination
+-   feature creation
+-   timeline changes
+
+Matching logic uses:
+
+Command match OR Feature evidence OR Geometry evidence
+
+This allows flexible user workflows.
+
+When match occurs:
+
+Python → sends completionEvent → JS
+
+JS → toggles checkbox
+
+When all required checks complete:
+
+Step automatically advances.
+
+------------------------------------------------------------------------
+
+## 6. UI Animation Architecture
+
+Each step supports uiAnimations.
+
+Animation types:
+
+-   move
+-   click
+-   drag
+-   pause
+-   highlight
+-   tooltip
+-   focusCamera
+
+Purpose:
+
+-   Demonstrate correct workflow
+-   Provide visual guidance
+-   Reduce learning friction
+
+Animations run independently from user interaction.
+
+User actions always take priority.
+
+------------------------------------------------------------------------
+
+## 7. Cloud Architecture (Optional)
+
+Plugin can generate tutorials using AI.
+
+Flow:
+
+1.  Plugin captures screenshots
+2.  Upload to backend
+3.  Backend creates job
+4.  n8n orchestrates workflow
+5.  AI generates tutorial manifest
+6.  Storage saves manifest
+7.  Plugin downloads manifest
+8.  Plugin runs tutorial
+
+Backend performs manifest validation before serving.
+
+------------------------------------------------------------------------
+
+## 8. Data Flow Summary
+
+Tutorial Playback:
+
+Manifest → TutorialManager → Renderer → Animation Player →
+CompletionDetector → Progression
+
+Tutorial Generation:
+
+Plugin → Backend → n8n → AI → Storage → Plugin
+
+------------------------------------------------------------------------
+
+## 9. Security Architecture
+
+Plugin does not directly access AI services.
+
+All AI access occurs via backend.
+
+Benefits:
+
+-   API key protection
+-   Access control
+-   Rate limiting
+-   Audit logging
+
+------------------------------------------------------------------------
+
+## 10. Scalability Architecture
+
+Plugin:
+
+-   Stateless tutorial execution
+-   Lightweight runtime
+
+Backend:
+
+-   Supports concurrent tutorial generation jobs
+
+n8n:
+
+-   Provides queue‑based orchestration
+
+Storage:
+
+-   Supports unlimited tutorial storage
+
+------------------------------------------------------------------------
+
+## 11. Design Principles
+
+This architecture prioritizes:
+
+-   Reliability
+-   Flexibility
+-   Modularity
+-   Low latency
+-   Offline tutorial playback
+-   Robust completion detection
+
+------------------------------------------------------------------------
+
+End of Software Architecture Section

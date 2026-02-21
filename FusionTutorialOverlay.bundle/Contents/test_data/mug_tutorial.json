@@ -28,10 +28,6 @@
       ],
       "uiAnimations": [
         {
-          "type": "focusCamera",
-          "orientation": "front"
-        },
-        {
           "type": "highlight",
           "target": "browser.rootComponent.origin",
           "style": "pulse"
@@ -63,13 +59,6 @@
         }
       ],
       "fusionActions": [
-        {
-          "type": "camera.orient",
-          "orientation": "front"
-        },
-        {
-          "type": "camera.fit"
-        },
         {
           "type": "ui.openPanel",
           "panel": "browser"
@@ -106,10 +95,6 @@
       ],
       "uiAnimations": [
         {
-          "type": "focusCamera",
-          "orientation": "front"
-        },
-        {
           "type": "highlight",
           "target": "toolbar.sketch.create.line",
           "style": "pulse"
@@ -141,13 +126,6 @@
         }
       ],
       "fusionActions": [
-        {
-          "type": "camera.orient",
-          "orientation": "front"
-        },
-        {
-          "type": "camera.fit"
-        },
         {
           "type": "ui.enterMode",
           "mode": "Sketch"
@@ -214,9 +192,6 @@
           "text": "Confirm the profile is closed (shaded), then finish sketch."
         },
         {
-          "type": "camera.fit"
-        },
-        {
           "type": "ui.exitMode",
           "mode": "Sketch"
         }
@@ -242,10 +217,6 @@
         }
       ],
       "uiAnimations": [
-        {
-          "type": "focusCamera",
-          "orientation": "iso"
-        },
         {
           "type": "highlight",
           "target": "toolbar.create.revolve",
@@ -284,13 +255,6 @@
           "environment": "Solid"
         },
         {
-          "type": "camera.orient",
-          "orientation": "iso"
-        },
-        {
-          "type": "camera.fit"
-        },
-        {
           "type": "ui.hint",
           "text": "Revolve profile 360° around Y-axis → New Body."
         }
@@ -316,10 +280,6 @@
         }
       ],
       "uiAnimations": [
-        {
-          "type": "focusCamera",
-          "orientation": "iso"
-        },
         {
           "type": "highlight",
           "target": "toolbar.modify.shell",
@@ -353,9 +313,6 @@
       ],
       "fusionActions": [
         {
-          "type": "camera.fit"
-        },
-        {
           "type": "ui.hint",
           "text": "Shell the mug from the top face at 3mm thickness."
         },
@@ -385,10 +342,6 @@
         }
       ],
       "uiAnimations": [
-        {
-          "type": "focusCamera",
-          "orientation": "iso"
-        },
         {
           "type": "highlight",
           "target": "toolbar.modify.fillet",
@@ -422,9 +375,6 @@
       ],
       "fusionActions": [
         {
-          "type": "camera.fit"
-        },
-        {
           "type": "ui.hint",
           "text": "Fillet rim edges to improve comfort."
         }
@@ -450,10 +400,6 @@
         }
       ],
       "uiAnimations": [
-        {
-          "type": "focusCamera",
-          "orientation": "right"
-        },
         {
           "type": "highlight",
           "target": "toolbar.sketch.createSketch",
@@ -487,13 +433,6 @@
       ],
       "fusionActions": [
         {
-          "type": "camera.orient",
-          "orientation": "right"
-        },
-        {
-          "type": "camera.fit"
-        },
-        {
           "type": "ui.enterMode",
           "mode": "Sketch"
         },
@@ -524,10 +463,6 @@
       ],
       "uiAnimations": [
         {
-          "type": "focusCamera",
-          "orientation": "right"
-        },
-        {
           "type": "highlight",
           "target": "toolbar.sketch.create.rectangle",
           "style": "pulse"
@@ -554,9 +489,6 @@
         }
       ],
       "fusionActions": [
-        {
-          "type": "camera.fit"
-        },
         {
           "type": "ui.hint",
           "text": "Draw a closed handle profile (about 11x8mm) and finish the sketch."
@@ -587,10 +519,6 @@
         }
       ],
       "uiAnimations": [
-        {
-          "type": "focusCamera",
-          "orientation": "iso"
-        },
         {
           "type": "highlight",
           "target": "toolbar.create.sweep",
@@ -629,9 +557,6 @@
       ],
       "fusionActions": [
         {
-          "type": "camera.fit"
-        },
-        {
           "type": "ui.hint",
           "text": "Sweep profile along path and set operation to Join."
         }
@@ -657,10 +582,6 @@
         }
       ],
       "uiAnimations": [
-        {
-          "type": "focusCamera",
-          "orientation": "iso"
-        },
         {
           "type": "highlight",
           "target": "toolbar.modify.fillet",
@@ -693,9 +614,6 @@
         }
       ],
       "fusionActions": [
-        {
-          "type": "camera.fit"
-        },
         {
           "type": "ui.openPanel",
           "panel": "timeline"

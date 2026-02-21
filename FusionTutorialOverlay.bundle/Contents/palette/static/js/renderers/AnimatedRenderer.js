@@ -1,6 +1,8 @@
 /**
  * AnimatedRenderer - Renders steps with cursor animations
- * Supports move, click, drag, and pause directives
+ * Supports move, click, drag, and pause directives.
+ * Delegates target resolution to BaseRenderer.resolveTarget() and swaps
+ * environment-specific screenshots when highlighting dropdown tools.
  */
 
 class AnimatedRenderer extends BaseRenderer {
@@ -45,10 +47,12 @@ class AnimatedRenderer extends BaseRenderer {
             if (visualArea) {
                 visualArea.classList.remove('hidden');
             }
-            // Show default Fusion UI image when no step image is set
+            // Show default environment image when no step image is set
             const visualImage = document.getElementById('visualStepImage');
             if (visualImage && (!visualImage.src || visualImage.src === window.location.href || visualImage.src.endsWith('/'))) {
-                visualImage.src = '../assets/UI Images/fusion_ui.png';
+                visualImage.src = this.getImagePath(this.currentEnvironment, 0);
+                visualImage.dataset.env = this.currentEnvironment;
+                visualImage.dataset.imageIndex = '0';
             }
             // Give animation area a min-height when no image is present
             if (this.animationArea && (!visualImage || !visualImage.src || visualImage.src.endsWith('/'))) {
@@ -126,9 +130,6 @@ class AnimatedRenderer extends BaseRenderer {
             case 'arrow':
                 await this.animateArrow(anim);
                 break;
-            case 'focusCamera':
-                await this.animateFocusCamera(anim);
-                break;
             default:
                 console.warn('Unknown animation type:', type);
         }
@@ -144,9 +145,6 @@ class AnimatedRenderer extends BaseRenderer {
         const from = anim.from || { x: 50, y: 50 };
         const to = anim.to || { x: 50, y: 50 };
         const duration = anim.duration || 500;
-
-        // Convert percentage to pixels
-        const areaRect = this.animationArea.getBoundingClientRect();
 
         // Set starting position
         this.cursorElement.style.left = `${from.x}%`;
@@ -235,86 +233,65 @@ class AnimatedRenderer extends BaseRenderer {
     }
 
     /**
-     * Resolve an animation target path to a percentage position on fusion_ui.png
-     * Uses a hardcoded position map calibrated for the full UI screenshot.
+     * Resolve an animation target path to a position on the UI screenshot.
+     * Delegates to BaseRenderer.resolveTarget() and normalizes the result
+     * into {x, y, width, height, label, env, imageIndex}.
      * @param {string} target - Dot-separated path (e.g. "toolbar.create.revolve")
-     * @returns {Object|null} Position {x, y, width, height} in percentages, or null
+     * @returns {Object|null} Position data or null
      */
     resolveAnimationTarget(target) {
         if (!target) return null;
 
-        // Positions calibrated for fusion_ui.png (full Fusion 360 UI screenshot)
-        const FULL_UI_POSITIONS = {
-            // Browser panel items
-            'browser':      { x: 0,    y: 8,    width: 14,  height: 35 },
-            'origin':       { x: 2,    y: 16,   width: 8,   height: 2.5 },
-            'bodies':       { x: 2,    y: 13,   width: 8,   height: 2.5 },
-            'sketches':     { x: 2,    y: 14.5, width: 8,   height: 2.5 },
+        const resolved = this.resolveTarget(target);
+        if (!resolved) return null;
 
-            // Toolbar groups
-            'create':       { x: 8,    y: 5,    width: 8,   height: 4 },
-            'modify':       { x: 18,   y: 5,    width: 12,  height: 4 },
-            'construct':    { x: 36,   y: 5,    width: 5,   height: 4 },
-            'inspect':      { x: 42,   y: 5,    width: 5,   height: 4 },
-            'insert':       { x: 48,   y: 5,    width: 7,   height: 4 },
-            'assemble':     { x: 56,   y: 5,    width: 6,   height: 4 },
-            'select':       { x: 63,   y: 5,    width: 4,   height: 4 },
-
-            // Specific tools in CREATE
-            'extrude':      { x: 12,   y: 5,    width: 3,   height: 4 },
-            'revolve':      { x: 14.5, y: 5,    width: 3,   height: 4 },
-            'sweep':        { x: 8,    y: 5,    width: 8,   height: 4 },
-            'loft':         { x: 8,    y: 5,    width: 8,   height: 4 },
-
-            // Specific tools in MODIFY
-            'fillet':       { x: 20,   y: 5,    width: 3,   height: 4 },
-            'chamfer':      { x: 23,   y: 5,    width: 3,   height: 4 },
-            'shell':        { x: 26,   y: 5,    width: 3,   height: 4 },
-            'press-pull':   { x: 18,   y: 5,    width: 3,   height: 4 },
-            'move-copy':    { x: 29,   y: 5,    width: 3,   height: 4 },
-
-            // Sketch tools (point to Create Sketch icon area)
-            'line':         { x: 10,   y: 5,    width: 3,   height: 4 },
-            'arc':          { x: 10,   y: 5,    width: 3,   height: 4 },
-            'rectangle':    { x: 10,   y: 5,    width: 3,   height: 4 },
-            'circle':       { x: 10,   y: 5,    width: 3,   height: 4 },
-
-            // Common actions
-            'finishsketch': { x: 85,   y: 5,    width: 5,   height: 4 },
-
-            // ViewCube
-            'viewcube':     { x: 88,   y: 8,    width: 8,   height: 8 }
+        const pos = resolved.position;
+        return {
+            x: pos.x,
+            y: pos.y,
+            width: pos.width || 3,
+            height: pos.height || 5,
+            label: resolved.label,
+            env: resolved.env,
+            imageIndex: resolved.imageIndex
         };
+    }
 
-        const parts = target.toLowerCase().split('.');
+    /**
+     * Swap the UI screenshot if the target's environment/imageIndex differs
+     * from what is currently displayed.
+     * @param {string} env - Target environment ('solid' or 'sketch')
+     * @param {number} imageIndex - Target image index
+     */
+    ensureCorrectImage(env, imageIndex) {
+        const visualImage = document.getElementById('visualStepImage');
+        if (!visualImage) return;
 
-        // Canvas targets are not resolvable to fixed UI positions
-        if (parts[0] === 'canvas') {
-            return null;
+        const currentEnv = visualImage.dataset.env || '';
+        const currentIdx = parseInt(visualImage.dataset.imageIndex || '-1', 10);
+
+        if (currentEnv !== env || currentIdx !== imageIndex) {
+            visualImage.src = this.getImagePath(env, imageIndex);
+            visualImage.dataset.env = env;
+            visualImage.dataset.imageIndex = String(imageIndex);
         }
-
-        // Skip prefix tokens that are just category labels
-        const skipTokens = ['toolbar', 'browser', 'canvas'];
-
-        // Walk segments from last to first, return the first match
-        for (let i = parts.length - 1; i >= 0; i--) {
-            if (skipTokens.includes(parts[i])) continue;
-            const pos = FULL_UI_POSITIONS[parts[i]];
-            if (pos) return { ...pos };
-        }
-
-        return null;
     }
 
     /**
      * Convert a dot-path animation target to a human-readable label.
-     * Strips category prefixes and splits camelCase.
+     * Prefers the JSON-sourced label from resolveTarget; falls back to
+     * path formatting for unresolvable targets.
      * @param {string} target - Dot-separated path (e.g. "browser.rootComponent.origin.XZPlane")
-     * @returns {string} Readable label (e.g. "Origin > XZ Plane")
+     * @returns {string} Readable label (e.g. "Origin" or "Origin > XZ Plane")
      */
     formatTargetLabel(target) {
         if (!target) return '';
 
+        // Try JSON label first
+        const resolved = this.resolveTarget(target);
+        if (resolved && resolved.label) return resolved.label;
+
+        // Fallback: format the path segments
         const skipTokens = ['toolbar', 'browser', 'canvas', 'dialog', 'rootcomponent'];
         const parts = target.split('.')
             .filter(p => !skipTokens.includes(p.toLowerCase()))
@@ -358,14 +335,15 @@ class AnimatedRenderer extends BaseRenderer {
      * @param {Object} anim - Highlight animation config
      */
     async animateHighlight(anim) {
-        const position = this.resolveAnimationTarget(anim.target);
-        if (position) {
-            const label = this.formatTargetLabel(anim.target);
-            this.createImageHighlight(position, anim.style, label);
+        const target = this.resolveAnimationTarget(anim.target);
+        if (target) {
+            this.ensureCorrectImage(target.env, target.imageIndex);
+            const label = target.label || this.formatTargetLabel(anim.target);
+            this.createImageHighlight(target, anim.style, label);
             if (this.cursorElement) {
                 this.cursorElement.classList.remove('hidden');
-                this.cursorElement.style.left = `${position.x}%`;
-                this.cursorElement.style.top = `${position.y}%`;
+                this.cursorElement.style.left = `${target.x + target.width / 2}%`;
+                this.cursorElement.style.top = `${target.y + target.height / 2}%`;
             }
         }
         await this.delay(anim.duration || 1500);
@@ -376,14 +354,15 @@ class AnimatedRenderer extends BaseRenderer {
      * @param {Object} anim - Tooltip animation config
      */
     async animateTooltip(anim) {
-        const position = this.resolveAnimationTarget(anim.target);
-        if (position) {
-            const label = this.formatTargetLabel(anim.target);
-            this.createImageHighlight(position, anim.style, label);
+        const target = this.resolveAnimationTarget(anim.target);
+        if (target) {
+            this.ensureCorrectImage(target.env, target.imageIndex);
+            const label = target.label || this.formatTargetLabel(anim.target);
+            this.createImageHighlight(target, anim.style, label);
             if (this.cursorElement) {
                 this.cursorElement.classList.remove('hidden');
-                this.cursorElement.style.left = `${position.x}%`;
-                this.cursorElement.style.top = `${position.y}%`;
+                this.cursorElement.style.left = `${target.x + target.width / 2}%`;
+                this.cursorElement.style.top = `${target.y + target.height / 2}%`;
             }
         }
         await this.delay(anim.duration || 2000);
@@ -394,25 +373,18 @@ class AnimatedRenderer extends BaseRenderer {
      * @param {Object} anim - Arrow animation config
      */
     async animateArrow(anim) {
-        const position = this.resolveAnimationTarget(anim.target);
-        if (position) {
-            const label = this.formatTargetLabel(anim.target);
-            this.createImageHighlight(position, anim.style, label);
+        const target = this.resolveAnimationTarget(anim.target);
+        if (target) {
+            this.ensureCorrectImage(target.env, target.imageIndex);
+            const label = target.label || this.formatTargetLabel(anim.target);
+            this.createImageHighlight(target, anim.style, label);
             if (this.cursorElement) {
                 this.cursorElement.classList.remove('hidden');
-                this.cursorElement.style.left = `${position.x}%`;
-                this.cursorElement.style.top = `${position.y}%`;
+                this.cursorElement.style.left = `${target.x + target.width / 2}%`;
+                this.cursorElement.style.top = `${target.y + target.height / 2}%`;
             }
         }
         await this.delay(anim.duration || 1500);
-    }
-
-    /**
-     * Animate a camera focus indicator
-     * @param {Object} anim - Focus camera animation config
-     */
-    async animateFocusCamera(anim) {
-        await this.delay(anim.duration || 1000);
     }
 
     /**

@@ -7,22 +7,296 @@ class BaseRenderer {
     constructor(container) {
         this.container = container;
         this.currentStep = null;
-        this.navbarConfig = null;
-        this.loadNavbarConfig();
+        this.uiConfigs = null;
+        this.lookupMap = null;
+        this.currentEnvironment = 'solid';
+        this.loadUIConfigs();
     }
 
     /**
-     * Load navbar configuration JSON
+     * Load UI component configurations for all environments
      */
-    async loadNavbarConfig() {
+    async loadUIConfigs() {
         try {
-            const response = await fetch('../core/Fusion360_SolidNavbar.json');
-            if (response.ok) {
-                this.navbarConfig = await response.json();
-                console.log('Navbar config loaded:', this.navbarConfig);
-            }
+            const [solidRes, sketchRes] = await Promise.all([
+                fetch('../assets/UI Images/Solid/Solid_UIComponents.json'),
+                fetch('../assets/UI Images/Sketch/Sketch_UIComponents.json')
+            ]);
+
+            this.uiConfigs = {};
+            if (solidRes.ok) this.uiConfigs.solid = await solidRes.json();
+            if (sketchRes.ok) this.uiConfigs.sketch = await sketchRes.json();
+
+            console.log('UI configs loaded:', Object.keys(this.uiConfigs));
+            this.buildLookupMap();
+            this.preloadImages();
         } catch (e) {
-            console.warn('Could not load navbar config:', e);
+            console.warn('Could not load UI configs:', e);
+        }
+    }
+
+    /**
+     * Build a flat lookup map from all UI configs for O(1) target resolution.
+     * Keys are registered both with and without environment prefix.
+     */
+    buildLookupMap() {
+        this.lookupMap = {};
+
+        for (const [envName, config] of Object.entries(this.uiConfigs)) {
+            const components = config.components;
+            if (!components) continue;
+
+            // Toolbar groups and their tools
+            if (components.toolbarGroups) {
+                for (const [groupId, group] of Object.entries(components.toolbarGroups)) {
+                    this._registerKey(`toolbar.${groupId}`, {
+                        env: envName, imageIndex: group.imageIndex,
+                        position: group.position, label: group.label, type: 'group'
+                    });
+
+                    if (group.tools) {
+                        for (const tool of group.tools) {
+                            const toolEntry = {
+                                env: envName, imageIndex: group.imageIndex,
+                                position: tool.position, label: tool.label, type: 'tool'
+                            };
+                            this._registerKey(`toolbar.${groupId}.${tool.id}`, toolEntry);
+                            this._registerKey(`toolbar.*.${tool.id}`, toolEntry);
+                        }
+                    }
+                }
+            }
+
+            // Environment tabs
+            if (components.environmentTabs) {
+                for (const [tabId, tab] of Object.entries(components.environmentTabs)) {
+                    this._registerKey(`environmentTabs.${tabId}`, {
+                        env: envName, imageIndex: tab.imageIndex,
+                        position: tab.position, label: tab.label, type: 'envTab'
+                    });
+                }
+            }
+
+            // Browser items
+            if (components.browser && components.browser.items) {
+                for (const [itemId, item] of Object.entries(components.browser.items)) {
+                    this._registerKey(`browser.${itemId}`, {
+                        env: envName, imageIndex: item.imageIndex,
+                        position: item.position, label: item.label, type: 'browser'
+                    });
+                }
+            }
+
+            // Navigation bar
+            if (components.navigationBar) {
+                for (const [navId, nav] of Object.entries(components.navigationBar)) {
+                    this._registerKey(`nav.${navId}`, {
+                        env: envName, imageIndex: nav.imageIndex,
+                        position: nav.position, label: navId, type: 'nav'
+                    });
+                }
+            }
+
+            // Special: finishSketch
+            if (components.finishSketch) {
+                const fs = components.finishSketch;
+                this._registerKey('toolbar.finishSketch', {
+                    env: envName, imageIndex: fs.imageIndex,
+                    position: fs.position, label: fs.label, type: 'special'
+                });
+                this._registerKey('finishSketch', {
+                    env: envName, imageIndex: fs.imageIndex,
+                    position: fs.position, label: fs.label, type: 'special'
+                });
+            }
+
+            // Workspace dropdown
+            if (components.workspaceDropdown) {
+                const wd = components.workspaceDropdown;
+                this._registerKey('workspaceDropdown', {
+                    env: envName, imageIndex: wd.imageIndex,
+                    position: wd.position, label: wd.label, type: 'special'
+                });
+            }
+        }
+
+        console.log('Lookup map built:', Object.keys(this.lookupMap).length, 'keys');
+    }
+
+    /**
+     * Register a key in the lookup map with env-prefixed and unprefixed variants.
+     * Unprefixed key is only stored if not already taken (first-registered wins).
+     */
+    _registerKey(key, entry) {
+        const envKey = `${entry.env}:${key}`;
+        this.lookupMap[envKey] = entry;
+        if (!this.lookupMap[key]) {
+            this.lookupMap[key] = entry;
+        }
+    }
+
+    /**
+     * Look up a key, trying currentEnvironment-prefixed first then unprefixed.
+     * Returns a shallow copy so callers can mutate without affecting the map.
+     */
+    _lookupWithEnv(key) {
+        const envKey = `${this.currentEnvironment}:${key}`;
+        if (this.lookupMap[envKey]) return { ...this.lookupMap[envKey] };
+        if (this.lookupMap[key]) return { ...this.lookupMap[key] };
+        return null;
+    }
+
+    /**
+     * Resolve an animation/highlight target path to component data.
+     * Multi-strategy resolution handles various target path patterns from tutorials.
+     * @param {string} targetPath - Dot-separated target path (e.g. "toolbar.create.revolve")
+     * @returns {Object|null} { env, imageIndex, position, label, type } or null
+     */
+    resolveTarget(targetPath) {
+        if (!targetPath || !this.lookupMap) return null;
+
+        const parts = targetPath.split('.');
+
+        // 1. Skip canvas.* and dialog.* — these are viewport/dialog elements, not UI image targets
+        if (parts[0] === 'canvas' || parts[0] === 'dialog') return null;
+
+        // 2. Direct lookup
+        let result = this._lookupWithEnv(targetPath);
+        if (result) return this._finalizeResult(result);
+
+        // 3. Strip non-structural segments and retry
+        const nonStructural = ['rootcomponent', 'sketch', 'solid'];
+        const cleaned = parts.filter(p => !nonStructural.includes(p.toLowerCase()));
+        const cleanedPath = cleaned.join('.');
+        if (cleanedPath !== targetPath) {
+            result = this._lookupWithEnv(cleanedPath);
+            if (result) return this._finalizeResult(result);
+        }
+
+        // 4. Progressive path shortening (for browser-like deep paths)
+        if (cleaned.length > 2) {
+            for (let len = cleaned.length - 1; len >= 2; len--) {
+                const shortened = cleaned.slice(0, len).join('.');
+                result = this._lookupWithEnv(shortened);
+                if (result) return this._finalizeResult(result);
+            }
+        }
+
+        // 5. Wildcard: toolbar.*.{lastSegment}
+        const lastSegment = cleaned[cleaned.length - 1];
+        result = this._lookupWithEnv(`toolbar.*.${lastSegment}`);
+        if (result) return this._finalizeResult(result);
+
+        // 6. camelCase to kebab-case and retry wildcard
+        const kebab = lastSegment.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        if (kebab !== lastSegment.toLowerCase()) {
+            result = this._lookupWithEnv(`toolbar.*.${kebab}`);
+            if (result) return this._finalizeResult(result);
+        }
+
+        // 7. Substring match in wildcard keys (e.g. "arc" matches "3-point-arc")
+        const lowerLast = lastSegment.toLowerCase();
+        for (const key of Object.keys(this.lookupMap)) {
+            if (key.includes(':')) continue; // skip env-prefixed keys
+            if (key.startsWith('toolbar.*.') && key.toLowerCase().includes(lowerLast)) {
+                result = this._lookupWithEnv(key);
+                if (result) return this._finalizeResult(result);
+            }
+        }
+
+        // 8. Browser fallback
+        result = this._lookupWithEnv(`browser.${lastSegment}`);
+        if (result) return this._finalizeResult(result);
+
+        // 9. Bare segment lookup
+        result = this._lookupWithEnv(lastSegment);
+        if (result) return this._finalizeResult(result);
+
+        return null;
+    }
+
+    /**
+     * Finalize a resolved result — override env for environment-agnostic items
+     * (browser and nav panels appear the same across environments)
+     */
+    _finalizeResult(result) {
+        if (result.type === 'browser' || result.type === 'nav') {
+            result.env = this.currentEnvironment;
+        }
+        return result;
+    }
+
+    /**
+     * Get image path for an environment and image index.
+     * Convention: ../assets/UI Images/{Env}/{Env}_{index}.png
+     * @param {string} env - 'solid' or 'sketch'
+     * @param {number} imageIndex - 0 = base UI, 1+ = dropdown states
+     * @returns {string} Relative image path
+     */
+    getImagePath(env, imageIndex) {
+        const envCap = env.charAt(0).toUpperCase() + env.slice(1);
+        return `../assets/UI Images/${envCap}/${envCap}_${imageIndex}.png`;
+    }
+
+    /**
+     * Detect which environment a step belongs to from step data.
+     * @param {Object} step - Step data
+     * @returns {string} 'solid' or 'sketch'
+     */
+    detectStepEnvironment(step) {
+        // 1. Explicit requires
+        if (step.requires && step.requires.environment) {
+            return step.requires.environment.toLowerCase();
+        }
+
+        const actions = step.fusionActions || [];
+
+        // 2. ui.openWorkspace with environment field (highest priority action)
+        for (const action of actions) {
+            if (action.type === 'ui.openWorkspace' && action.environment) {
+                return action.environment.toLowerCase();
+            }
+        }
+
+        // 3. ui.enterMode or ui.exitMode: Sketch
+        for (const action of actions) {
+            if ((action.type === 'ui.enterMode' || action.type === 'ui.exitMode') &&
+                action.mode === 'Sketch') {
+                return 'sketch';
+            }
+        }
+
+        // 4. Animation target hints
+        const animations = step.uiAnimations || [];
+        for (const anim of animations) {
+            if (anim.target) {
+                const t = anim.target.toLowerCase();
+                if (t === 'toolbar.finishsketch' || t.startsWith('toolbar.sketch.create.')) {
+                    return 'sketch';
+                }
+            }
+        }
+
+        // 5. Default
+        return 'solid';
+    }
+
+    /**
+     * Preload all environment images to prevent flicker during swaps.
+     */
+    preloadImages() {
+        for (const [envName, config] of Object.entries(this.uiConfigs)) {
+            let maxIdx = 0;
+            const components = config.components;
+            if (components && components.toolbarGroups) {
+                for (const group of Object.values(components.toolbarGroups)) {
+                    if (group.imageIndex > maxIdx) maxIdx = group.imageIndex;
+                }
+            }
+            for (let i = 0; i <= maxIdx; i++) {
+                const img = new Image();
+                img.src = this.getImagePath(envName, i);
+            }
         }
     }
 
@@ -32,6 +306,7 @@ class BaseRenderer {
      */
     render(step) {
         this.currentStep = step;
+        this.currentEnvironment = this.detectStepEnvironment(step);
         this.renderStepInfo(step);
         this.renderVisualStep(step);
         this.renderExpandedContent(step);
@@ -63,10 +338,9 @@ class BaseRenderer {
 
         const visualStep = step.visualStep;
 
-        // If no visual step data, check if we should use navbar config
+        // If no visual step data, check if we should use UI config
         if (!visualStep || !visualStep.image) {
-            // Use default navbar image if step has UI targets
-            if (step.uiTargets && step.uiTargets.length > 0 && this.navbarConfig) {
+            if (step.uiTargets && step.uiTargets.length > 0 && this.uiConfigs) {
                 this.renderNavbarWithTargets(step.uiTargets, visualArea, visualImage, visualHighlights, visualCaption);
                 return;
             }
@@ -77,23 +351,24 @@ class BaseRenderer {
         // Show the visual step area
         visualArea.classList.remove('hidden');
 
-        // Determine image path - use new navbar image as default for toolbar references
+        // Determine image path
         let imagePath = visualStep.image;
 
-        // Check if this is a navbar/toolbar reference and use the new image
         if (visualStep.useNavbar || imagePath === 'navbar' || imagePath === 'toolbar') {
-            imagePath = '../assets/UI Images/Fusion360SolidNavbar.png';
+            imagePath = this.getImagePath(this.currentEnvironment, 0);
         } else if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('../')) {
             imagePath = '../' + imagePath;
         }
 
         visualImage.src = imagePath;
+        visualImage.dataset.env = this.currentEnvironment;
+        visualImage.dataset.imageIndex = '0';
         visualImage.alt = visualStep.alt || 'Fusion 360 UI Reference';
 
         // Clear existing highlights
         visualHighlights.innerHTML = '';
 
-        // Add highlights - check for navbar component references
+        // Add highlights — resolve component references via lookup map
         const highlights = this.resolveHighlights(visualStep.highlights);
 
         if (highlights && highlights.length > 0) {
@@ -135,25 +410,28 @@ class BaseRenderer {
     }
 
     /**
-     * Render navbar image with specific UI targets highlighted
+     * Render UI image with specific targets highlighted
      */
     renderNavbarWithTargets(targets, visualArea, visualImage, visualHighlights, visualCaption) {
         visualArea.classList.remove('hidden');
-        visualImage.src = '../assets/UI Images/Fusion360SolidNavbar.png';
+        visualImage.src = this.getImagePath(this.currentEnvironment, 0);
+        visualImage.dataset.env = this.currentEnvironment;
+        visualImage.dataset.imageIndex = '0';
         visualImage.alt = 'Fusion 360 Toolbar';
 
         visualHighlights.innerHTML = '';
 
         targets.forEach((target, index) => {
-            const position = this.getNavbarComponentPosition(target);
-            if (position) {
+            const resolved = this.resolveTarget(target.component || target);
+            if (resolved) {
+                const pos = resolved.position;
                 const highlightEl = document.createElement('div');
                 highlightEl.className = 'visual-highlight';
 
-                highlightEl.style.left = position.x + '%';
-                highlightEl.style.top = position.y + '%';
-                highlightEl.style.width = position.width + '%';
-                highlightEl.style.height = position.height + '%';
+                highlightEl.style.left = pos.x + '%';
+                highlightEl.style.top = pos.y + '%';
+                highlightEl.style.width = (pos.width || 3) + '%';
+                highlightEl.style.height = (pos.height || 5) + '%';
 
                 if (targets.length > 1) {
                     const numberEl = document.createElement('span');
@@ -164,7 +442,7 @@ class BaseRenderer {
 
                 const labelEl = document.createElement('span');
                 labelEl.className = 'visual-highlight-label';
-                labelEl.textContent = target.label || target.component;
+                labelEl.textContent = target.label || resolved.label || target.component;
                 highlightEl.appendChild(labelEl);
 
                 visualHighlights.appendChild(highlightEl);
@@ -178,62 +456,28 @@ class BaseRenderer {
     }
 
     /**
-     * Resolve highlight definitions - convert component references to positions
+     * Resolve highlight definitions — convert component references to positions
      */
     resolveHighlights(highlights) {
         if (!highlights) return [];
 
         return highlights.map(h => {
-            // If highlight references a navbar component by name
-            if (h.component && this.navbarConfig) {
-                const position = this.getNavbarComponentPosition({ component: h.component });
-                if (position) {
+            if (h.component) {
+                const resolved = this.resolveTarget(h.component);
+                if (resolved) {
+                    const pos = resolved.position;
                     return {
-                        ...position,
-                        label: h.label || position.label,
+                        x: pos.x,
+                        y: pos.y,
+                        width: pos.width || 3,
+                        height: pos.height || 5,
+                        label: h.label || resolved.label,
                         shape: h.shape || 'rect'
                     };
                 }
             }
             return h;
         });
-    }
-
-    /**
-     * Get position of a navbar component from config
-     */
-    getNavbarComponentPosition(target) {
-        if (!this.navbarConfig || !target.component) return null;
-
-        const componentPath = target.component.split('.');
-        let component = this.navbarConfig.components;
-
-        for (const part of componentPath) {
-            if (component && component[part]) {
-                component = component[part];
-            } else {
-                // Try common actions
-                if (this.navbarConfig.commonActions && this.navbarConfig.commonActions[target.component]) {
-                    const action = this.navbarConfig.commonActions[target.component];
-                    if (action.positions && action.positions[0]) {
-                        return {
-                            ...action.positions[0],
-                            label: action.label
-                        };
-                    }
-                }
-                return null;
-            }
-        }
-
-        if (component && component.position) {
-            return {
-                ...component.position,
-                label: component.label
-            };
-        }
-
-        return null;
     }
 
     /**
