@@ -10,6 +10,13 @@ class BaseRenderer {
         this.uiConfigs = null;
         this.lookupMap = null;
         this.currentEnvironment = 'solid';
+        this.carouselTimer = null;
+        this.carouselResumeTimer = null;
+        this.carouselImages = [];
+        this.carouselHighlightSets = [];
+        this.carouselCaptions = [];
+        this.carouselIndex = 0;
+        this.carouselAlt = 'Fusion 360 UI Reference';
         this.loadUIConfigs();
     }
 
@@ -333,76 +340,61 @@ class BaseRenderer {
         const visualImage = document.getElementById('visualStepImage');
         const visualHighlights = document.getElementById('visualStepHighlights');
         const visualCaption = document.getElementById('visualStepCaption');
+        const carouselIndicators = document.getElementById('carouselIndicators');
 
         if (!visualArea || !visualImage || !visualHighlights) return;
 
+        this.stopCarousel();
         const visualStep = step.visualStep;
 
-        // If no visual step data, check if we should use UI config
-        if (!visualStep || !visualStep.image) {
+        if (!visualStep || (!visualStep.image && !Array.isArray(visualStep.images))) {
             if (step.uiTargets && step.uiTargets.length > 0 && this.uiConfigs) {
                 this.renderNavbarWithTargets(step.uiTargets, visualArea, visualImage, visualHighlights, visualCaption);
                 return;
             }
+
+            visualHighlights.innerHTML = '';
+            if (visualCaption) {
+                visualCaption.textContent = '';
+                visualCaption.style.display = 'none';
+            }
+            if (carouselIndicators) {
+                carouselIndicators.innerHTML = '';
+                carouselIndicators.classList.add('hidden');
+            }
+
             visualArea.classList.add('hidden');
             return;
         }
 
-        // Show the visual step area
         visualArea.classList.remove('hidden');
 
-        // Determine image path
-        let imagePath = visualStep.image;
+        if (Array.isArray(visualStep.images) && visualStep.images.length > 0) {
+            visualImage.dataset.env = this.currentEnvironment;
+            visualImage.alt = visualStep.alt || 'Fusion 360 UI Reference';
+            visualImage.classList.add('carousel-enabled');
 
-        if (visualStep.useNavbar || imagePath === 'navbar' || imagePath === 'toolbar') {
-            imagePath = this.getImagePath(this.currentEnvironment, 0);
-        } else if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('../')) {
-            imagePath = '../' + imagePath;
+            this.startCarousel(visualStep.images, visualImage.alt);
+            return;
         }
+
+        const imagePath = this.normalizeVisualImagePath(visualStep.image, visualStep.useNavbar);
 
         visualImage.src = imagePath;
         visualImage.dataset.env = this.currentEnvironment;
         visualImage.dataset.imageIndex = '0';
         visualImage.alt = visualStep.alt || 'Fusion 360 UI Reference';
+        visualImage.classList.remove('carousel-enabled');
+        visualImage.style.opacity = '';
 
-        // Clear existing highlights
-        visualHighlights.innerHTML = '';
-
-        // Add highlights — resolve component references via lookup map
-        const highlights = this.resolveHighlights(visualStep.highlights);
-
-        if (highlights && highlights.length > 0) {
-            highlights.forEach((highlight, index) => {
-                const highlightEl = document.createElement('div');
-                highlightEl.className = 'visual-highlight' + (highlight.shape === 'circle' ? ' circle' : '');
-
-                // Position and size (percentage-based)
-                highlightEl.style.left = highlight.x + '%';
-                highlightEl.style.top = highlight.y + '%';
-                highlightEl.style.width = highlight.width + '%';
-                highlightEl.style.height = highlight.height + '%';
-
-                // Add number indicator
-                if (highlights.length > 1) {
-                    const numberEl = document.createElement('span');
-                    numberEl.className = 'visual-highlight-number';
-                    numberEl.textContent = (index + 1).toString();
-                    highlightEl.appendChild(numberEl);
-                }
-
-                // Add label if provided
-                if (highlight.label) {
-                    const labelEl = document.createElement('span');
-                    labelEl.className = 'visual-highlight-label';
-                    labelEl.textContent = highlight.label;
-                    highlightEl.appendChild(labelEl);
-                }
-
-                visualHighlights.appendChild(highlightEl);
-            });
+        if (carouselIndicators) {
+            carouselIndicators.innerHTML = '';
+            carouselIndicators.classList.add('hidden');
         }
 
-        // Set caption
+        const highlights = this.resolveHighlights(visualStep.highlights);
+        this.renderHighlightElements(visualHighlights, highlights);
+
         if (visualCaption) {
             visualCaption.textContent = visualStep.caption || '';
             visualCaption.style.display = visualStep.caption ? 'block' : 'none';
@@ -413,13 +405,20 @@ class BaseRenderer {
      * Render UI image with specific targets highlighted
      */
     renderNavbarWithTargets(targets, visualArea, visualImage, visualHighlights, visualCaption) {
+        const carouselIndicators = document.getElementById('carouselIndicators');
         visualArea.classList.remove('hidden');
         visualImage.src = this.getImagePath(this.currentEnvironment, 0);
         visualImage.dataset.env = this.currentEnvironment;
         visualImage.dataset.imageIndex = '0';
         visualImage.alt = 'Fusion 360 Toolbar';
+        visualImage.classList.remove('carousel-enabled');
+        visualImage.style.opacity = '';
 
         visualHighlights.innerHTML = '';
+        if (carouselIndicators) {
+            carouselIndicators.innerHTML = '';
+            carouselIndicators.classList.add('hidden');
+        }
 
         targets.forEach((target, index) => {
             const resolved = this.resolveTarget(target.component || target);
@@ -452,6 +451,174 @@ class BaseRenderer {
         if (visualCaption) {
             visualCaption.textContent = '';
             visualCaption.style.display = 'none';
+        }
+    }
+
+    normalizeVisualImagePath(imagePath, useNavbar = false) {
+        if (useNavbar || imagePath === 'navbar' || imagePath === 'toolbar') {
+            return this.getImagePath(this.currentEnvironment, 0);
+        }
+        if (imagePath && !imagePath.startsWith('http') && !imagePath.startsWith('/') && !imagePath.startsWith('../')) {
+            return '../' + imagePath;
+        }
+        return imagePath;
+    }
+
+    renderHighlightElements(container, highlights) {
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!highlights || highlights.length === 0) return;
+
+        highlights.forEach((highlight, index) => {
+            const highlightEl = document.createElement('div');
+            highlightEl.className = 'visual-highlight' + (highlight.shape === 'circle' ? ' circle' : '');
+
+            highlightEl.style.left = highlight.x + '%';
+            highlightEl.style.top = highlight.y + '%';
+            highlightEl.style.width = highlight.width + '%';
+            highlightEl.style.height = highlight.height + '%';
+
+            if (highlights.length > 1) {
+                const numberEl = document.createElement('span');
+                numberEl.className = 'visual-highlight-number';
+                numberEl.textContent = (index + 1).toString();
+                highlightEl.appendChild(numberEl);
+            }
+
+            if (highlight.label) {
+                const labelEl = document.createElement('span');
+                labelEl.className = 'visual-highlight-label';
+                labelEl.textContent = highlight.label;
+                highlightEl.appendChild(labelEl);
+            }
+
+            container.appendChild(highlightEl);
+        });
+    }
+
+    startCarousel(imagesArray, alt = 'Fusion 360 UI Reference') {
+        this.stopCarousel();
+        this.carouselAlt = alt;
+        this.carouselIndex = 0;
+
+        if (!Array.isArray(imagesArray)) {
+            this.carouselImages = [];
+        } else if (imagesArray.length > 0 && typeof imagesArray[0] === 'string') {
+            // Backward-compatible internal shape if strings are ever passed.
+            this.carouselImages = imagesArray.map(image => ({
+                image: this.normalizeVisualImagePath(image),
+                highlights: [],
+                caption: ''
+            }));
+        } else {
+            this.carouselImages = imagesArray.map(entry => ({
+                ...entry,
+                image: this.normalizeVisualImagePath(entry.image)
+            }));
+        }
+
+        this.renderCarouselIndicators(this.carouselImages.length);
+
+        if (this.carouselImages.length === 0) return;
+
+        this.showCarouselImage(0);
+        this.startCarouselAutoCycle();
+    }
+
+    startCarouselAutoCycle() {
+        if (!this.carouselImages || this.carouselImages.length <= 1) return;
+        if (this.carouselTimer) clearInterval(this.carouselTimer);
+
+        this.carouselTimer = setInterval(() => {
+            const nextIndex = (this.carouselIndex + 1) % this.carouselImages.length;
+            this.showCarouselImage(nextIndex);
+        }, 5000);
+    }
+
+    showCarouselImage(index) {
+        const visualImage = document.getElementById('visualStepImage');
+        const visualHighlights = document.getElementById('visualStepHighlights');
+        const visualCaption = document.getElementById('visualStepCaption');
+        const carouselIndicators = document.getElementById('carouselIndicators');
+
+        if (!visualImage || !visualHighlights || !this.carouselImages || this.carouselImages.length === 0) return;
+
+        const imageCount = this.carouselImages.length;
+        const safeIndex = ((index % imageCount) + imageCount) % imageCount;
+        this.carouselIndex = safeIndex;
+
+        visualImage.classList.add('carousel-enabled');
+        visualImage.style.opacity = '0.92';
+        const activeImage = this.carouselImages[safeIndex] || {};
+
+        visualImage.src = activeImage.image || '';
+        visualImage.alt = this.carouselAlt || 'Fusion 360 UI Reference';
+        visualImage.dataset.imageIndex = String(safeIndex);
+        requestAnimationFrame(() => {
+            visualImage.style.opacity = '1';
+        });
+
+        const activeHighlights = this.resolveHighlights(activeImage.highlights || []);
+        this.renderHighlightElements(visualHighlights, activeHighlights);
+
+        if (visualCaption) {
+            const caption = activeImage.caption || '';
+            visualCaption.textContent = caption;
+            visualCaption.style.display = caption ? 'block' : 'none';
+        }
+
+        if (carouselIndicators) {
+            carouselIndicators.querySelectorAll('.carousel-dot').forEach((dot, dotIndex) => {
+                dot.classList.toggle('active', dotIndex === safeIndex);
+            });
+        }
+    }
+
+    renderCarouselIndicators(count) {
+        const carouselIndicators = document.getElementById('carouselIndicators');
+        if (!carouselIndicators) return;
+
+        carouselIndicators.innerHTML = '';
+        if (!count || count <= 0) {
+            carouselIndicators.classList.add('hidden');
+            return;
+        }
+
+        for (let i = 0; i < count; i++) {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'carousel-dot' + (i === this.carouselIndex ? ' active' : '');
+            dot.setAttribute('aria-label', `Show image ${i + 1}`);
+            dot.addEventListener('click', () => {
+                this.showCarouselImage(i);
+
+                if (this.carouselTimer) {
+                    clearInterval(this.carouselTimer);
+                    this.carouselTimer = null;
+                }
+                if (this.carouselResumeTimer) {
+                    clearTimeout(this.carouselResumeTimer);
+                }
+                this.carouselResumeTimer = setTimeout(() => {
+                    this.carouselResumeTimer = null;
+                    this.startCarouselAutoCycle();
+                }, 5000);
+            });
+            carouselIndicators.appendChild(dot);
+        }
+
+        carouselIndicators.classList.remove('hidden');
+    }
+
+    stopCarousel() {
+        if (this.carouselTimer) {
+            clearInterval(this.carouselTimer);
+            this.carouselTimer = null;
+        }
+        if (this.carouselResumeTimer) {
+            clearTimeout(this.carouselResumeTimer);
+            this.carouselResumeTimer = null;
         }
     }
 
@@ -734,6 +901,7 @@ class BaseRenderer {
      * Clean up renderer resources
      */
     cleanup() {
+        this.stopCarousel();
         this.currentStep = null;
     }
 }

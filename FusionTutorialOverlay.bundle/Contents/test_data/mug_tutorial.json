@@ -1,61 +1,29 @@
 {
   "tutorialId": "mug_v2",
-  "title": "Create a Better Coffee Mug (Refined)",
-  "description": "Model an ergonomic mug using revolve, shell, sweep, and fillets with guided animations and Fusion actions.",
+  "title": "Create a Real Coffee Mug (Test Tutorial Data)",
+  "description": "Test tutorial JSON for the Fusion tutorial player: revolve + shell mug body, then sweep a handle on an offset plane. Includes paired UI animations under each reference image.",
   "steps": [
     {
       "stepId": "mug-v2-step-1",
       "stepNumber": 1,
-      "title": "Create Sketch on XZ Plane",
-      "instruction": "Create a new sketch on the XZ plane.",
-      "detailedText": "We build the outer silhouette first, then hollow it using Shell.",
+      "title": "Start Sketch on XZ Plane (Set the Axis)",
+      "instruction": "Create a new sketch on the XZ plane, then draw a vertical construction line for the revolve axis.",
+      "detailedText": "We’ll sketch a half-profile and revolve it around the centerline to form a clean, symmetric mug body.",
       "expandedContent": {
         "whyThisMatters": "Choosing the correct sketch plane ensures the revolve axis aligns properly with the mug centerline. This prevents misalignment errors and simplifies downstream modeling operations."
       },
       "tips": [
-        "Use the XZ plane so the Y-axis can be used as the revolve axis.",
-        "Using the wrong plane may cause revolve alignment issues later."
+        "Use the XZ plane so your revolve axis is vertical (centerline).",
+        "Make the axis line a **construction** line so it doesn’t create extra profiles."
       ],
       "qcChecks": [
         {
-          "text": "Sketch created",
+          "text": "Sketch created on XZ plane",
           "expectedCommand": "SketchCreate"
         },
         {
-          "text": "Sketch editing active",
-          "expectedCommand": "SketchActivate"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "browser.rootComponent.origin",
-          "style": "pulse"
-        },
-        {
-          "type": "highlight",
-          "target": "browser.rootComponent.origin.XZPlane",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "browser.rootComponent.origin.XZPlane",
-          "text": "Click XZ Plane → Create Sketch"
-        },
-        {
-          "type": "arrow",
-          "target": "browser.rootComponent.origin.XZPlane",
-          "direction": "right"
-        },
-        {
-          "type": "highlight",
-          "target": "toolbar.sketch.createSketch",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.sketch.createSketch",
-          "text": "Start a new sketch"
+          "text": "Construction centerline created",
+          "expectedCommand": "SketchLine"
         }
       ],
       "fusionActions": [
@@ -72,57 +40,91 @@
           "type": "ui.enterMode",
           "mode": "Sketch"
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Sketch/Sketch_0.png",
+            "caption": "Sketch workspace default view",
+            "highlights": [
+              {
+                "component": "toolbar.sketch.createSketch",
+                "label": "Create Sketch"
+              }
+            ],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "browser.rootComponent.origin",
+                "style": "pulse"
+              },
+              {
+                "type": "highlight",
+                "target": "browser.rootComponent.origin.XZPlane",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "browser.rootComponent.origin.XZPlane",
+                "text": "Right‑click XZ Plane → Create Sketch"
+              },
+              {
+                "type": "arrow",
+                "target": "browser.rootComponent.origin.XZPlane",
+                "direction": "right"
+              },
+              {
+                "type": "highlight",
+                "target": "toolbar.sketch.createSketch",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.sketch.createSketch",
+                "text": "Start a new sketch"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_1.png",
+            "caption": "Sketch Create tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_2.png",
+            "caption": "Sketch Modify tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_3.png",
+            "caption": "Sketch Constraints tools menu open",
+            "highlights": []
+          }
+        ]
+      }
     },
     {
       "stepId": "mug-v2-step-2",
       "stepNumber": 2,
-      "title": "Sketch Outer Mug Silhouette",
-      "instruction": "Draw the mug outer profile using Line + Arc: ~95mm tall, base radius ~34mm, rim radius ~38mm (slight flare).",
-      "detailedText": "Create a gentle taper and a smooth base transition for a realistic and stable mug.",
+      "title": "Sketch the Mug Half‑Profile (Outer Wall)",
+      "instruction": "On one side of the centerline, sketch the outer mug profile: ~95 mm tall, base radius ~34 mm, rim radius ~38 mm (slight flare). Add a small bottom thickness (~4–6 mm) in the sketch.",
+      "detailedText": "A smooth, slightly tapered silhouette looks realistic and makes Shell more reliable. Keep the profile as one closed region.",
       "expandedContent": {
         "whyThisMatters": "A tapered silhouette improves ergonomics and realism. Smooth transitions reduce geometry failures in Shell/Fillet later and keep the timeline robust."
       },
       "tips": [
-        "Add dimensions early to maintain proportions.",
-        "Keep the profile entirely on one side of the axis."
+        "Keep everything on ONE side of the centerline (axis).",
+        "Use tangent arcs where the base meets the wall to avoid sharp corners.",
+        "Add key dimensions now (height, base/rim radius) so edits stay stable."
       ],
       "qcChecks": [
         {
-          "text": "Profile geometry drawn",
+          "text": "Outer half-profile drawn (lines/arcs)",
           "expectedCommand": "SketchLine"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.sketch.create.line",
-          "style": "pulse"
         },
         {
-          "type": "tooltip",
-          "target": "toolbar.sketch.create.line",
-          "text": "Use Line to sketch the silhouette"
-        },
-        {
-          "type": "highlight",
-          "target": "toolbar.sketch.create.arc",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.sketch.create.arc",
-          "text": "Use Arc for smooth transitions"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.center",
-          "text": "Sketch on ONE side of the axis only"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.axisLine",
-          "style": "pulse"
+          "text": "Profile is a single closed region",
+          "expectedCommand": "SketchDimension"
         }
       ],
       "fusionActions": [
@@ -138,52 +140,86 @@
           "type": "ui.hint",
           "text": "Draw a closed outer profile (one side of axis)."
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Sketch/Sketch_0.png",
+            "caption": "Sketch workspace default view",
+            "highlights": [],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "toolbar.sketch.create.line",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.sketch.create.line",
+                "text": "Use Line to sketch the silhouette"
+              },
+              {
+                "type": "highlight",
+                "target": "toolbar.sketch.create.arc",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.sketch.create.arc",
+                "text": "Use Arc for smooth transitions"
+              },
+              {
+                "type": "tooltip",
+                "target": "canvas.center",
+                "text": "Sketch on ONE side of the axis only"
+              },
+              {
+                "type": "highlight",
+                "target": "canvas.axisLine",
+                "style": "pulse"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_1.png",
+            "caption": "Sketch Create tools menu open",
+            "highlights": [
+              {
+                "component": "toolbar.sketch.create.line",
+                "label": "Line Tool"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_2.png",
+            "caption": "Sketch Modify tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_3.png",
+            "caption": "Sketch Constraints tools menu open",
+            "highlights": []
+          }
+        ]
+      }
     },
     {
       "stepId": "mug-v2-step-3",
       "stepNumber": 3,
       "title": "Close Profile and Finish Sketch",
-      "instruction": "Close the profile back to the axis and click Finish Sketch.",
-      "detailedText": "You should see a shaded region inside the profile.",
+      "instruction": "Ensure the profile region is shaded (closed), then click Finish Sketch.",
+      "detailedText": "The shaded region confirms Fusion can revolve a watertight solid.",
       "expandedContent": {
         "whyThisMatters": "A closed profile is required to generate a watertight revolve body. This prevents downstream failures when applying Shell and Fillets."
       },
       "tips": [
-        "A shaded region means the profile is closed correctly.",
-        "If it does not shade, look for tiny gaps or overlaps."
+        "If it does not shade, look for tiny gaps or overlapping endpoints.",
+        "Avoid extra stray sketch entities near the axis."
       ],
       "qcChecks": [
         {
           "text": "Sketch finished",
           "expectedCommand": "FinishSketch"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "canvas.profileRegion",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.profileRegion",
-          "text": "Make sure the profile region is shaded"
-        },
-        {
-          "type": "highlight",
-          "target": "toolbar.finishSketch",
-          "style": "pulse"
-        },
-        {
-          "type": "arrow",
-          "target": "toolbar.finishSketch",
-          "direction": "down"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.finishSketch",
-          "text": "Finish Sketch"
         }
       ],
       "fusionActions": [
@@ -201,51 +237,19 @@
       "stepId": "mug-v2-step-4",
       "stepNumber": 4,
       "title": "Revolve Outer Body",
-      "instruction": "Create > Revolve. Select the closed profile and revolve 360° around the Y-axis. Operation: New Body.",
+      "instruction": "Solid > Create > Revolve. Select the closed profile and revolve 360° around the construction centerline (or Y-axis). Operation: New Body.",
       "detailedText": "This produces a clean outer solid. We hollow it next using Shell so thickness stays editable.",
       "expandedContent": {
         "whyThisMatters": "Revolve is the most stable way to create circular-symmetric objects. Revolving the outer form first simplifies later edits and avoids sketching both inner and outer walls."
       },
       "tips": [
-        "Axis must be on the edge of or outside your profile.",
-        "If the axis intersects the profile region, revolve may fail or create unexpected geometry."
+        "Select the shaded profile region, not just sketch lines.",
+        "If the axis intersects the profile region, fix the sketch so it stays on one side."
       ],
       "qcChecks": [
         {
           "text": "Revolve created a new body",
           "expectedCommand": "Revolve"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.create.revolve",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.create.revolve",
-          "text": "Click Revolve"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.profileRegion",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.profileRegion",
-          "text": "Select the closed profile region"
-        },
-        {
-          "type": "highlight",
-          "target": "origin.YAxis",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "origin.YAxis",
-          "text": "Select Y-axis as revolve axis"
         }
       ],
       "fusionActions": [
@@ -258,57 +262,81 @@
           "type": "ui.hint",
           "text": "Revolve profile 360° around Y-axis → New Body."
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Solid/Solid_0.png",
+            "caption": "Solid workspace default view",
+            "highlights": [],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "toolbar.create.revolve",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.create.revolve",
+                "text": "Click Revolve"
+              },
+              {
+                "type": "highlight",
+                "target": "canvas.profileRegion",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "canvas.profileRegion",
+                "text": "Select the closed profile region"
+              },
+              {
+                "type": "highlight",
+                "target": "origin.YAxis",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "origin.YAxis",
+                "text": "Select Y-axis as revolve axis"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_1.png",
+            "caption": "Solid Create tools menu open",
+            "highlights": [
+              {
+                "component": "toolbar.create.revolve",
+                "label": "Revolve"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_2.png",
+            "caption": "Solid Modify tools menu open",
+            "highlights": []
+          }
+        ]
+      }
     },
     {
       "stepId": "mug-v2-step-5",
       "stepNumber": 5,
       "title": "Shell the Mug",
-      "instruction": "Modify > Shell. Select the top face and set thickness to 3mm.",
+      "instruction": "Solid > Modify > Shell. Select the top face (opening) and set thickness to 3 mm.",
       "detailedText": "Shell hollows the mug while keeping a uniform wall thickness that is realistic and print-friendly.",
       "expandedContent": {
         "whyThisMatters": "Shell creates consistent wall thickness without requiring a second inner sketch profile. This improves editability and reduces sketch complexity, making the model more robust."
       },
       "tips": [
-        "Select the top opening face for Shell.",
-        "If Shell fails, try reducing thickness or simplifying the base."
+        "If Shell fails, reduce thickness to 2 mm and try again.",
+        "Very tight base curvature can cause Shell failures—smooth the base in the sketch if needed."
       ],
       "qcChecks": [
         {
-          "text": "Shell applied to create hollow interior",
+          "text": "Shell created hollow interior",
           "expectedCommand": "Shell"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.modify.shell",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.modify.shell",
-          "text": "Click Shell"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.mugTopFace",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.mugTopFace",
-          "text": "Select the top face (opening)"
-        },
-        {
-          "type": "tooltip",
-          "target": "dialog.shell.thickness",
-          "text": "Set thickness to 3mm"
-        },
-        {
-          "type": "highlight",
-          "target": "dialog.shell.ok",
-          "style": "pulse"
         }
       ],
       "fusionActions": [
@@ -320,57 +348,81 @@
           "type": "ui.openPanel",
           "panel": "timeline"
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Solid/Solid_0.png",
+            "caption": "Solid workspace default view",
+            "highlights": [],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "toolbar.modify.shell",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.modify.shell",
+                "text": "Click Shell"
+              },
+              {
+                "type": "highlight",
+                "target": "canvas.mugTopFace",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "canvas.mugTopFace",
+                "text": "Select the top face (opening)"
+              },
+              {
+                "type": "tooltip",
+                "target": "dialog.shell.thickness",
+                "text": "Set thickness to 3mm"
+              },
+              {
+                "type": "highlight",
+                "target": "dialog.shell.ok",
+                "style": "pulse"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_1.png",
+            "caption": "Solid Create tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_2.png",
+            "caption": "Solid Modify tools menu open",
+            "highlights": [
+              {
+                "component": "toolbar.modify.shell",
+                "label": "Shell"
+              }
+            ]
+          }
+        ]
+      }
     },
     {
       "stepId": "mug-v2-step-6",
       "stepNumber": 6,
-      "title": "Fillet the Rim",
-      "instruction": "Modify > Fillet. Select the top inner edge and top outer edge. Set radius to ~2mm.",
+      "title": "Round the Rim (Fillet)",
+      "instruction": "Solid > Modify > Fillet. Select the top inner edge and top outer edge. Radius ~2 mm.",
       "detailedText": "A rounded rim improves comfort and looks more premium.",
       "expandedContent": {
         "whyThisMatters": "Fillets improve ergonomics and reduce stress concentration. A rounded rim also avoids thin sharp edges that may chip or print poorly."
       },
       "tips": [
-        "Start with 1mm if 2mm fails, then increase gradually.",
-        "Select both inner and outer rim edges."
+        "Start at 1 mm if 2 mm fails, then increase gradually.",
+        "Select both inner and outer rim edges for a comfortable lip."
       ],
       "qcChecks": [
         {
           "text": "Rim edges filleted",
           "expectedCommand": "FilletEdge"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.modify.fillet",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.modify.fillet",
-          "text": "Click Fillet"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.mugRimEdges",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.mugRimEdges",
-          "text": "Select inner + outer rim edges"
-        },
-        {
-          "type": "tooltip",
-          "target": "dialog.fillet.radius",
-          "text": "Set radius ~2mm"
-        },
-        {
-          "type": "highlight",
-          "target": "dialog.fillet.ok",
-          "style": "pulse"
         }
       ],
       "fusionActions": [
@@ -383,52 +435,20 @@
     {
       "stepId": "mug-v2-step-7",
       "stepNumber": 7,
-      "title": "Create Handle Path Sketch",
-      "instruction": "Create a sketch on the mug side plane and draw a 3-point arc for the handle path.",
-      "detailedText": "Place endpoints near the mug wall and arc outward for finger clearance (~30mm).",
+      "title": "Create an Offset Plane for the Handle",
+      "instruction": "Construct > Offset Plane. Pick the YZ plane and offset it by ~38 mm (about the rim radius) so the sketch plane sits on the mug’s side.",
+      "detailedText": "Sketching the handle path on an offset plane keeps it aligned to the mug side and makes the sweep attach cleanly.",
       "expandedContent": {
         "whyThisMatters": "The handle path determines usability. Proper clearance prevents knuckle collision and ensures the handle is comfortable and functional."
       },
       "tips": [
-        "Aim for a smooth C-shape.",
-        "Do not intersect the mug body with the arc."
+        "If your mug radius is different, offset by your actual outer radius.",
+        "Name the plane 'Handle Plane' in the browser to stay organized."
       ],
       "qcChecks": [
         {
-          "text": "Handle path arc created",
-          "expectedCommand": "Sketch3PointArc"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.sketch.createSketch",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.sketch.createSketch",
-          "text": "Start a new sketch for the handle path"
-        },
-        {
-          "type": "highlight",
-          "target": "toolbar.sketch.create.arc",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.sketch.create.arc",
-          "text": "Use 3-point arc for the handle path"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.rightSide",
-          "text": "Draw the arc outward (finger clearance)"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.handleArcRegion",
-          "style": "pulse"
+          "text": "Offset plane created for handle",
+          "expectedCommand": "ConstructPlaneOffset"
         }
       ],
       "fusionActions": [
@@ -440,52 +460,86 @@
           "type": "ui.hint",
           "text": "Draw a handle path arc with enough clearance for fingers."
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Sketch/Sketch_0.png",
+            "caption": "Sketch workspace default view",
+            "highlights": [],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "toolbar.sketch.createSketch",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.sketch.createSketch",
+                "text": "Start a new sketch for the handle path"
+              },
+              {
+                "type": "highlight",
+                "target": "toolbar.sketch.create.arc",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.sketch.create.arc",
+                "text": "Use 3-point arc for the handle path"
+              },
+              {
+                "type": "tooltip",
+                "target": "canvas.rightSide",
+                "text": "Draw the arc outward (finger clearance)"
+              },
+              {
+                "type": "highlight",
+                "target": "canvas.handleArcRegion",
+                "style": "pulse"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_1.png",
+            "caption": "Sketch Create tools menu open",
+            "highlights": [
+              {
+                "component": "toolbar.sketch.create.arc",
+                "label": "Arc Tool"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_2.png",
+            "caption": "Sketch Modify tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_3.png",
+            "caption": "Sketch Constraints tools menu open",
+            "highlights": []
+          }
+        ]
+      }
     },
     {
       "stepId": "mug-v2-step-8",
       "stepNumber": 8,
-      "title": "Create Handle Profile Sketch",
-      "instruction": "Create a profile (rounded rectangle/oval) about 11mm x 8mm at the handle path start.",
-      "detailedText": "The profile must be closed and centered so the sweep stays stable.",
+      "title": "Sketch the Handle Path (3‑Point Arc)",
+      "instruction": "Start a sketch on the Handle Plane. Draw a smooth 3‑point arc for the handle path. Endpoints should touch the mug wall; arc should bulge outward for ~30 mm finger clearance.",
+      "detailedText": "This path controls comfort and clearance. Keep it smooth and avoid sharp kinks.",
       "expandedContent": {
         "whyThisMatters": "A closed, centered profile prevents sweep twisting and ensures a clean join to the mug body. The size affects comfort and strength."
       },
       "tips": [
-        "Keep the profile centered on the path start point.",
-        "If the sweep twists, the profile plane may not be perpendicular."
+        "Make endpoints coincident with the mug outer wall silhouette (project edge if needed).",
+        "A gentle C‑shape feels better than a tight curve."
       ],
       "qcChecks": [
         {
-          "text": "Handle profile created",
-          "expectedCommand": "SketchCenterRectangle"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.sketch.create.rectangle",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.sketch.create.rectangle",
-          "text": "Create the handle profile (closed shape)"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.nearHandleStart",
-          "text": "Place the profile at the path start"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.nearHandleStart",
-          "style": "pulse"
-        },
-        {
-          "type": "highlight",
-          "target": "toolbar.finishSketch",
-          "style": "pulse"
+          "text": "Handle path arc created",
+          "expectedCommand": "Sketch3PointArc"
         }
       ],
       "fusionActions": [
@@ -497,62 +551,89 @@
           "type": "ui.exitMode",
           "mode": "Sketch"
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Sketch/Sketch_0.png",
+            "caption": "Sketch workspace default view",
+            "highlights": [],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "toolbar.sketch.create.rectangle",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.sketch.create.rectangle",
+                "text": "Create the handle profile (closed shape)"
+              },
+              {
+                "type": "tooltip",
+                "target": "canvas.nearHandleStart",
+                "text": "Place the profile at the path start"
+              },
+              {
+                "type": "highlight",
+                "target": "canvas.nearHandleStart",
+                "style": "pulse"
+              },
+              {
+                "type": "highlight",
+                "target": "toolbar.finishSketch",
+                "style": "pulse"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_1.png",
+            "caption": "Sketch Create tools menu open",
+            "highlights": [
+              {
+                "component": "toolbar.sketch.create.rectangle",
+                "label": "Rectangle Tool"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_2.png",
+            "caption": "Sketch Modify tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_3.png",
+            "caption": "Sketch Constraints tools menu open",
+            "highlights": []
+          }
+        ]
+      }
     },
     {
       "stepId": "mug-v2-step-9",
       "stepNumber": 9,
-      "title": "Sweep the Handle (Join)",
-      "instruction": "Create > Sweep. Select the handle profile, then the arc path. Operation: Join.",
-      "detailedText": "This creates the handle and merges it into a single solid mug body.",
+      "title": "Create Profile at Path Start (Plane Along Path)",
+      "instruction": "Construct > Plane Along Path at the start of the handle arc. Sketch on that plane and draw a centered profile ~11 mm × 8 mm (rounded rectangle or oval). Finish sketch.",
+      "detailedText": "A perpendicular profile prevents sweep twisting and keeps the handle thickness consistent.",
       "expandedContent": {
         "whyThisMatters": "Sweep preserves a consistent cross-section along the curved path. Join ensures the handle becomes part of the mug for printing and structural integrity."
       },
       "tips": [
-        "Select the profile first, then the path.",
-        "If Join fails, ensure the handle ends touch the mug body."
+        "Keep the profile centered on the path start point.",
+        "If the sweep twists, re-check that the profile plane is **perpendicular** to the path."
       ],
       "qcChecks": [
         {
-          "text": "Handle sweep completed",
-          "expectedCommand": "Sweep"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.create.sweep",
-          "style": "pulse"
+          "text": "Profile plane created",
+          "expectedCommand": "ConstructPlaneAlongPath"
         },
         {
-          "type": "tooltip",
-          "target": "toolbar.create.sweep",
-          "text": "Click Sweep"
+          "text": "Closed handle profile created",
+          "expectedCommand": "SketchCenterRectangle"
         },
         {
-          "type": "highlight",
-          "target": "canvas.handleProfile",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.handleProfile",
-          "text": "Select the handle profile"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.handlePath",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.handlePath",
-          "text": "Select the handle path"
-        },
-        {
-          "type": "tooltip",
-          "target": "dialog.sweep.operation",
-          "text": "Set operation to Join"
+          "text": "Sketch finished",
+          "expectedCommand": "FinishSketch"
         }
       ],
       "fusionActions": [
@@ -565,52 +646,24 @@
     {
       "stepId": "mug-v2-step-10",
       "stepNumber": 10,
-      "title": "Blend Handle Joints (Fillet)",
-      "instruction": "Apply fillets at the handle-to-body joints. Start at 3mm and increase if stable.",
-      "detailedText": "Blending strengthens the joint and makes the handle look integrated.",
+      "title": "Sweep Handle (Join) + Blend Joints",
+      "instruction": "Solid > Create > Sweep: select the handle profile, then the arc path. Operation: Join. Then fillet the handle‑to‑body joint edges (start ~3 mm).",
+      "detailedText": "Joining makes the mug printable as one solid. Fillets strengthen the joint and improve the look.",
       "expandedContent": {
         "whyThisMatters": "Filleting the handle joint reduces stress concentration and improves durability. It also improves aesthetics, making the handle look designed rather than attached."
       },
       "tips": [
-        "Apply a small fillet first, then increase gradually.",
-        "If fillet fails, select fewer edges at once."
+        "If Join fails, ensure both handle ends intersect the mug body (extend the path slightly if needed).",
+        "Apply smaller fillets first, then increase gradually."
       ],
       "qcChecks": [
         {
+          "text": "Handle sweep completed (Join)",
+          "expectedCommand": "Sweep"
+        },
+        {
           "text": "Handle joints filleted",
           "expectedCommand": "FilletEdge"
-        }
-      ],
-      "uiAnimations": [
-        {
-          "type": "highlight",
-          "target": "toolbar.modify.fillet",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "toolbar.modify.fillet",
-          "text": "Click Fillet"
-        },
-        {
-          "type": "highlight",
-          "target": "canvas.handleJoint",
-          "style": "pulse"
-        },
-        {
-          "type": "tooltip",
-          "target": "canvas.handleJoint",
-          "text": "Select joint edges (handle meets mug)"
-        },
-        {
-          "type": "tooltip",
-          "target": "dialog.fillet.radius",
-          "text": "Start with 3mm"
-        },
-        {
-          "type": "highlight",
-          "target": "dialog.fillet.ok",
-          "style": "pulse"
         }
       ],
       "fusionActions": [
@@ -622,7 +675,63 @@
           "type": "ui.hint",
           "text": "Blend handle joints using Fillet for strength and realism."
         }
-      ]
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Solid/Solid_0.png",
+            "caption": "Solid workspace default view",
+            "highlights": [],
+            "uiAnimations": [
+              {
+                "type": "highlight",
+                "target": "toolbar.modify.fillet",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "toolbar.modify.fillet",
+                "text": "Click Fillet"
+              },
+              {
+                "type": "highlight",
+                "target": "canvas.handleJoint",
+                "style": "pulse"
+              },
+              {
+                "type": "tooltip",
+                "target": "canvas.handleJoint",
+                "text": "Select joint edges (handle meets mug)"
+              },
+              {
+                "type": "tooltip",
+                "target": "dialog.fillet.radius",
+                "text": "Start with 3mm"
+              },
+              {
+                "type": "highlight",
+                "target": "dialog.fillet.ok",
+                "style": "pulse"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_1.png",
+            "caption": "Solid Create tools menu open",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_2.png",
+            "caption": "Solid Modify tools menu open",
+            "highlights": [
+              {
+                "component": "toolbar.modify.fillet",
+                "label": "Fillet"
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

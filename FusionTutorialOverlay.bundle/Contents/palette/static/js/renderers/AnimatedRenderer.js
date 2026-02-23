@@ -32,15 +32,27 @@ class AnimatedRenderer extends BaseRenderer {
     render(step) {
         this.abort();
         this.clearSemanticIndicators();
-        super.render(step);
         this.initElements();
+        super.render(step);
 
         // Show animation area
         if (this.animationArea) {
             this.animationArea.classList.remove('hidden');
         }
 
-        // Ensure parent #visualStepArea is visible when animations exist
+        const hasCarousel = Array.isArray(step.visualStep && step.visualStep.images) &&
+            step.visualStep.images.length > 0;
+
+        // When carousel is active, per-image animations are triggered from showCarouselImage().
+        if (hasCarousel) {
+            const activeAnimations = this.getCarouselAnimations(this.carouselIndex);
+            if ((!activeAnimations || activeAnimations.length === 0) && this.cursorElement) {
+                this.cursorElement.classList.add('hidden');
+            }
+            return;
+        }
+
+        // Ensure parent #visualStepArea is visible when legacy step-level animations exist
         const animations = step.uiAnimations || [];
         if (animations.length > 0) {
             const visualArea = document.getElementById('visualStepArea');
@@ -68,6 +80,28 @@ class AnimatedRenderer extends BaseRenderer {
             if (this.cursorElement) {
                 this.cursorElement.classList.add('hidden');
             }
+        }
+    }
+
+    /**
+     * Override carousel image swap to play per-image animations.
+     * @param {number} index - Carousel image index
+     */
+    showCarouselImage(index) {
+        super.showCarouselImage(index);
+
+        // Only play per-image animations when the current step uses the carousel schema.
+        if (!this.currentStep || !Array.isArray(this.currentStep.visualStep && this.currentStep.visualStep.images)) {
+            return;
+        }
+
+        const animations = this.getCarouselAnimations(this.carouselIndex);
+        this.abort();
+
+        if (animations.length > 0) {
+            this.playAnimations(animations);
+        } else if (this.cursorElement) {
+            this.cursorElement.classList.add('hidden');
         }
     }
 
@@ -398,6 +432,18 @@ class AnimatedRenderer extends BaseRenderer {
     }
 
     /**
+     * Get animation sequence attached to a carousel image.
+     * @param {number} index - Carousel image index
+     * @returns {Array} uiAnimations array or empty array
+     */
+    getCarouselAnimations(index) {
+        if (!Array.isArray(this.carouselImages) || this.carouselImages.length === 0) return [];
+        const entry = this.carouselImages[index];
+        if (!entry || !Array.isArray(entry.uiAnimations)) return [];
+        return entry.uiAnimations;
+    }
+
+    /**
      * Replay the current step's animations
      */
     replay() {
@@ -406,9 +452,16 @@ class AnimatedRenderer extends BaseRenderer {
         this.abort();
 
         setTimeout(() => {
-            const animations = this.currentStep.uiAnimations || [];
+            let animations = [];
+            if (Array.isArray(this.currentStep.visualStep && this.currentStep.visualStep.images)) {
+                animations = this.getCarouselAnimations(this.carouselIndex);
+            } else {
+                animations = this.currentStep.uiAnimations || [];
+            }
             if (animations.length > 0) {
                 this.playAnimations(animations);
+            } else if (this.cursorElement) {
+                this.cursorElement.classList.add('hidden');
             }
         }, 100);
     }

@@ -59,6 +59,73 @@ servers.
 
 The tutorial manifest is a JSON file that defines tutorial steps.
 
+### 3.1 JSON Data Structure (for AI Tutorial Generation)
+
+The **tutorial manifest is the single contract** between the cloud generator and the plugin.
+Future AI generators **must output valid JSON** that follows the rules below so the plugin can render
+steps, play animations, and detect completion.
+
+#### Root object
+
+```json
+{
+  "tutorialId": "string_unique_id",
+  "title": "string",
+  "description": "string",
+  "steps": [ /* ordered */ ]
+}
+```
+
+#### Step object
+
+A step is intentionally **render-first** (what the user sees) plus **signals** (what the plugin tracks).
+
+```json
+{
+  "stepId": "string_unique_step_id",
+  "stepNumber": 1,
+  "title": "string",
+  "instruction": "string (1 sentence)",
+  "detailedText": "string (optional, 1–3 sentences)",
+  "tips": ["string", "..."],
+  "qcChecks": [
+    { "text": "string", "expectedCommand": "FusionCommandIdOrEventAlias" }
+  ],
+  "fusionActions": [ { "type": "string", "...": "..." } ],
+  "visualStep": {
+    "images": [
+      {
+        "image": "assets/...png OR dataUrl",
+        "caption": "string",
+        "highlights": [
+          { "component": "toolbar.create.extrude", "label": "Extrude" }
+        ],
+        "uiAnimations": [
+          { "type": "highlight", "target": "toolbar.create.extrude", "style": "pulse" },
+          { "type": "tooltip", "target": "toolbar.create.extrude", "text": "Click Extrude" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### Key rules for generators
+
+- **Pair animations with reference images.** `uiAnimations` MUST live under the specific `visualStep.images[i]`
+  it refers to. (Step-level `uiAnimations` is treated as deprecated and should not be emitted.)
+- **Omit visuals when unnecessary.** `visualStep` is optional. Only include it when you have at least one reference image that helps the user. If a step does not need images, omit `visualStep` entirely (do not emit `visualStep: { images: [] }`).
+- **Keep targets resolvable.** Prefer `component` / `target` paths that exist in the UI component maps
+  (e.g., `toolbar.create.revolve`, `toolbar.modify.shell`). Avoid freehand coordinates unless necessary.
+- **QC checks drive auto-advance.** Each `qcChecks[]` item should map to an observable Fusion signal:
+  - For sketch tools: command IDs like `SketchLine`, `Sketch3PointArc`, `FinishSketch`
+  - For features: `Extrude`, `Revolve`, `Shell`, `Sweep`, `FilletEdge`
+  - For construction: aliases like `ConstructPlaneOffset`, `ConstructPlaneAlongPath` (backend maps these)
+- **Order matters.** `steps[]` must be in execution order; `stepNumber` should match the array order.
+- **Be conservative with fusionActions.** Only emit actions that the add-in actually implements; everything else
+  should be expressed as instruction text + animations.
+
+
 ### Required fields
 
 Root level:
@@ -78,8 +145,8 @@ Step level:
 -   expandedContent.whyThisMatters (optional)
 -   tips\[\]
 -   qcChecks\[\]
--   uiAnimations\[\]
 -   fusionActions\[\]
+-   visualStep.images[].uiAnimations[] (paired with each reference image)
 
 ### Explicitly removed from schema
 
