@@ -213,6 +213,26 @@ body {
     overflow: hidden;
 }
 
+.visual-step-zoom-layer {
+    position: relative;
+    width: 100%;
+    transform-origin: 0 0;
+    transform: translate3d(0, 0, 0) scale(1);
+    will-change: transform;
+}
+
+.visual-step-container {
+    cursor: zoom-in;
+}
+
+.visual-step-container.zoomed {
+    cursor: grab;
+}
+
+.visual-step-container.zoomed.dragging {
+    cursor: grabbing;
+}
+
 .visual-step-image {
     width: 100%;
     height: auto;
@@ -222,6 +242,10 @@ body {
 
 .visual-step-image.carousel-enabled {
     transition: opacity 0.2s ease;
+}
+
+.visual-step-container.zoomed .visual-step-image.carousel-enabled {
+    transition: opacity 0.2s ease, transform 0.12s ease;
 }
 
 .visual-step-highlights {
@@ -282,13 +306,28 @@ body {
     border-top: 1px solid var(--border);
 }
 
+.carousel-arrow-btn:focus-visible,
+.carousel-dot:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+.carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+    background-color: var(--bg-secondary);
+}
+
 .carousel-indicators {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
-    background-color: var(--bg-secondary);
+    padding: 0;
+    background-color: transparent;
 }
 
 .carousel-dot {
@@ -308,6 +347,33 @@ body {
 .carousel-dot.active {
     background-color: var(--accent-primary);
     transform: scale(1.1);
+}
+
+.carousel-arrow-btn {
+    border: none;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.carousel-arrow-btn:hover:not(:disabled) {
+    background-color: var(--border);
+    transform: scale(1.05);
+}
+
+.carousel-arrow-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .cursor-element {
@@ -346,6 +412,42 @@ body {
     100% {
         transform: translate(-50%, -50%) scale(2);
         opacity: 0;
+    }
+}
+
+.zoom-gesture-hint {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 24;
+    pointer-events: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.78);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.zoom-gesture-hint.play {
+    animation: zoomHintFade 3s ease-out forwards;
+}
+
+@keyframes zoomHintFade {
+    0% {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    12% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(0);
     }
 }
 

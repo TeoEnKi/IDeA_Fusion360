@@ -88,18 +88,34 @@ The tutorial **automatically advances** when the user completes the required act
 
 **Fallback:** Manual "Skip" button available if detection fails or user wants to proceed without completing.
 
-### **C) Animated Cursor Guidance (UI-side)**
+### **C) Static Visual Guidance (UI-side)**
 
-Each step may include **cursor animation primitives**:
+Each step may include static UI reference visuals and annotations:
 
-* Move cursor from A → B
-* Click (expand/contract pulse)
-* Drag (click \+ move \+ release)
-* Pause / wait for user
+* Highlighted UI targets in reference images
+* Captions and labels to clarify what to click
+* Manual image navigation for multi-image steps
 
-These animations **demonstrate intent**, not automate Fusion.
+The UI renderer does **not** execute cursor or UI animation directives.
 
-### **D) Real 3D Model Interaction (Fusion-side)**
+### **D) Reference Image Viewer (Zoom + Manual Carousel)**
+
+Each step may include one or more annotated reference images inside the tutorial card:
+
+* Reference images display inline with highlights/annotations for UI guidance
+* Zoom is **in-palette** (inside the plugin UI), not a separate modal/window
+* Users can use the **mouse wheel** to zoom in/out directly over the image
+* Users can **double-click / double-tap** the image to toggle zoom in/out
+* Users can **drag** to pan the image while zoomed in
+* The image area cursor changes to a **magnifying-glass style cursor** (`zoom-in`) to indicate zoom support
+* If the user performs a single tap/click and does not double-tap, the UI shows a delayed helper hint near the pointer ("Double tap to zoom") after ~2 seconds, then fades it out over ~3 seconds
+* Image highlights/annotations must scale and move with the image so labels remain aligned
+* When multiple images exist, users switch images manually using:
+  * **Triangle Previous / Next buttons**
+  * **Circle page indicators (dots)**
+* **No automatic image rotation / auto-switching** is allowed for step reference images
+
+### **E) Real 3D Model Interaction (Fusion-side)**
 
 For each step, the add-in may:
 
@@ -144,11 +160,12 @@ Each step contains:
 -   title
 -   instruction
 -   detailedText
--   uiAnimations
 -   fusionActions
 -   completionTrigger
 -   qcChecks
 -   warnings
+
+Note: Multi-image visual guidance continues to use `visualStep.images[]`. The zoom and manual image navigation behavior is a plugin viewer feature and does not require a manifest schema change.
 
 ------------------------------------------------------------------------
 
@@ -171,6 +188,12 @@ Plugin must:
 -   Poll job status
 -   Download tutorial manifest
 -   Execute tutorial steps
+-   Render zoomable step reference images with annotations/highlights
+-   Show zoom affordance via cursor change (`zoom-in`) over the visual image area
+-   Support double-click / double-tap to toggle zoom in/out
+-   Support mouse-wheel zoom and drag-to-pan in the plugin palette image viewer
+-   Provide manual image carousel controls (triangle previous/next + dot indicators) for multi-image steps
+-   Not auto-switch carousel images on a timer
 
 Cloud must:
 

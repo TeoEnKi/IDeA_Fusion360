@@ -13,10 +13,28 @@ class BaseRenderer {
         this.carouselTimer = null;
         this.carouselResumeTimer = null;
         this.carouselImages = [];
-        this.carouselHighlightSets = [];
-        this.carouselCaptions = [];
         this.carouselIndex = 0;
         this.carouselAlt = 'Fusion 360 UI Reference';
+        this.zoomInitialized = false;
+        this.isZoomMode = false;
+        this.zoomScale = 1;
+        this.zoomPanX = 0;
+        this.zoomPanY = 0;
+        this.zoomMinScale = 1;
+        this.zoomMaxScale = 4;
+        this.zoomStep = 0.2;
+        this.zoomToggleScale = 2;
+        this.isDraggingZoom = false;
+        this.zoomDragStartX = 0;
+        this.zoomDragStartY = 0;
+        this.zoomDragOriginX = 0;
+        this.zoomDragOriginY = 0;
+        this.lastTouchEndAt = 0;
+        this.lastTouchTapX = 0;
+        this.lastTouchTapY = 0;
+        this.zoomHintTimer = null;
+        this.zoomHintHideTimer = null;
+        this.boundZoomHandlers = null;
         this.loadUIConfigs();
     }
 
@@ -273,18 +291,7 @@ class BaseRenderer {
             }
         }
 
-        // 4. Animation target hints
-        const animations = step.uiAnimations || [];
-        for (const anim of animations) {
-            if (anim.target) {
-                const t = anim.target.toLowerCase();
-                if (t === 'toolbar.finishsketch' || t.startsWith('toolbar.sketch.create.')) {
-                    return 'sketch';
-                }
-            }
-        }
-
-        // 5. Default
+        // 4. Default
         return 'solid';
     }
 
@@ -312,6 +319,8 @@ class BaseRenderer {
      * @param {Object} step - The step data to render
      */
     render(step) {
+        this.initVisualZoomControls();
+        this.resetZoomState(true);
         this.currentStep = step;
         this.currentEnvironment = this.detectStepEnvironment(step);
         this.renderStepInfo(step);
@@ -341,6 +350,7 @@ class BaseRenderer {
         const visualHighlights = document.getElementById('visualStepHighlights');
         const visualCaption = document.getElementById('visualStepCaption');
         const carouselIndicators = document.getElementById('carouselIndicators');
+        const carouselNav = document.getElementById('carouselNav');
 
         if (!visualArea || !visualImage || !visualHighlights) return;
 
@@ -362,12 +372,17 @@ class BaseRenderer {
                 carouselIndicators.innerHTML = '';
                 carouselIndicators.classList.add('hidden');
             }
+            if (carouselNav) {
+                carouselNav.classList.add('hidden');
+            }
 
             visualArea.classList.add('hidden');
+            this.resetZoomState(true);
             return;
         }
 
         visualArea.classList.remove('hidden');
+        this.resetZoomState(true);
 
         if (Array.isArray(visualStep.images) && visualStep.images.length > 0) {
             visualImage.dataset.env = this.currentEnvironment;
@@ -391,6 +406,9 @@ class BaseRenderer {
             carouselIndicators.innerHTML = '';
             carouselIndicators.classList.add('hidden');
         }
+        if (carouselNav) {
+            carouselNav.classList.add('hidden');
+        }
 
         const highlights = this.resolveHighlights(visualStep.highlights);
         this.renderHighlightElements(visualHighlights, highlights);
@@ -406,6 +424,7 @@ class BaseRenderer {
      */
     renderNavbarWithTargets(targets, visualArea, visualImage, visualHighlights, visualCaption) {
         const carouselIndicators = document.getElementById('carouselIndicators');
+        const carouselNav = document.getElementById('carouselNav');
         visualArea.classList.remove('hidden');
         visualImage.src = this.getImagePath(this.currentEnvironment, 0);
         visualImage.dataset.env = this.currentEnvironment;
@@ -419,6 +438,10 @@ class BaseRenderer {
             carouselIndicators.innerHTML = '';
             carouselIndicators.classList.add('hidden');
         }
+        if (carouselNav) {
+            carouselNav.classList.add('hidden');
+        }
+        this.resetZoomState(true);
 
         targets.forEach((target, index) => {
             const resolved = this.resolveTarget(target.component || target);
@@ -520,27 +543,18 @@ class BaseRenderer {
 
         this.renderCarouselIndicators(this.carouselImages.length);
 
-        if (this.carouselImages.length === 0) return;
+        if (this.carouselImages.length === 0) {
+            this.updateCarouselControls();
+            return;
+        }
 
         this.showCarouselImage(0);
-        this.startCarouselAutoCycle();
-    }
-
-    startCarouselAutoCycle() {
-        if (!this.carouselImages || this.carouselImages.length <= 1) return;
-        if (this.carouselTimer) clearInterval(this.carouselTimer);
-
-        this.carouselTimer = setInterval(() => {
-            const nextIndex = (this.carouselIndex + 1) % this.carouselImages.length;
-            this.showCarouselImage(nextIndex);
-        }, 5000);
     }
 
     showCarouselImage(index) {
         const visualImage = document.getElementById('visualStepImage');
         const visualHighlights = document.getElementById('visualStepHighlights');
         const visualCaption = document.getElementById('visualStepCaption');
-        const carouselIndicators = document.getElementById('carouselIndicators');
 
         if (!visualImage || !visualHighlights || !this.carouselImages || this.carouselImages.length === 0) return;
 
@@ -567,12 +581,20 @@ class BaseRenderer {
             visualCaption.textContent = caption;
             visualCaption.style.display = caption ? 'block' : 'none';
         }
+        this.resetZoomState(false);
+        this.updateCarouselControls();
+    }
 
-        if (carouselIndicators) {
-            carouselIndicators.querySelectorAll('.carousel-dot').forEach((dot, dotIndex) => {
-                dot.classList.toggle('active', dotIndex === safeIndex);
-            });
-        }
+    showPrevCarouselImage() {
+        if (!Array.isArray(this.carouselImages) || this.carouselImages.length <= 1) return;
+        if (this.carouselIndex <= 0) return;
+        this.showCarouselImage(this.carouselIndex - 1);
+    }
+
+    showNextCarouselImage() {
+        if (!Array.isArray(this.carouselImages) || this.carouselImages.length <= 1) return;
+        if (this.carouselIndex >= this.carouselImages.length - 1) return;
+        this.showCarouselImage(this.carouselIndex + 1);
     }
 
     renderCarouselIndicators(count) {
@@ -582,6 +604,7 @@ class BaseRenderer {
         carouselIndicators.innerHTML = '';
         if (!count || count <= 0) {
             carouselIndicators.classList.add('hidden');
+            this.updateCarouselControls();
             return;
         }
 
@@ -592,23 +615,37 @@ class BaseRenderer {
             dot.setAttribute('aria-label', `Show image ${i + 1}`);
             dot.addEventListener('click', () => {
                 this.showCarouselImage(i);
-
-                if (this.carouselTimer) {
-                    clearInterval(this.carouselTimer);
-                    this.carouselTimer = null;
-                }
-                if (this.carouselResumeTimer) {
-                    clearTimeout(this.carouselResumeTimer);
-                }
-                this.carouselResumeTimer = setTimeout(() => {
-                    this.carouselResumeTimer = null;
-                    this.startCarouselAutoCycle();
-                }, 5000);
             });
             carouselIndicators.appendChild(dot);
         }
 
-        carouselIndicators.classList.remove('hidden');
+        this.updateCarouselControls();
+    }
+
+    updateCarouselControls() {
+        const count = Array.isArray(this.carouselImages) ? this.carouselImages.length : 0;
+        const carouselNav = document.getElementById('carouselNav');
+        const carouselIndicators = document.getElementById('carouselIndicators');
+        const prevBtn = document.getElementById('carouselPrevImageBtn');
+        const nextBtn = document.getElementById('carouselNextImageBtn');
+
+        if (carouselIndicators) {
+            carouselIndicators.classList.toggle('hidden', count <= 1);
+            carouselIndicators.querySelectorAll('.carousel-dot').forEach((dot, dotIndex) => {
+                dot.classList.toggle('active', dotIndex === this.carouselIndex);
+            });
+        }
+
+        if (carouselNav) {
+            carouselNav.classList.toggle('hidden', count <= 1);
+        }
+
+        if (prevBtn) {
+            prevBtn.disabled = count <= 1 || this.carouselIndex <= 0;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = count <= 1 || this.carouselIndex >= count - 1;
+        }
     }
 
     stopCarousel() {
@@ -620,6 +657,318 @@ class BaseRenderer {
             clearTimeout(this.carouselResumeTimer);
             this.carouselResumeTimer = null;
         }
+    }
+
+    initVisualZoomControls() {
+        if (this.zoomInitialized) return;
+
+        const animationArea = document.getElementById('animationArea');
+        const prevBtn = document.getElementById('carouselPrevImageBtn');
+        const nextBtn = document.getElementById('carouselNextImageBtn');
+
+        if (!animationArea) return;
+
+        this.boundZoomHandlers = {
+            onWheel: (event) => this.handleWheelZoom(event),
+            onMouseDown: (event) => this.handleZoomDragStart(event),
+            onMouseMove: (event) => this.handleZoomDragMove(event),
+            onMouseUp: () => this.handleZoomDragEnd(),
+            onMouseLeave: () => this.handleZoomDragEnd(),
+            onClick: (event) => this.handleZoomHintCandidateClick(event),
+            onDoubleClick: (event) => this.handleZoomToggleGesture(event),
+            onTouchEnd: (event) => this.handleTouchZoomToggle(event)
+        };
+
+        animationArea.addEventListener('wheel', this.boundZoomHandlers.onWheel, { passive: false });
+        animationArea.addEventListener('mousedown', this.boundZoomHandlers.onMouseDown);
+        animationArea.addEventListener('click', this.boundZoomHandlers.onClick);
+        animationArea.addEventListener('dblclick', this.boundZoomHandlers.onDoubleClick);
+        animationArea.addEventListener('touchend', this.boundZoomHandlers.onTouchEnd, { passive: false });
+        window.addEventListener('mousemove', this.boundZoomHandlers.onMouseMove);
+        window.addEventListener('mouseup', this.boundZoomHandlers.onMouseUp);
+        animationArea.addEventListener('mouseleave', this.boundZoomHandlers.onMouseLeave);
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => this.showPrevCarouselImage());
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => this.showNextCarouselImage());
+        }
+
+        this.zoomInitialized = true;
+        this.applyZoomUiState();
+        this.updateCarouselControls();
+        this.applyZoomTransform();
+    }
+
+    getVisualZoomElements() {
+        return {
+            animationArea: document.getElementById('animationArea'),
+            zoomLayer: document.getElementById('visualStepZoomLayer'),
+            zoomHint: document.getElementById('zoomGestureHint')
+        };
+    }
+
+    toggleZoomMode(forceMode) {
+        const nextMode = typeof forceMode === 'boolean' ? forceMode : !this.isZoomMode;
+        this.isZoomMode = nextMode;
+
+        if (!this.isZoomMode) {
+            this.resetZoomState(false);
+            this.applyZoomUiState();
+            return;
+        }
+
+        this.zoomScale = 1;
+        this.zoomPanX = 0;
+        this.zoomPanY = 0;
+        this.isDraggingZoom = false;
+        this.applyZoomUiState();
+        this.applyZoomTransform();
+    }
+
+    resetZoomState(exitMode = false) {
+        this.cancelZoomGestureHint();
+        this.hideZoomGestureHint();
+        this.zoomScale = 1;
+        this.zoomPanX = 0;
+        this.zoomPanY = 0;
+        this.isDraggingZoom = false;
+        if (exitMode) {
+            this.isZoomMode = false;
+        }
+        this.applyZoomUiState();
+        this.applyZoomTransform();
+    }
+
+    applyZoomUiState() {
+        const { animationArea } = this.getVisualZoomElements();
+        if (animationArea) {
+            animationArea.classList.toggle('zoomed', this.zoomScale > 1);
+            animationArea.classList.toggle('dragging', this.isDraggingZoom);
+        }
+    }
+
+    applyZoomTransform() {
+        const { zoomLayer } = this.getVisualZoomElements();
+        if (!zoomLayer) return;
+        const pan = this.clampZoomPan(this.zoomPanX, this.zoomPanY, this.zoomScale);
+        this.zoomPanX = pan.x;
+        this.zoomPanY = pan.y;
+        zoomLayer.style.transform = `translate3d(${this.zoomPanX}px, ${this.zoomPanY}px, 0) scale(${this.zoomScale})`;
+    }
+
+    setZoomScale(nextScale, anchorPoint = null) {
+        const { animationArea, zoomLayer } = this.getVisualZoomElements();
+        if (!animationArea || !zoomLayer) return;
+
+        const oldScale = this.zoomScale;
+        const clampedScale = Math.min(this.zoomMaxScale, Math.max(this.zoomMinScale, nextScale));
+        if (clampedScale === oldScale) return;
+
+        if (anchorPoint) {
+            const contentX = (anchorPoint.x - this.zoomPanX) / oldScale;
+            const contentY = (anchorPoint.y - this.zoomPanY) / oldScale;
+            this.zoomPanX = anchorPoint.x - (contentX * clampedScale);
+            this.zoomPanY = anchorPoint.y - (contentY * clampedScale);
+        }
+
+        this.zoomScale = clampedScale;
+        if (this.zoomScale <= 1) {
+            this.zoomPanX = 0;
+            this.zoomPanY = 0;
+        }
+
+        this.applyZoomUiState();
+        this.applyZoomTransform();
+    }
+
+    clampZoomPan(panX, panY, scale = this.zoomScale) {
+        const { animationArea, zoomLayer } = this.getVisualZoomElements();
+        if (!animationArea || !zoomLayer || scale <= 1) {
+            return { x: 0, y: 0 };
+        }
+
+        const viewportW = animationArea.clientWidth;
+        const viewportH = animationArea.clientHeight;
+        const contentW = zoomLayer.offsetWidth;
+        const contentH = zoomLayer.offsetHeight;
+        const scaledW = contentW * scale;
+        const scaledH = contentH * scale;
+
+        const minX = Math.min(0, viewportW - scaledW);
+        const minY = Math.min(0, viewportH - scaledH);
+        const x = Math.min(0, Math.max(minX, panX));
+        const y = Math.min(0, Math.max(minY, panY));
+        return { x, y };
+    }
+
+    handleWheelZoom(event) {
+        const { animationArea } = this.getVisualZoomElements();
+        if (!animationArea) return;
+
+        this.cancelZoomGestureHint();
+        this.hideZoomGestureHint();
+        event.preventDefault();
+
+        const rect = animationArea.getBoundingClientRect();
+        const anchor = {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+        const delta = event.deltaY < 0 ? this.zoomStep : -this.zoomStep;
+        this.setZoomScale(this.zoomScale + delta, anchor);
+    }
+
+    handleZoomHintCandidateClick(event) {
+        if (!event || event.button !== 0) return;
+
+        // Ignore synthetic click that commonly follows touchend.
+        if (Date.now() - this.lastTouchEndAt < 500) return;
+
+        this.scheduleZoomGestureHint(event.clientX, event.clientY);
+    }
+
+    handleZoomToggleGesture(event) {
+        const { animationArea } = this.getVisualZoomElements();
+        if (!animationArea) return;
+
+        this.cancelZoomGestureHint();
+        this.hideZoomGestureHint();
+        event.preventDefault();
+        const rect = animationArea.getBoundingClientRect();
+        const anchor = {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+
+        if (this.zoomScale > 1) {
+            this.setZoomScale(1, anchor);
+        } else {
+            this.setZoomScale(this.zoomToggleScale, anchor);
+        }
+    }
+
+    handleTouchZoomToggle(event) {
+        const { animationArea } = this.getVisualZoomElements();
+        if (!animationArea) return;
+        if (!event.changedTouches || event.changedTouches.length === 0) return;
+
+        const touch = event.changedTouches[0];
+        const now = Date.now();
+        const dt = now - this.lastTouchEndAt;
+        const dx = touch.clientX - this.lastTouchTapX;
+        const dy = touch.clientY - this.lastTouchTapY;
+        const distSq = (dx * dx) + (dy * dy);
+
+        this.lastTouchEndAt = now;
+        this.lastTouchTapX = touch.clientX;
+        this.lastTouchTapY = touch.clientY;
+
+        // Double-tap within 300ms and ~24px radius toggles zoom.
+        if (dt > 0 && dt <= 300 && distSq <= (24 * 24)) {
+            this.cancelZoomGestureHint();
+            this.hideZoomGestureHint();
+            event.preventDefault();
+            this.handleZoomToggleGesture({
+                preventDefault() {},
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            return;
+        }
+
+        this.scheduleZoomGestureHint(touch.clientX, touch.clientY);
+    }
+
+    handleZoomDragStart(event) {
+        if (this.zoomScale <= 1) return;
+        if (event.button !== 0) return;
+
+        this.cancelZoomGestureHint();
+        this.hideZoomGestureHint();
+        this.isDraggingZoom = true;
+        this.zoomDragStartX = event.clientX;
+        this.zoomDragStartY = event.clientY;
+        this.zoomDragOriginX = this.zoomPanX;
+        this.zoomDragOriginY = this.zoomPanY;
+        this.applyZoomUiState();
+        event.preventDefault();
+    }
+
+    handleZoomDragMove(event) {
+        if (!this.isDraggingZoom) return;
+
+        const deltaX = event.clientX - this.zoomDragStartX;
+        const deltaY = event.clientY - this.zoomDragStartY;
+        this.zoomPanX = this.zoomDragOriginX + deltaX;
+        this.zoomPanY = this.zoomDragOriginY + deltaY;
+        this.applyZoomTransform();
+    }
+
+    handleZoomDragEnd() {
+        if (!this.isDraggingZoom) return;
+        this.isDraggingZoom = false;
+        this.applyZoomUiState();
+    }
+
+    scheduleZoomGestureHint(clientX, clientY) {
+        this.cancelZoomGestureHint();
+        this.hideZoomGestureHint();
+        this.zoomHintTimer = setTimeout(() => {
+            this.zoomHintTimer = null;
+            this.showZoomGestureHint(clientX, clientY);
+        }, 2000);
+    }
+
+    cancelZoomGestureHint() {
+        if (this.zoomHintTimer) {
+            clearTimeout(this.zoomHintTimer);
+            this.zoomHintTimer = null;
+        }
+    }
+
+    hideZoomGestureHint() {
+        if (this.zoomHintHideTimer) {
+            clearTimeout(this.zoomHintHideTimer);
+            this.zoomHintHideTimer = null;
+        }
+
+        const { zoomHint } = this.getVisualZoomElements();
+        if (!zoomHint) return;
+        zoomHint.classList.remove('play');
+        zoomHint.classList.add('hidden');
+    }
+
+    showZoomGestureHint(clientX, clientY) {
+        const { animationArea, zoomHint } = this.getVisualZoomElements();
+        if (!animationArea || !zoomHint) return;
+
+        const rect = animationArea.getBoundingClientRect();
+        const localX = clientX - rect.left;
+        const localY = clientY - rect.top;
+
+        zoomHint.classList.remove('hidden', 'play');
+        // Measure after unhide
+        const hintW = zoomHint.offsetWidth || 120;
+        const hintH = zoomHint.offsetHeight || 28;
+        const offsetX = 14;
+        const offsetY = -10;
+        const maxX = Math.max(0, animationArea.clientWidth - hintW - 6);
+        const maxY = Math.max(0, animationArea.clientHeight - hintH - 6);
+        const left = Math.min(maxX, Math.max(6, localX + offsetX));
+        const top = Math.min(maxY, Math.max(6, localY + offsetY));
+        zoomHint.style.left = `${left}px`;
+        zoomHint.style.top = `${top}px`;
+
+        // Restart animation cleanly
+        void zoomHint.offsetWidth;
+        zoomHint.classList.add('play');
+
+        this.zoomHintHideTimer = setTimeout(() => {
+            this.zoomHintHideTimer = null;
+            this.hideZoomGestureHint();
+        }, 3000);
     }
 
     /**
@@ -902,6 +1251,22 @@ class BaseRenderer {
      */
     cleanup() {
         this.stopCarousel();
+        if (this.zoomInitialized && this.boundZoomHandlers) {
+            const animationArea = document.getElementById('animationArea');
+            if (animationArea) {
+                animationArea.removeEventListener('wheel', this.boundZoomHandlers.onWheel);
+                animationArea.removeEventListener('mousedown', this.boundZoomHandlers.onMouseDown);
+                animationArea.removeEventListener('click', this.boundZoomHandlers.onClick);
+                animationArea.removeEventListener('dblclick', this.boundZoomHandlers.onDoubleClick);
+                animationArea.removeEventListener('touchend', this.boundZoomHandlers.onTouchEnd);
+                animationArea.removeEventListener('mouseleave', this.boundZoomHandlers.onMouseLeave);
+            }
+            window.removeEventListener('mousemove', this.boundZoomHandlers.onMouseMove);
+            window.removeEventListener('mouseup', this.boundZoomHandlers.onMouseUp);
+            this.zoomInitialized = false;
+        }
+        this.cancelZoomGestureHint();
+        this.hideZoomGestureHint();
         this.currentStep = null;
     }
 }

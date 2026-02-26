@@ -9,5 +9,5 @@ trigger: always_on
 2. Review the project scripts 
 3. Create implementation plan for Codex based on the prompt a
 4. Cross check with the PRD and Software Archtecture plan to prevent conflict in design
-5. Generate and add the implementation plan markdown file into C:\Users\teoen\GitHub\IDeA_Fusion360\implementationplans after approval 
+5. Generate and add the implementation plan markdown file into C:\Users\teoen\GitHub\IDeA_Fusion360\implementationplans and update the CLAUDE.md after approval 
 6. Stop and let codex code

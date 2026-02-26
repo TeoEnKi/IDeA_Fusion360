@@ -99,10 +99,6 @@ A step is intentionally **render-first** (what the user sees) plus **signals** (
         "caption": "string",
         "highlights": [
           { "component": "toolbar.create.extrude", "label": "Extrude" }
-        ],
-        "uiAnimations": [
-          { "type": "highlight", "target": "toolbar.create.extrude", "style": "pulse" },
-          { "type": "tooltip", "target": "toolbar.create.extrude", "text": "Click Extrude" }
         ]
       }
     ]
@@ -112,8 +108,7 @@ A step is intentionally **render-first** (what the user sees) plus **signals** (
 
 #### Key rules for generators
 
-- **Pair animations with reference images.** `uiAnimations` MUST live under the specific `visualStep.images[i]`
-  it refers to. (Step-level `uiAnimations` is treated as deprecated and should not be emitted.)
+- **Reference images are static.** Do not emit `visualStep.images[i].uiAnimations`; image entries are for screenshots, captions, and highlights only.
 - **Omit visuals when unnecessary.** `visualStep` is optional. Only include it when you have at least one reference image that helps the user. If a step does not need images, omit `visualStep` entirely (do not emit `visualStep: { images: [] }`).
 - **Keep targets resolvable.** Prefer `component` / `target` paths that exist in the UI component maps
   (e.g., `toolbar.create.revolve`, `toolbar.modify.shell`). Avoid freehand coordinates unless necessary.
@@ -146,7 +141,7 @@ Step level:
 -   tips\[\]
 -   qcChecks\[\]
 -   fusionActions\[\]
--   visualStep.images[].uiAnimations[] (paired with each reference image)
+-   visualStep.images[] (with image/caption/highlights only)
 
 ### Explicitly removed from schema
 
@@ -189,7 +184,6 @@ Normalization rules:
 -   Remove metadata
 -   Remove parameters
 -   Ensure tips exists
--   Ensure uiAnimations exists
 
 completion_detector.py Responsible for:
 
@@ -266,7 +260,7 @@ Step automatically advances.
 
 ## 6. UI Animation Architecture
 
-Each step supports uiAnimations.
+UI animation directives (`uiAnimations`) are not supported in the current UI renderer.
 
 Animation types:
 

@@ -53,18 +53,25 @@
                         <button id="refreshViewportBtn" class="viewport-refresh-btn" title="Refresh">&#x21BB;</button>
                     </div>
                     <div id="animationArea" class="visual-step-container">
-                        <img id="visualStepImage" src="" alt="Fusion 360 UI" class="visual-step-image">
-                        <div id="visualStepHighlights" class="visual-step-highlights"></div>
-                        <!-- Cursor overlay elements -->
-                        <div id="cursorElement" class="cursor-element hidden">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M4 4L12 20L14 14L20 12L4 4Z" fill="#333" stroke="#fff" stroke-width="1"/>
-                            </svg>
+                        <div id="visualStepZoomLayer" class="visual-step-zoom-layer">
+                            <img id="visualStepImage" src="" alt="Fusion 360 UI" class="visual-step-image">
+                            <div id="visualStepHighlights" class="visual-step-highlights"></div>
+                            <!-- Cursor overlay elements -->
+                            <div id="cursorElement" class="cursor-element hidden">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M4 4L12 20L14 14L20 12L4 4Z" fill="#333" stroke="#fff" stroke-width="1"/>
+                                </svg>
+                            </div>
+                            <div id="clickRipple" class="click-ripple hidden"></div>
                         </div>
-                        <div id="clickRipple" class="click-ripple hidden"></div>
+                        <div id="zoomGestureHint" class="zoom-gesture-hint hidden" aria-hidden="true">Double tap to zoom</div>
                     </div>
                     <div id="visualStepCaption" class="visual-step-caption"></div>
-                    <div id="carouselIndicators" class="carousel-indicators hidden"></div>
+                    <div id="carouselNav" class="carousel-nav hidden">
+                        <button id="carouselPrevImageBtn" class="carousel-arrow-btn" type="button" aria-label="Previous image" title="Previous image">&#x25C0;</button>
+                        <div id="carouselIndicators" class="carousel-indicators hidden"></div>
+                        <button id="carouselNextImageBtn" class="carousel-arrow-btn" type="button" aria-label="Next image" title="Next image">&#x25B6;</button>
+                    </div>
                 </div>
 
 <!-- Expanded Content Section -->

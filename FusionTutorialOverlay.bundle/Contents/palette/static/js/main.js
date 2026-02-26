@@ -881,8 +881,7 @@
                         instruction: 'Could not load tutorial JSON. Serve from a local HTTP server to load the full tutorial.',
                         detailedText: 'Run "python -m http.server" from the Contents/ directory, then open http://localhost:8000/palette/tutorial_palette.html',
                         qcChecks: [{ symbol: '\u26A0\uFE0F', text: 'Fetch failed — likely a file:// CORS restriction' }],
-                        warnings: [],
-                        uiAnimations: [{ type: 'click', at: { x: 50, y: 50 } }]
+                        warnings: []
                     }]
                 });
             });

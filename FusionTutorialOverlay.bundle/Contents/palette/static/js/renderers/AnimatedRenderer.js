@@ -1,6 +1,6 @@
 /**
- * AnimatedRenderer - Renders steps with cursor animations
- * Supports move, click, drag, and pause directives.
+ * AnimatedRenderer - Renders steps in the animated renderer shell.
+ * UI animation directives are no longer supported.
  * Delegates target resolution to BaseRenderer.resolveTarget() and swaps
  * environment-specific screenshots when highlighting dropdown tools.
  */
@@ -26,7 +26,7 @@ class AnimatedRenderer extends BaseRenderer {
     }
 
     /**
-     * Render a step with animations
+     * Render a step
      * @param {Object} step - The step data to render
      */
     render(step) {
@@ -40,73 +40,17 @@ class AnimatedRenderer extends BaseRenderer {
             this.animationArea.classList.remove('hidden');
         }
 
-        const hasCarousel = Array.isArray(step.visualStep && step.visualStep.images) &&
-            step.visualStep.images.length > 0;
-
-        // When carousel is active, per-image animations are triggered from showCarouselImage().
-        if (hasCarousel) {
-            const activeAnimations = this.getCarouselAnimations(this.carouselIndex);
-            if ((!activeAnimations || activeAnimations.length === 0) && this.cursorElement) {
-                this.cursorElement.classList.add('hidden');
-            }
-            return;
-        }
-
-        // Ensure parent #visualStepArea is visible when legacy step-level animations exist
-        const animations = step.uiAnimations || [];
-        if (animations.length > 0) {
-            const visualArea = document.getElementById('visualStepArea');
-            if (visualArea) {
-                visualArea.classList.remove('hidden');
-            }
-            // Show default environment image when no step image is set
-            const visualImage = document.getElementById('visualStepImage');
-            if (visualImage && (!visualImage.src || visualImage.src === window.location.href || visualImage.src.endsWith('/'))) {
-                visualImage.src = this.getImagePath(this.currentEnvironment, 0);
-                visualImage.dataset.env = this.currentEnvironment;
-                visualImage.dataset.imageIndex = '0';
-            }
-            // Give animation area a min-height when no image is present
-            if (this.animationArea && (!visualImage || !visualImage.src || visualImage.src.endsWith('/'))) {
-                this.animationArea.style.minHeight = '80px';
-            }
-        }
-
-        // Queue animations if present
-        if (animations.length > 0) {
-            this.playAnimations(animations);
-        } else {
-            // No animations, hide cursor
-            if (this.cursorElement) {
-                this.cursorElement.classList.add('hidden');
-            }
-        }
-    }
-
-    /**
-     * Override carousel image swap to play per-image animations.
-     * @param {number} index - Carousel image index
-     */
-    showCarouselImage(index) {
-        super.showCarouselImage(index);
-
-        // Only play per-image animations when the current step uses the carousel schema.
-        if (!this.currentStep || !Array.isArray(this.currentStep.visualStep && this.currentStep.visualStep.images)) {
-            return;
-        }
-
-        const animations = this.getCarouselAnimations(this.carouselIndex);
-        this.abort();
-
-        if (animations.length > 0) {
-            this.playAnimations(animations);
-        } else if (this.cursorElement) {
+        // uiAnimations support removed: always hide cursor overlays.
+        if (this.cursorElement) {
             this.cursorElement.classList.add('hidden');
         }
+        if (this.clickRipple) {
+            this.clickRipple.classList.add('hidden');
+        }
     }
 
     /**
-     * Play a sequence of animations
+     * Play a sequence of animations (unused; retained for compatibility)
      * @param {Array} animations - Array of animation directives
      */
     async playAnimations(animations) {
@@ -432,38 +376,13 @@ class AnimatedRenderer extends BaseRenderer {
     }
 
     /**
-     * Get animation sequence attached to a carousel image.
-     * @param {number} index - Carousel image index
-     * @returns {Array} uiAnimations array or empty array
-     */
-    getCarouselAnimations(index) {
-        if (!Array.isArray(this.carouselImages) || this.carouselImages.length === 0) return [];
-        const entry = this.carouselImages[index];
-        if (!entry || !Array.isArray(entry.uiAnimations)) return [];
-        return entry.uiAnimations;
-    }
-
-    /**
-     * Replay the current step's animations
+     * Replay hook (no-op: uiAnimations support removed)
      */
     replay() {
-        if (!this.currentStep) return;
-
         this.abort();
-
-        setTimeout(() => {
-            let animations = [];
-            if (Array.isArray(this.currentStep.visualStep && this.currentStep.visualStep.images)) {
-                animations = this.getCarouselAnimations(this.carouselIndex);
-            } else {
-                animations = this.currentStep.uiAnimations || [];
-            }
-            if (animations.length > 0) {
-                this.playAnimations(animations);
-            } else if (this.cursorElement) {
-                this.cursorElement.classList.add('hidden');
-            }
-        }, 100);
+        if (this.cursorElement) {
+            this.cursorElement.classList.add('hidden');
+        }
     }
 
     /**

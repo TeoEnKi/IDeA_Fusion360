@@ -1,7 +1,7 @@
 {
   "tutorialId": "mug_v2",
   "title": "Create a Real Coffee Mug (Test Tutorial Data)",
-  "description": "Test tutorial JSON for the Fusion tutorial player: revolve + shell mug body, then sweep a handle on an offset plane. Includes paired UI animations under each reference image.",
+  "description": "Test tutorial JSON for the Fusion tutorial player: revolve + shell mug body, then sweep a handle on an offset plane.",
   "steps": [
     {
       "stepId": "mug-v2-step-1",
@@ -50,38 +50,6 @@
               {
                 "component": "toolbar.sketch.createSketch",
                 "label": "Create Sketch"
-              }
-            ],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "browser.rootComponent.origin",
-                "style": "pulse"
-              },
-              {
-                "type": "highlight",
-                "target": "browser.rootComponent.origin.XZPlane",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "browser.rootComponent.origin.XZPlane",
-                "text": "Right‑click XZ Plane → Create Sketch"
-              },
-              {
-                "type": "arrow",
-                "target": "browser.rootComponent.origin.XZPlane",
-                "direction": "right"
-              },
-              {
-                "type": "highlight",
-                "target": "toolbar.sketch.createSketch",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.sketch.createSketch",
-                "text": "Start a new sketch"
               }
             ]
           },
@@ -146,39 +114,7 @@
           {
             "image": "assets/UI Images/Sketch/Sketch_0.png",
             "caption": "Sketch workspace default view",
-            "highlights": [],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "toolbar.sketch.create.line",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.sketch.create.line",
-                "text": "Use Line to sketch the silhouette"
-              },
-              {
-                "type": "highlight",
-                "target": "toolbar.sketch.create.arc",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.sketch.create.arc",
-                "text": "Use Arc for smooth transitions"
-              },
-              {
-                "type": "tooltip",
-                "target": "canvas.center",
-                "text": "Sketch on ONE side of the axis only"
-              },
-              {
-                "type": "highlight",
-                "target": "canvas.axisLine",
-                "style": "pulse"
-              }
-            ]
+            "highlights": []
           },
           {
             "image": "assets/UI Images/Sketch/Sketch_1.png",
@@ -268,39 +204,7 @@
           {
             "image": "assets/UI Images/Solid/Solid_0.png",
             "caption": "Solid workspace default view",
-            "highlights": [],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "toolbar.create.revolve",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.create.revolve",
-                "text": "Click Revolve"
-              },
-              {
-                "type": "highlight",
-                "target": "canvas.profileRegion",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "canvas.profileRegion",
-                "text": "Select the closed profile region"
-              },
-              {
-                "type": "highlight",
-                "target": "origin.YAxis",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "origin.YAxis",
-                "text": "Select Y-axis as revolve axis"
-              }
-            ]
+            "highlights": []
           },
           {
             "image": "assets/UI Images/Solid/Solid_1.png",
@@ -354,39 +258,7 @@
           {
             "image": "assets/UI Images/Solid/Solid_0.png",
             "caption": "Solid workspace default view",
-            "highlights": [],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "toolbar.modify.shell",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.modify.shell",
-                "text": "Click Shell"
-              },
-              {
-                "type": "highlight",
-                "target": "canvas.mugTopFace",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "canvas.mugTopFace",
-                "text": "Select the top face (opening)"
-              },
-              {
-                "type": "tooltip",
-                "target": "dialog.shell.thickness",
-                "text": "Set thickness to 3mm"
-              },
-              {
-                "type": "highlight",
-                "target": "dialog.shell.ok",
-                "style": "pulse"
-              }
-            ]
+            "highlights": []
           },
           {
             "image": "assets/UI Images/Solid/Solid_1.png",
@@ -466,39 +338,7 @@
           {
             "image": "assets/UI Images/Sketch/Sketch_0.png",
             "caption": "Sketch workspace default view",
-            "highlights": [],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "toolbar.sketch.createSketch",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.sketch.createSketch",
-                "text": "Start a new sketch for the handle path"
-              },
-              {
-                "type": "highlight",
-                "target": "toolbar.sketch.create.arc",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.sketch.create.arc",
-                "text": "Use 3-point arc for the handle path"
-              },
-              {
-                "type": "tooltip",
-                "target": "canvas.rightSide",
-                "text": "Draw the arc outward (finger clearance)"
-              },
-              {
-                "type": "highlight",
-                "target": "canvas.handleArcRegion",
-                "style": "pulse"
-              }
-            ]
+            "highlights": []
           },
           {
             "image": "assets/UI Images/Sketch/Sketch_1.png",
@@ -557,34 +397,7 @@
           {
             "image": "assets/UI Images/Sketch/Sketch_0.png",
             "caption": "Sketch workspace default view",
-            "highlights": [],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "toolbar.sketch.create.rectangle",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.sketch.create.rectangle",
-                "text": "Create the handle profile (closed shape)"
-              },
-              {
-                "type": "tooltip",
-                "target": "canvas.nearHandleStart",
-                "text": "Place the profile at the path start"
-              },
-              {
-                "type": "highlight",
-                "target": "canvas.nearHandleStart",
-                "style": "pulse"
-              },
-              {
-                "type": "highlight",
-                "target": "toolbar.finishSketch",
-                "style": "pulse"
-              }
-            ]
+            "highlights": []
           },
           {
             "image": "assets/UI Images/Sketch/Sketch_1.png",
@@ -681,39 +494,7 @@
           {
             "image": "assets/UI Images/Solid/Solid_0.png",
             "caption": "Solid workspace default view",
-            "highlights": [],
-            "uiAnimations": [
-              {
-                "type": "highlight",
-                "target": "toolbar.modify.fillet",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "toolbar.modify.fillet",
-                "text": "Click Fillet"
-              },
-              {
-                "type": "highlight",
-                "target": "canvas.handleJoint",
-                "style": "pulse"
-              },
-              {
-                "type": "tooltip",
-                "target": "canvas.handleJoint",
-                "text": "Select joint edges (handle meets mug)"
-              },
-              {
-                "type": "tooltip",
-                "target": "dialog.fillet.radius",
-                "text": "Start with 3mm"
-              },
-              {
-                "type": "highlight",
-                "target": "dialog.fillet.ok",
-                "style": "pulse"
-              }
-            ]
+            "highlights": []
           },
           {
             "image": "assets/UI Images/Solid/Solid_1.png",

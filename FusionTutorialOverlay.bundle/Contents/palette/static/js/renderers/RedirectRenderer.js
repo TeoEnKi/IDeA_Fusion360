@@ -7,7 +7,6 @@ class RedirectRenderer extends BaseRenderer {
     constructor(container) {
         super(container);
         this.redirectCard = null;
-        this.animationRunner = null;
         this.onSkip = null;
         this.isResolved = false;
     }
@@ -26,10 +25,6 @@ class RedirectRenderer extends BaseRenderer {
         // Show and populate redirect card
         this._showRedirectCard(step);
 
-        // Start animations if available
-        if (step.uiAnimations && step.uiAnimations.length > 0) {
-            this._runAnimations(step.uiAnimations);
-        }
     }
 
     /**
@@ -163,30 +158,6 @@ class RedirectRenderer extends BaseRenderer {
     }
 
     /**
-     * Run UI animations
-     * @param {Array} animations - Array of animation objects
-     */
-    _runAnimations(animations) {
-        // Get animation area within redirect card or create one
-        let animArea = this.redirectCard.querySelector('.redirect-animation-area');
-
-        if (!animArea) {
-            // Use the reference image area for animations
-            animArea = document.getElementById('referenceImageArea');
-        }
-
-        if (!animArea) return;
-
-        // Use AnimatedRenderer's animation logic if available
-        if (window.AnimatedRenderer && this.animationRunner) {
-            this.animationRunner.runAnimationSequence(animations, animArea);
-        } else {
-            // Simple fallback - just log
-            console.log('Would run animations:', animations);
-        }
-    }
-
-    /**
      * Show context resolved state with success animation
      * @param {Object} resolvedContext - The new context after resolution
      */
@@ -228,12 +199,10 @@ class RedirectRenderer extends BaseRenderer {
     }
 
     /**
-     * Replay animations
+     * Replay hook (no-op: uiAnimations support removed)
      */
     replay() {
-        if (this.currentStep && this.currentStep.uiAnimations) {
-            this._runAnimations(this.currentStep.uiAnimations);
-        }
+        // No-op
     }
 
     /**
