@@ -589,7 +589,8 @@ body {
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 13px;
+    height: 13px;
 }
 
 ::-webkit-scrollbar-track {
@@ -597,12 +598,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--bg-tertiary);
+    background: var(--accent-primary);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
+    background: var(--accent-hover);
 }
 
 /* Consent Overlay */
