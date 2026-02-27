@@ -29,7 +29,17 @@
         warningFooterMessage: null,
         warningFooterDismiss: null,
         warningFooterAction: null,
-        warningFooterBtn: null
+        warningFooterBtn: null,
+        workspaceMismatchModal: null,
+        workspaceMismatchClose: null,
+        workspaceMismatchDismissBtn: null,
+        workspaceMismatchTitle: null,
+        workspaceMismatchMessage: null,
+        workspaceMismatchCurrent: null,
+        workspaceMismatchRequired: null,
+        workspaceMismatchImage: null,
+        workspaceMismatchAnnotation: null,
+        workspaceMismatchAnnotationLabel: null
     };
 
     /**
@@ -74,6 +84,16 @@
         elements.warningFooterDismiss = document.getElementById('warningFooterDismiss');
         elements.warningFooterAction = document.getElementById('warningFooterAction');
         elements.warningFooterBtn = document.getElementById('warningFooterBtn');
+        elements.workspaceMismatchModal = document.getElementById('workspaceMismatchModal');
+        elements.workspaceMismatchClose = document.getElementById('workspaceMismatchClose');
+        elements.workspaceMismatchDismissBtn = document.getElementById('workspaceMismatchDismissBtn');
+        elements.workspaceMismatchTitle = document.getElementById('workspaceMismatchTitle');
+        elements.workspaceMismatchMessage = document.getElementById('workspaceMismatchMessage');
+        elements.workspaceMismatchCurrent = document.getElementById('workspaceMismatchCurrent');
+        elements.workspaceMismatchRequired = document.getElementById('workspaceMismatchRequired');
+        elements.workspaceMismatchImage = document.getElementById('workspaceMismatchImage');
+        elements.workspaceMismatchAnnotation = document.getElementById('workspaceMismatchAnnotation');
+        elements.workspaceMismatchAnnotationLabel = document.getElementById('workspaceMismatchAnnotationLabel');
     }
 
     /**
@@ -127,6 +147,20 @@
         // Warning footer dismiss button
         if (elements.warningFooterDismiss) {
             elements.warningFooterDismiss.addEventListener('click', hideWarningFooter);
+        }
+
+        if (elements.workspaceMismatchClose) {
+            elements.workspaceMismatchClose.addEventListener('click', hideWorkspaceMismatchModal);
+        }
+        if (elements.workspaceMismatchDismissBtn) {
+            elements.workspaceMismatchDismissBtn.addEventListener('click', hideWorkspaceMismatchModal);
+        }
+        if (elements.workspaceMismatchModal) {
+            elements.workspaceMismatchModal.addEventListener('click', (e) => {
+                if (e.target === elements.workspaceMismatchModal) {
+                    hideWorkspaceMismatchModal();
+                }
+            });
         }
 
         // Viewport screenshot refresh button
@@ -245,6 +279,11 @@
                     clearViewportPreview();
                     showTutorial();
                     stepper.loadStep(payload.step);
+                    if (payload.workspaceMismatchFeedback) {
+                        showWorkspaceMismatchModal(payload.workspaceMismatchFeedback);
+                    } else {
+                        hideWorkspaceMismatchModal();
+                    }
                     break;
 
                 case 'error':
@@ -253,6 +292,17 @@
 
                 case 'assets':
                     handleAssets(payload.assets);
+                    break;
+
+                case 'runtimeInfo':
+                    console.log(
+                        'TutorialOverlay runtimeInfo:',
+                        `build=${payload.buildStamp}`,
+                        `path=${payload.scriptPath}`,
+                        `coreModulesLoaded=${payload.coreModulesLoaded}`,
+                        `pathMatchesExpected=${payload.pathMatchesExpected}`,
+                        `headerHash=${payload.headerHash || 'n/a'}`
+                    );
                     break;
 
                 // Consent system
@@ -585,6 +635,62 @@
     }
 
     /**
+     * Show a non-blocking modal with workspace mismatch guidance.
+     */
+    function showWorkspaceMismatchModal(feedback) {
+        if (!feedback || !elements.workspaceMismatchModal) return;
+
+        if (elements.workspaceMismatchTitle && feedback.title) {
+            elements.workspaceMismatchTitle.textContent = feedback.title;
+        }
+        if (elements.workspaceMismatchMessage) {
+            elements.workspaceMismatchMessage.textContent = feedback.message ||
+                'This step requires a different workspace. You can close this and continue.';
+        }
+        if (elements.workspaceMismatchCurrent) {
+            elements.workspaceMismatchCurrent.textContent = feedback.currentWorkspace || 'Unknown';
+        }
+        if (elements.workspaceMismatchRequired) {
+            elements.workspaceMismatchRequired.textContent = feedback.requiredWorkspace || 'Required';
+        }
+
+        if (elements.workspaceMismatchImage) {
+            const src = feedback.referenceImageSrc || '../assets/UI Images/Solid/Solid_0.png';
+            elements.workspaceMismatchImage.src = encodeURI(src);
+        }
+
+        applyWorkspaceMismatchAnnotation(feedback.annotation);
+        elements.workspaceMismatchModal.classList.remove('hidden');
+    }
+
+    function hideWorkspaceMismatchModal() {
+        if (elements.workspaceMismatchModal) {
+            elements.workspaceMismatchModal.classList.add('hidden');
+        }
+    }
+
+    function applyWorkspaceMismatchAnnotation(annotation) {
+        if (!elements.workspaceMismatchAnnotation) return;
+
+        if (!annotation || !annotation.position) {
+            elements.workspaceMismatchAnnotation.classList.add('hidden');
+            return;
+        }
+
+        const pos = annotation.position;
+        elements.workspaceMismatchAnnotation.style.left = `${Number(pos.x || 0)}%`;
+        elements.workspaceMismatchAnnotation.style.top = `${Number(pos.y || 0)}%`;
+        elements.workspaceMismatchAnnotation.style.width = `${Number(pos.width || 0)}%`;
+        elements.workspaceMismatchAnnotation.style.height = `${Number(pos.height || 0)}%`;
+
+        if (elements.workspaceMismatchAnnotationLabel) {
+            elements.workspaceMismatchAnnotationLabel.textContent = annotation.label || 'Workspace selector';
+        }
+
+        elements.workspaceMismatchAnnotation.classList.remove('hidden');
+    }
+
+    /**
      * Handle completion event from Fusion 360
      */
     function handleCompletionEvent(event) {
@@ -620,12 +726,19 @@
         if (!commandId) return;
 
         const items = qcList.querySelectorAll('li');
+        let matchedExpectedCommand = false;
+        const pendingExpectedCommands = [];
+
         items.forEach(item => {
             // Only transition pending items
             if (!item.classList.contains('pending')) return;
 
             const expectedCommand = item.dataset.expectedCommand;
+            if (expectedCommand) {
+                pendingExpectedCommands.push(expectedCommand);
+            }
             if (expectedCommand && expectedCommand === commandId) {
+                matchedExpectedCommand = true;
                 item.classList.remove('pending');
                 item.classList.add('checking');
 
@@ -637,6 +750,22 @@
                 }
             }
         });
+
+        // Non-blocking feedback when the user starts a command that doesn't match
+        // any expected command documented in the current step's qcChecks.
+        if (!matchedExpectedCommand && pendingExpectedCommands.length > 0) {
+            const ignorePrefix = ['Select', 'Pan', 'Orbit', 'Zoom'];
+            const shouldIgnore = ignorePrefix.some(prefix => commandId.startsWith(prefix));
+            if (!shouldIgnore) {
+                const expectedPreview = pendingExpectedCommands.slice(0, 3).join(', ');
+                const more = pendingExpectedCommands.length > 3 ? ` (+${pendingExpectedCommands.length - 3} more)` : '';
+                showWarningFooter(
+                    `This step expects command: ${expectedPreview}${more}. You started: ${commandId}.`,
+                    'warning',
+                    { autoHide: 5000 }
+                );
+            }
+        }
     }
 
     /**
@@ -926,6 +1055,8 @@
     window.requestViewportCapture = requestViewportCapture;
     window.showWarningFooter = showWarningFooter;
     window.hideWarningFooter = hideWarningFooter;
+    window.showWorkspaceMismatchModal = showWorkspaceMismatchModal;
+    window.hideWorkspaceMismatchModal = hideWorkspaceMismatchModal;
 
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {

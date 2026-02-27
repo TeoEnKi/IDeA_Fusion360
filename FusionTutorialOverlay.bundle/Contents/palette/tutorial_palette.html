@@ -106,6 +106,32 @@
             </div>
         </div>
 
+        <!-- Workspace Mismatch Modal (non-blocking guidance) -->
+        <div id="workspaceMismatchModal" class="workspace-mismatch-modal hidden" role="dialog" aria-modal="true" aria-labelledby="workspaceMismatchTitle">
+            <div class="workspace-mismatch-card">
+                <button id="workspaceMismatchClose" class="workspace-mismatch-close" type="button" aria-label="Close workspace warning">&times;</button>
+                <h3 id="workspaceMismatchTitle" class="workspace-mismatch-title">Wrong Workspace for This Step</h3>
+                <p id="workspaceMismatchMessage" class="workspace-mismatch-message"></p>
+                <div class="workspace-mismatch-context">
+                    <span class="label">Current:</span>
+                    <span id="workspaceMismatchCurrent" class="current">Unknown</span>
+                    <span class="arrow">&rarr;</span>
+                    <span class="label">Required:</span>
+                    <span id="workspaceMismatchRequired" class="required">Design</span>
+                </div>
+                <div class="workspace-mismatch-image-wrap">
+                    <img id="workspaceMismatchImage" class="workspace-mismatch-image" src="" alt="Workspace selector reference">
+                    <div id="workspaceMismatchAnnotation" class="workspace-mismatch-annotation hidden">
+                        <div class="workspace-mismatch-ring"></div>
+                        <div id="workspaceMismatchAnnotationLabel" class="workspace-mismatch-annotation-label">Workspace selector</div>
+                    </div>
+                </div>
+                <div class="workspace-mismatch-actions">
+                    <button id="workspaceMismatchDismissBtn" class="btn btn-secondary" type="button">Close and Continue</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Navigation -->
         <nav id="navigation" class="navigation hidden">
             <button id="prevBtn" class="btn btn-nav" disabled>

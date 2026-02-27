@@ -53,6 +53,11 @@ Python → JS: palette.sendInfoToHTML(JSON.stringify(message))
 This architecture ensures low‑latency communication without external
 servers.
 
+Runtime identity enforcement:
+
+- Plugin emits runtime identity metadata (`buildStamp`, `scriptPath`, `headerHash`, `pathMatchesExpected`) on palette ready.
+- Startup validates runtime script location against the installed AddIns bundle path to detect stale deployments before tutorial playback.
+
 ------------------------------------------------------------------------
 
 ## 3. Tutorial Manifest Contract (Canonical Format)
@@ -79,6 +84,7 @@ steps, play animations, and detect completion.
 #### Step object
 
 A step is intentionally **render-first** (what the user sees) plus **signals** (what the plugin tracks).
+`requires.workspace` and `requires.environment` are **mandatory on every step**.
 
 ```json
 {
@@ -87,6 +93,10 @@ A step is intentionally **render-first** (what the user sees) plus **signals** (
   "title": "string",
   "instruction": "string (1 sentence)",
   "detailedText": "string (optional, 1–3 sentences)",
+  "requires": {
+    "workspace": "Design | Render | Manufacture | ...",
+    "environment": "Solid | Sketch | Surface | Mesh | Sheet Metal | ..."
+  },
   "tips": ["string", "..."],
   "qcChecks": [
     { "text": "string", "expectedCommand": "FusionCommandIdOrEventAlias" }
@@ -109,6 +119,9 @@ A step is intentionally **render-first** (what the user sees) plus **signals** (
 #### Key rules for generators
 
 - **Reference images are static.** Do not emit `visualStep.images[i].uiAnimations`; image entries are for screenshots, captions, and highlights only.
+- **Mandatory per-step context requirements.** Every step **must** include `requires.workspace` and `requires.environment` so the plugin can validate context and trigger mismatch feedback consistently.
+  - `requires.workspace` is the top-level Fusion workspace (e.g., `Design`, `Render`, `Manufacture`)
+  - `requires.environment` is the active tab/mode inside the workspace (e.g., `Solid`, `Sketch`, `Surface`, `Mesh`, `Sheet Metal`)
 - **Omit visuals when unnecessary.** `visualStep` is optional. Only include it when you have at least one reference image that helps the user. If a step does not need images, omit `visualStep` entirely (do not emit `visualStep: { images: [] }`).
 - **Keep targets resolvable.** Prefer `component` / `target` paths that exist in the UI component maps
   (e.g., `toolbar.create.revolve`, `toolbar.modify.shell`). Avoid freehand coordinates unless necessary.
@@ -123,6 +136,8 @@ A step is intentionally **render-first** (what the user sees) plus **signals** (
 
 ### Required fields
 
+Important: `requires.workspace` and `requires.environment` are required on **every** step, including steps that appear to stay in the same mode as the previous step.
+
 Root level:
 
 -   tutorialId
@@ -136,6 +151,8 @@ Step level:
 -   stepNumber
 -   title
 -   instruction
+-   requires.workspace
+-   requires.environment
 -   detailedText (optional)
 -   expandedContent.whyThisMatters (optional)
 -   tips\[\]
@@ -201,12 +218,24 @@ context_detector.py / context_poller.py Responsible for:
 
 -   Monitoring workspace context
 -   Warning user if wrong environment
+-   Treating `ToolsTab`/Utilities as toolbar focus state (not a modeling environment)
+-   Avoiding false fallback to `Solid` when active toolbar tab is known but non-modeling
+
+Initial-load context normalization (FusionTutorialOverlay.py):
+
+-   Before rendering step 1, plugin attempts to normalize to required `requires.workspace` / `requires.environment`
+-   Specifically handles Add-Ins launch case by collapsing `ToolsTab` focus and activating required Design tab (e.g., `SolidTab`)
+-   Uses retries + UI event pumping (`adsk.doEvents`) and multiple activation fallbacks
 
 ------------------------------------------------------------------------
 
 ### Frontend (Palette)
 
 main.js Initializes bridge and routes messages.
+
+Additional runtime diagnostics:
+
+-   Handles `runtimeInfo` bridge message and logs runtime identity payload to console for deployment verification.
 
 stepper.js Handles tutorial progression logic.
 
@@ -309,6 +338,10 @@ Tutorial Playback:
 
 Manifest → TutorialManager → Renderer → Animation Player →
 CompletionDetector → Progression
+
+Runtime Verification:
+
+Plugin Startup → Runtime Identity Check → (`runtimeInfo` to palette) → Tutorial Load Allowed/Blocked
 
 Tutorial Generation:
 

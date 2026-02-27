@@ -9,6 +9,10 @@ import sys
 import traceback
 import base64
 import time
+import hashlib
+
+BUILD_STAMP = "2026-02-26-initial-autoswitch-v3"
+EXPECTED_INSTALL_FRAGMENT = "AppData/Roaming/Autodesk/Autodesk Fusion 360/API/AddIns/FusionTutorialOverlay.bundle/Contents/FusionTutorialOverlay.py"
 
 # Get the directory for logging BEFORE any other imports
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -59,6 +63,7 @@ except Exception as e:
     raise
 
 debug_log("Step 5: All basic imports complete")
+debug_log(f"Build: {BUILD_STAMP}")
 
 # Add the Contents directory to path for imports
 ADDIN_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -97,6 +102,9 @@ _pending_step_index = None
 # Completion detection system
 _completion_detector = None
 _screenshot_dir = None
+_workspace_feedback_template = None
+_environment_feedback_templates = {}
+_runtime_identity_ok = True
 
 # Add-in metadata
 ADDIN_NAME = "AI Tutorial Overlay"
@@ -110,6 +118,166 @@ def get_resource_path(relative_path: str) -> str:
     full_path = os.path.join(this_dir, relative_path)
     # Normalize path separators for cross-platform compatibility
     return full_path.replace("\\", "/")
+
+
+def get_runtime_signature() -> dict:
+    """Return runtime identity details for deployment verification."""
+    script_path = os.path.abspath(__file__).replace("\\", "/")
+    header_hash = "unknown"
+    try:
+        with open(__file__, "rb") as f:
+            header = f.read(1024)
+        header_hash = hashlib.sha1(header).hexdigest()[:12]
+    except Exception:
+        pass
+
+    path_matches_expected = EXPECTED_INSTALL_FRAGMENT.replace("\\", "/") in script_path
+    return {
+        "buildStamp": BUILD_STAMP,
+        "scriptPath": script_path,
+        "headerHash": header_hash,
+        "pathMatchesExpected": path_matches_expected,
+        "coreModulesLoaded": CORE_MODULES_LOADED
+    }
+
+
+def validate_runtime_identity() -> tuple:
+    """Check whether the running script path looks like the installed AddIns bundle path."""
+    sig = get_runtime_signature()
+    if sig["pathMatchesExpected"]:
+        return True, sig
+    msg = (
+        "Runtime deployment mismatch detected.\n\n"
+        f"Running from:\n{sig['scriptPath']}\n\n"
+        f"Expected path fragment:\n{EXPECTED_INSTALL_FRAGMENT}\n\n"
+        "Fix:\n"
+        "1) Stop the add-in in Fusion\n"
+        "2) Copy this repo bundle to %APPDATA%/Autodesk/Autodesk Fusion 360/API/AddIns/FusionTutorialOverlay.bundle\n"
+        "3) Delete __pycache__ in installed bundle\n"
+        "4) Restart add-in / Fusion"
+    )
+    return False, {"message": msg, **sig}
+
+
+def get_workspace_feedback_template() -> dict:
+    """Load and cache modal reference image + workspace selector annotation."""
+    global _workspace_feedback_template
+
+    if _workspace_feedback_template is not None:
+        return _workspace_feedback_template
+
+    fallback = {
+        "referenceImageSrc": "../assets/UI Images/Solid/Solid_0.png",
+        "annotation": {
+            "label": "Workspace selector",
+            "shape": "circle",
+            "position": {"x": 4.2, "y": 12.0, "width": 6.8, "height": 8.5}
+        }
+    }
+
+    try:
+        metadata_path = get_resource_path("assets/UI Images/Solid/Solid_UIComponents.json")
+        with open(metadata_path, "r", encoding="utf-8") as f:
+            metadata = json.load(f)
+
+        workspace_dropdown = metadata.get("components", {}).get("workspaceDropdown", {})
+        position = workspace_dropdown.get("position", {})
+
+        _workspace_feedback_template = {
+            "referenceImageSrc": "../assets/UI Images/Solid/Solid_0.png",
+            "annotation": {
+                "label": workspace_dropdown.get("label", "Workspace selector"),
+                "shape": "circle",
+                "position": {
+                    "x": position.get("x", 4.2),
+                    "y": position.get("y", 12.0),
+                    "width": position.get("width", 6.8),
+                    "height": position.get("height", 8.5)
+                }
+            }
+        }
+    except Exception as e:
+        debug_log(f" Failed to load workspace feedback template, using fallback: {e}")
+        _workspace_feedback_template = fallback
+
+    return _workspace_feedback_template
+
+
+def get_environment_feedback_template(required_environment: str) -> dict:
+    """Load/cached modal reference image + annotation for a Design environment tab."""
+    global _environment_feedback_templates
+
+    env_name = str(required_environment or "").strip()
+    env_key = env_name.lower()
+    if env_key in _environment_feedback_templates:
+        return _environment_feedback_templates[env_key]
+
+    # Prefer matching screenshot/metadata when available; otherwise fall back to Solid navbar image.
+    source_configs = [
+        (
+            get_resource_path("assets/UI Images/Sketch/Sketch_UIComponents.json"),
+            "../assets/UI Images/Sketch/Sketch_0.png",
+            {
+                "solid": "solid",
+                "surface": "surface",
+                "mesh": "mesh",
+                "sketch": "sketch"
+            }
+        ),
+        (
+            get_resource_path("assets/UI Images/Solid/Solid_UIComponents.json"),
+            "../assets/UI Images/Solid/Solid_0.png",
+            {
+                "solid": "solid",
+                "surface": "surface",
+                "mesh": "mesh",
+                "sheet metal": "sheetMetal",
+                "sheet_metal": "sheetMetal",
+                "sheetmetal": "sheetMetal"
+            }
+        )
+    ]
+
+    for metadata_path, image_src, tab_key_map in source_configs:
+        try:
+            tab_key = tab_key_map.get(env_key)
+            if not tab_key:
+                continue
+
+            with open(metadata_path, "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+
+            env_tab = (
+                metadata.get("components", {})
+                .get("environmentTabs", {})
+                .get(tab_key, {})
+            )
+            position = env_tab.get("position")
+            if not isinstance(position, dict):
+                continue
+
+            template = {
+                "referenceImageSrc": image_src,
+                "annotation": {
+                    "label": env_tab.get("label", env_name),
+                    "shape": "circle",
+                    "position": {
+                        "x": position.get("x", 0),
+                        "y": position.get("y", 0),
+                        "width": position.get("width", 5.0),
+                        "height": position.get("height", 5.0)
+                    }
+                }
+            }
+            _environment_feedback_templates[env_key] = template
+            return template
+        except Exception as e:
+            debug_log(f" Failed to load environment feedback template ({env_name}) from {metadata_path}: {e}")
+
+    # Fallback: reuse workspace selector image/annotation if no environment tab metadata exists.
+    fallback = get_workspace_feedback_template()
+    _environment_feedback_templates[env_key] = fallback
+    return fallback
 
 
 class TutorialManager:
@@ -391,6 +559,16 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         debug_log(" _handle_ready called")
 
+        # Send runtime identity so stale bundle issues are obvious in JS logs.
+        try:
+            if _palette:
+                _palette.sendInfoToHTML("response", json.dumps({
+                    "action": "runtimeInfo",
+                    **get_runtime_signature()
+                }))
+        except Exception as e:
+            debug_log(f" Failed to send runtimeInfo: {e}")
+
         # Load tutorial first for fast startup (change "mug" to "test" for box tutorial)
         response = self._handle_load_tutorial("mug")
         debug_log(f" Tutorial load response: {response.get('action', 'unknown')}")
@@ -411,7 +589,14 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
     def _handle_load_tutorial(self, tutorial_id: str) -> dict:
         """Load a tutorial by ID."""
-        global _tutorial_manager
+        global _tutorial_manager, _runtime_identity_ok
+
+        if not _runtime_identity_ok:
+            return {
+                "action": "error",
+                "message": "Runtime deployment mismatch detected. Re-deploy the add-in bundle and restart.",
+                "success": False
+            }
 
         try:
             # For testing, load from test_data folder
@@ -422,15 +607,20 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 debug_log(" Tutorial file found, loading...")
                 step = _tutorial_manager.load_from_file(test_file)
                 if step:
+                    self._ensure_initial_step_context(step)
                     debug_log(" Tutorial loaded, executing fusion actions...")
                     self._execute_fusion_actions(step)
                     self._auto_capture_viewport(step)
+                    mismatch_feedback = self._build_workspace_mismatch_feedback(step)
                     debug_log(" Returning tutorialLoaded response")
-                    return {
+                    response = {
                         "action": "tutorialLoaded",
                         "step": step,
                         "success": True
                     }
+                    if mismatch_feedback:
+                        response["workspaceMismatchFeedback"] = mismatch_feedback
+                    return response
 
             # If no file found, return error
             debug_log(f" Tutorial file not found at {test_file}")
@@ -454,6 +644,299 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         if actions:
             runner = FusionActionsRunner()
             runner.execute_actions(actions)
+
+    def _ensure_initial_step_context(self, step: dict):
+        """Best-effort auto-switch to the first step's required context."""
+        global _context_detector
+
+        if not step or not CORE_MODULES_LOADED or not _context_detector:
+            return
+
+        requires = step.get("requires", {}) or {}
+        required_workspace = requires.get("workspace")
+        required_environment = requires.get("environment")
+        if not required_workspace and not required_environment:
+            return
+
+        try:
+            tools_tab_active = self._is_tools_tab_active()
+            current = _context_detector.get_current_context()
+            workspace_mismatch = (
+                bool(required_workspace) and
+                str(current.workspace.value).lower() != str(required_workspace).lower()
+            )
+            environment_mismatch = (
+                bool(required_environment) and
+                str(current.environment.value).lower() != str(required_environment).lower()
+            )
+
+            # Startup timing edge case: detector can transiently report Solid while
+            # UI focus is still on ToolsTab/Utilities. Force switch attempt anyway.
+            force_switch_from_tools = tools_tab_active and str(required_environment).lower() == "solid"
+
+            if not workspace_mismatch and not environment_mismatch and not force_switch_from_tools:
+                return
+
+            debug_log(
+                f" Initial tutorial open auto-switch attempt: "
+                f"current={current.workspace.value}/{current.environment.value}, "
+                f"required={required_workspace}/{required_environment}"
+            )
+
+            # Retry a few times because launching from Add-Ins/Utilities can leave
+            # Fusion in a transient UI state on initial palette open.
+            for _ in range(4):
+                if str(required_environment).lower() == "solid":
+                    self._collapse_tools_tab_to_solid()
+                    self._pump_ui_events(0.1)
+
+                if workspace_mismatch and required_workspace:
+                    self._activate_workspace_by_name(required_workspace)
+                    self._pump_ui_events(0.15)
+
+                if required_environment:
+                    self._activate_environment_tab(required_environment)
+                    self._pump_ui_events(0.2)
+
+                # Re-check after each attempt and exit early if matched.
+                current = _context_detector.get_current_context()
+                workspace_mismatch = (
+                    bool(required_workspace) and
+                    str(current.workspace.value).lower() != str(required_workspace).lower()
+                )
+                environment_mismatch = (
+                    bool(required_environment) and
+                    str(current.environment.value).lower() != str(required_environment).lower()
+                )
+                if not workspace_mismatch and not environment_mismatch:
+                    break
+
+        except Exception as e:
+            debug_log(f" Initial tutorial context auto-switch failed (continuing): {e}")
+
+    def _is_tools_tab_active(self) -> bool:
+        """Detect whether ToolsTab currently has focus."""
+        try:
+            app = adsk.core.Application.get()
+            ui = app.userInterface if app else None
+            if not ui:
+                return False
+
+            global_tabs = getattr(ui, "toolbarTabs", None)
+            if global_tabs:
+                tools_tab = global_tabs.itemById("ToolsTab")
+                if tools_tab and getattr(tools_tab, "isActive", False):
+                    return True
+
+            active_workspace = ui.activeWorkspace
+            ws_tabs = active_workspace.toolbarTabs if active_workspace else None
+            if ws_tabs:
+                tools_tab = ws_tabs.itemById("ToolsTab")
+                if tools_tab and getattr(tools_tab, "isActive", False):
+                    return True
+        except Exception:
+            pass
+
+        return False
+
+    def _collapse_tools_tab_to_solid(self) -> bool:
+        """If ToolsTab is active, switch to SolidTab before rendering tutorial step."""
+        try:
+            app = adsk.core.Application.get()
+            ui = app.userInterface if app else None
+            if not ui:
+                return False
+
+            # Try global toolbar tabs first (matches user-observed API path)
+            global_tabs = getattr(ui, "toolbarTabs", None)
+            if global_tabs:
+                tools_tab = global_tabs.itemById("ToolsTab")
+                solid_tab = global_tabs.itemById("SolidTab")
+                if tools_tab and getattr(tools_tab, "isActive", False) and solid_tab:
+                    solid_tab.activate()
+                    debug_log(" Collapsed ToolsTab by activating SolidTab (ui.toolbarTabs)")
+                    return True
+
+            # Fallback: active workspace toolbar tabs
+            active_workspace = ui.activeWorkspace
+            ws_tabs = active_workspace.toolbarTabs if active_workspace else None
+            if ws_tabs:
+                tools_tab = ws_tabs.itemById("ToolsTab")
+                solid_tab = ws_tabs.itemById("SolidTab")
+                if tools_tab and getattr(tools_tab, "isActive", False) and solid_tab:
+                    solid_tab.activate()
+                    debug_log(" Collapsed ToolsTab by activating SolidTab (activeWorkspace.toolbarTabs)")
+                    return True
+        except Exception as e:
+            debug_log(f" Failed collapsing ToolsTab to SolidTab: {e}")
+
+        return False
+
+    def _pump_ui_events(self, delay_seconds: float = 0.1):
+        """Let Fusion process UI changes between activation attempts."""
+        try:
+            adsk.doEvents()
+        except Exception:
+            pass
+        time.sleep(delay_seconds)
+        try:
+            adsk.doEvents()
+        except Exception:
+            pass
+
+    def _activate_workspace_by_name(self, workspace_name: str) -> bool:
+        """Attempt to activate a top-level Fusion workspace by name."""
+        try:
+            app = adsk.core.Application.get()
+            ui = app.userInterface if app else None
+            if not ui:
+                return False
+
+            # Preferred: iterate workspaces collection and activate matching display name.
+            try:
+                workspaces = ui.workspaces
+                if workspaces:
+                    for i in range(workspaces.count):
+                        ws = workspaces.item(i)
+                        ws_name = (getattr(ws, "name", "") or "").strip()
+                        if ws_name.lower() == str(workspace_name).lower():
+                            ws.activate()
+                            return True
+            except Exception:
+                pass
+
+            # Fallback: execute workspace command definition.
+            cmd_map = {
+                "design": "DesignWorkspace",
+                "render": "RenderWorkspace",
+                "manufacture": "ManufactureWorkspace",
+                "simulation": "SimulationWorkspace",
+                "drawing": "DrawingWorkspace",
+                "animation": "AnimationWorkspace",
+                "generative": "GenerativeDesignWorkspace",
+            }
+            cmd_id = cmd_map.get(str(workspace_name).lower())
+            if cmd_id:
+                cmd_def = ui.commandDefinitions.itemById(cmd_id)
+                if cmd_def:
+                    cmd_def.execute()
+                    return True
+        except Exception as e:
+            debug_log(f" Failed to activate workspace '{workspace_name}': {e}")
+
+        return False
+
+    def _activate_environment_tab(self, environment_name: str) -> bool:
+        """Attempt to activate a Design environment tab by name."""
+        try:
+            app = adsk.core.Application.get()
+            ui = app.userInterface if app else None
+            active_workspace = ui.activeWorkspace if ui else None
+            if not active_workspace:
+                return False
+
+            target = str(environment_name).strip().lower()
+
+            # First try Design workspace + explicit tab activation. This is the most
+            # reliable path when launched from Add-Ins (ToolsTab/Utilities focus).
+            try:
+                design_tab_map = {
+                    "solid": "SolidTab",
+                    "surface": "SurfaceTab",
+                    "mesh": "MeshTab",
+                    "sheet metal": "SheetMetalTab",
+                    "sketch": "SketchTab",
+                    "plastic": "PlasticTab",
+                }
+                tab_id = design_tab_map.get(target)
+                if tab_id and ui.workspaces:
+                    design_ws = ui.workspaces.itemById("FusionSolidEnvironment")
+                    if design_ws:
+                        design_ws.activate()
+                        self._pump_ui_events(0.1)
+                        solid_tab = design_ws.toolbarTabs.itemById(tab_id)
+                        if solid_tab:
+                            solid_tab.activate()
+                            debug_log(f" Activated Design workspace + tab: FusionSolidEnvironment/{tab_id}")
+                            return True
+
+                # Form is typically a separate environment/workspace in some builds.
+                if target == "form" and ui.workspaces:
+                    sculpt_ws = ui.workspaces.itemById("FusionSculptEnvironment")
+                    if sculpt_ws:
+                        sculpt_ws.activate()
+                        debug_log(" Activated environment workspace: FusionSculptEnvironment")
+                        return True
+            except Exception:
+                pass
+
+            toolbar_tabs = active_workspace.toolbarTabs
+            if toolbar_tabs:
+                alias_map = {
+                    "sheet metal": ["sheetmetal", "sheet metal"],
+                    "utilities": ["utilities", "utility"],
+                    "form": ["form", "sculpt", "tspline"],
+                }
+                terms = set([target])
+                for alias in alias_map.get(target, []):
+                    terms.add(alias)
+
+                for i in range(toolbar_tabs.count):
+                    tab = toolbar_tabs.item(i)
+                    tab_id = (getattr(tab, "id", "") or "").lower()
+                    tab_name = (getattr(tab, "name", "") or "").lower()
+                    if any(term in tab_id or term in tab_name for term in terms):
+                        try:
+                            tab.activate()
+                            debug_log(f" Activated environment toolbar tab: {tab.id or tab.name}")
+                            return True
+                        except Exception:
+                            # Fall through to command-based activation using the tab id.
+                            if tab_id and ui:
+                                cmd_def = ui.commandDefinitions.itemById(tab.id)
+                                if cmd_def:
+                                    cmd_def.execute()
+                                    debug_log(f" Activated environment via tab command id: {tab.id}")
+                                    return True
+
+            # Fallback: execute tab command definition if exposed.
+            cmd_map = {
+                "solid": "SolidTab",
+                "surface": "SurfaceTab",
+                "mesh": "MeshTab",
+                "sheet metal": "SheetMetalTab",
+                "sketch": "SketchTab",
+                "form": "FormTab",
+                "utilities": "UtilitiesTab",
+            }
+            cmd_id = cmd_map.get(target)
+            if cmd_id and ui:
+                cmd_def = ui.commandDefinitions.itemById(cmd_id)
+                if cmd_def:
+                    cmd_def.execute()
+                    debug_log(f" Activated environment via known command: {cmd_id}")
+                    return True
+
+            # Last resort: fuzzy search command definitions for a tab command that
+            # contains the target term (helps across Fusion builds with different IDs).
+            if ui:
+                try:
+                    defs = ui.commandDefinitions
+                    for i in range(defs.count):
+                        cmd = defs.item(i)
+                        cid = (getattr(cmd, "id", "") or "").lower()
+                        cname = (getattr(cmd, "name", "") or "").lower()
+                        if any(term in cid or term in cname for term in terms):
+                            if "tab" in cid or "tab" in cname:
+                                cmd.execute()
+                                debug_log(f" Activated environment via fuzzy command: {cmd.id}")
+                                return True
+                except Exception:
+                    pass
+        except Exception as e:
+            debug_log(f" Failed to activate environment '{environment_name}': {e}")
+
+        return False
 
     def _auto_capture_viewport(self, step: dict):
         """Auto-capture viewport screenshot if the step requests it."""
@@ -492,6 +975,83 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         except Exception as e:
             debug_log(f" Auto-capture viewport failed: {e}")
 
+    def _build_workspace_mismatch_feedback(self, step: dict) -> dict:
+        """Create payload for a non-blocking workspace/environment mismatch modal."""
+        global _context_detector
+
+        if not step or not CORE_MODULES_LOADED or not _context_detector:
+            return None
+
+        requires = (step.get("requires") or {})
+        required_workspace = requires.get("workspace")
+        required_environment = requires.get("environment")
+        if not required_workspace and not required_environment:
+            return None
+
+        try:
+            current_context = _context_detector.get_current_context()
+            current_workspace = current_context.workspace.value
+            current_environment = current_context.environment.value
+
+            workspace_mismatch = (
+                bool(required_workspace) and
+                str(current_workspace).lower() != str(required_workspace).lower()
+            )
+            environment_mismatch = (
+                bool(required_environment) and
+                str(current_environment).lower() != str(required_environment).lower()
+            )
+
+            if not workspace_mismatch and not environment_mismatch:
+                return None
+
+            mismatch_type = "workspace" if workspace_mismatch else "environment"
+            if mismatch_type == "workspace":
+                template = get_workspace_feedback_template()
+                title = "Wrong Workspace for This Step"
+                message = (
+                    f"This step expects the {required_workspace} workspace. "
+                    "You can close this and continue, but the UI may not match until you switch."
+                )
+                required_value = required_workspace
+                current_value = current_workspace
+                annotation_label = "Open the workspace selector here"
+            else:
+                template = get_environment_feedback_template(required_environment)
+                title = "Wrong Environment for This Step"
+                message = (
+                    f"This step expects the {required_environment} environment (tab) in Fusion. "
+                    "You can close this and continue, but the toolbar and commands may not match until you switch."
+                )
+                required_value = required_environment
+                current_value = current_environment
+                annotation_label = f"Switch to {required_environment} here"
+
+            annotation = template.get("annotation", {})
+            position = annotation.get("position", {})
+
+            return {
+                "title": title,
+                "message": message,
+                "mismatchType": mismatch_type,
+                "currentWorkspace": current_value,
+                "requiredWorkspace": required_value,
+                "referenceImageSrc": template.get("referenceImageSrc", "../assets/UI Images/Solid/Solid_0.png"),
+                "annotation": {
+                    "label": annotation_label,
+                    "shape": annotation.get("shape", "circle"),
+                    "position": {
+                        "x": position.get("x", 4.2),
+                        "y": position.get("y", 12.0),
+                        "width": position.get("width", 6.8),
+                        "height": position.get("height", 8.5)
+                    }
+                }
+            }
+        except Exception as e:
+            debug_log(f" Workspace mismatch feedback check failed: {e}")
+            return None
+
     def _handle_navigation(self, direction: str, index: int = None) -> dict:
         """Handle navigation with optional context checking."""
         global _tutorial_manager, _context_detector, _consent_manager
@@ -517,7 +1077,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         target_step = steps[target_index]
         requires = target_step.get("requires", {})
-
         # Stop any context polling left over from a previous mismatch warning
         if _context_poller and _context_poller.is_polling:
             _context_poller.stop_polling()
@@ -570,7 +1129,11 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         if step:
             self._execute_fusion_actions(step)
             self._auto_capture_viewport(step)
-            return {"action": "updateStep", "step": step, "success": True}
+            response = {"action": "updateStep", "step": step, "success": True}
+            mismatch_feedback = self._build_workspace_mismatch_feedback(step)
+            if mismatch_feedback:
+                response["workspaceMismatchFeedback"] = mismatch_feedback
+            return response
 
         return {"action": "error", "message": "Navigation failed", "success": False}
 
@@ -739,11 +1302,15 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                         step = _tutorial_manager.go_to_step(target_index)
                         if step:
                             self._execute_fusion_actions(step)
-                            return {
+                            response = {
                                 "action": "updateStep",
                                 "step": step,
                                 "success": True
                             }
+                            mismatch_feedback = self._build_workspace_mismatch_feedback(step)
+                            if mismatch_feedback:
+                                response["workspaceMismatchFeedback"] = mismatch_feedback
+                            return response
                     else:
                         # Context still doesn't match - show warning
                         debug_log(" Context still doesn't match - user needs to switch manually")
@@ -759,11 +1326,15 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                     step = _tutorial_manager.go_to_step(target_index)
                     if step:
                         self._execute_fusion_actions(step)
-                        return {
+                        response = {
                             "action": "updateStep",
                             "step": step,
                             "success": True
                         }
+                        mismatch_feedback = self._build_workspace_mismatch_feedback(step)
+                        if mismatch_feedback:
+                            response["workspaceMismatchFeedback"] = mismatch_feedback
+                        return response
 
         return {"action": "redirectSkipped", "success": True}
 
@@ -784,12 +1355,16 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
             if step:
                 self._execute_fusion_actions(step)
-                return {
+                response = {
                     "action": "updateStep",
                     "step": step,
                     "skippedRedirect": True,
                     "success": True
                 }
+                mismatch_feedback = self._build_workspace_mismatch_feedback(step)
+                if mismatch_feedback:
+                    response["workspaceMismatchFeedback"] = mismatch_feedback
+                return response
 
         return {"action": "redirectSkipped", "success": True}
 
@@ -980,14 +1555,26 @@ def run(context):
     global _app, _ui, _tutorial_manager, _handlers
     global _context_detector, _consent_manager, _context_poller
     global _completion_detector, _screenshot_dir
+    global _runtime_identity_ok
 
     debug_log("=== run() called - add-in starting ===")
+    debug_log(f"Runtime build stamp: {BUILD_STAMP}")
 
     try:
         _app = adsk.core.Application.get()
         _ui = _app.userInterface
         _tutorial_manager = TutorialManager()
         debug_log(" Basic initialization complete")
+
+        # Mandatory runtime identity check to catch stale installed bundle.
+        _runtime_identity_ok, identity = validate_runtime_identity()
+        debug_log(f" Runtime script path: {identity.get('scriptPath')}")
+        debug_log(f" Runtime header hash: {identity.get('headerHash')}")
+        if not _runtime_identity_ok and _ui:
+            try:
+                _ui.messageBox(identity.get("message", "Runtime identity validation failed."))
+            except Exception:
+                pass
 
         # Initialize new modules (optional - basic tutorial works without them)
         if CORE_MODULES_LOADED:

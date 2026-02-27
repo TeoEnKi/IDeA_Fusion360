@@ -69,6 +69,10 @@
             "highlights": []
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
       }
     },
     {
@@ -137,6 +141,10 @@
             "highlights": []
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Sketch"
       }
     },
     {
@@ -167,7 +175,11 @@
           "type": "ui.exitMode",
           "mode": "Sketch"
         }
-      ]
+      ],
+      "requires": {
+        "workspace": "Design",
+        "environment": "Sketch"
+      }
     },
     {
       "stepId": "mug-v2-step-4",
@@ -222,6 +234,10 @@
             "highlights": []
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
       }
     },
     {
@@ -276,6 +292,10 @@
             ]
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
       }
     },
     {
@@ -302,7 +322,11 @@
           "type": "ui.hint",
           "text": "Fillet rim edges to improve comfort."
         }
-      ]
+      ],
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
+      }
     },
     {
       "stepId": "mug-v2-step-7",
@@ -361,6 +385,10 @@
             "highlights": []
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
       }
     },
     {
@@ -420,6 +448,10 @@
             "highlights": []
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Sketch"
       }
     },
     {
@@ -454,7 +486,11 @@
           "type": "ui.hint",
           "text": "Sweep profile along path and set operation to Join."
         }
-      ]
+      ],
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
+      }
     },
     {
       "stepId": "mug-v2-step-10",
@@ -512,6 +548,10 @@
             ]
           }
         ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
       }
     }
   ]

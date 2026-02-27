@@ -165,6 +165,7 @@ class FusionContextDetector:
             try:
                 toolbar_tabs = active_workspace.toolbarTabs
                 if toolbar_tabs:
+                    active_tab_seen = False
                     _debug_log(f"Found {toolbar_tabs.count} toolbar tabs")
                     for i in range(toolbar_tabs.count):
                         tab = toolbar_tabs.item(i)
@@ -173,6 +174,7 @@ class FusionContextDetector:
                         is_active = tab.isActive
 
                         if is_active:
+                            active_tab_seen = True
                             _debug_log(f"Active tab: id='{tab_id}', name='{tab_name}'")
                             tab_id_lower = tab_id.lower()
                             tab_name_lower = tab_name.lower()
@@ -193,11 +195,23 @@ class FusionContextDetector:
                             if "plastic" in tab_id_lower or "plastic" in tab_name_lower:
                                 _debug_log("Detected: PLASTIC environment")
                                 return Environment.PLASTIC
+                            if "sketch" in tab_id_lower or "sketch" in tab_name_lower:
+                                _debug_log("Detected: SKETCH environment (toolbar tab)")
+                                return Environment.SKETCH
+                            if tab_id_lower == "toolstab" or "utilit" in tab_name_lower:
+                                # Tools/Utilities is a toolbar state, not a modeling environment.
+                                _debug_log("Detected: TOOLS/UTILITIES toolbar tab (treating as UNKNOWN environment)")
+                                return Environment.UNKNOWN
                             if "form" in tab_id_lower or "form" in tab_name_lower or "sculpt" in tab_name_lower:
                                 _debug_log("Detected: FORM environment")
                                 return Environment.FORM
 
                             _debug_log(f"Tab '{tab_name}' did not match any known environment")
+
+                    # If a toolbar tab is active but not recognized, avoid mislabeling it as SOLID.
+                    if active_tab_seen:
+                        _debug_log("Active toolbar tab detected but unrecognized; returning UNKNOWN instead of SOLID fallback")
+                        return Environment.UNKNOWN
             except Exception as e:
                 _debug_log(f"Error checking toolbar tabs: {e}")
 

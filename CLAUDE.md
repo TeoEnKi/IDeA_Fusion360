@@ -68,6 +68,7 @@ Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC upd
 **Python → JS response types** (sent via `sendInfoToHTML`):
 | Action | Description |
 |---|---|
+| `runtimeInfo` | Runtime identity payload (`buildStamp`, `scriptPath`, `headerHash`, `pathMatchesExpected`, `coreModulesLoaded`) for stale-bundle detection |
 | `tutorialLoaded` | Tutorial loaded with first step data |
 | `updateStep` | Step data after navigation |
 | `error` | Error message |
@@ -87,6 +88,8 @@ Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC upd
 
 ### Context Warnings
 Context warnings are **non-blocking** — navigation always proceeds even if the user is in the wrong environment. A dismissible `#warningFooter` appears with configurable type (`warning`/`error`/`info`), optional action button with callback, and auto-dismiss after 5 seconds or when the context poller detects the user has switched to the correct environment.
+Workspace/environment mismatch validation during step navigation depends on each step including `requires.workspace` and `requires.environment`. These are **mandatory on every step** (not inherited). The current `test_data/mug_tutorial.json` includes explicit `requires` on all steps so mismatch warning/modal behavior can be tested on every navigation transition.
+When launched from Add-Ins with `ToolsTab` active, initial tutorial load now performs best-effort context normalization before rendering step 1: collapse `ToolsTab` focus and activate required Design tab (e.g., `SolidTab`) using multiple fallback activation paths.
 
 ### QC Completion Detection
 Tutorial steps can include `qcChecks` with an `expectedCommand` field matching a Fusion 360 command ID (e.g., `"expectedCommand": "SketchLine"`). The completion detector monitors Fusion API events and sends `completionEvent` messages to JS.
@@ -115,19 +118,35 @@ python -m http.server 8000
 The palette auto-detects the missing Fusion bridge and enters standalone mode, loading `test_data/mug_tutorial.json`. Opening the HTML file directly via `file://` will hit CORS errors and fall back to inline placeholder data.
 
 ### Full testing in Fusion 360
-1. Copy `FusionTutorialOverlay.bundle` to `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns`
+1. Run `scripts/deploy_addin.ps1` from repo root (recommended deployment path)
 2. In Fusion: Tools > Add-Ins > enable "FusionTutorialOverlay" > Run
 3. Button appears in Tools > Utilities panel
 4. Python errors: View > Python Console
 5. JS errors: F12 (Qt WebEngine DevTools)
 6. Debug log: `FusionTutorialOverlay.bundle/Contents/debug.log`
+7. Confirm runtime identity in logs and JS console:
+   - `Build: <BUILD_STAMP>`
+   - `Runtime build stamp: <BUILD_STAMP>`
+   - `Runtime script path: .../API/AddIns/FusionTutorialOverlay.bundle/...`
+   - `runtimeInfo` message in JS console
 
-**After editing files in the repo, you must re-copy the bundle to the AddIns directory** for changes to take effect in Fusion. There is no sync script.
+**Supported deploy workflow (required for reliable debugging):**
+1. Run `scripts/deploy_addin.ps1`
+2. Restart add-in in Fusion
+3. Verify startup logs include:
+   - `Build: <BUILD_STAMP>`
+   - `Runtime build stamp: <BUILD_STAMP>`
+   - runtime script path under `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns\FusionTutorialOverlay.bundle`
+4. If those lines are missing, stop behavior debugging and fix deployment first.
+
+### Runtime Identity Enforcement
+`FusionTutorialOverlay.py` enforces runtime identity checks at startup to catch stale installed bundles. The check validates installed script path against the expected AddIns location and logs a deterministic header hash. If runtime identity fails, the add-in shows a deployment-fix message and blocks tutorial load to avoid misleading behavior diagnostics.
 
 ### Tutorial JSON format
 Test tutorials live in `test_data/`. The current test tutorial is `mug_tutorial.json` (tutorialId: `mug_v2`, 10 steps). The tutorial ID is hard-coded in `_handle_ready()` — changing which tutorial loads requires editing that method.
 
 **Step fields:**
+`requires.workspace` and `requires.environment` are **required on every step** for runtime context validation and mismatch feedback.
 - `stepId`, `stepNumber`, `title` — Step identification
 - `instruction` — Primary instruction text
 - `detailedText` — Secondary explanation text
@@ -136,7 +155,9 @@ Test tutorials live in `test_data/`. The current test tutorial is `mug_tutorial.
 - `warnings` — Array of `{symbol, text}` for step warnings
 - `uiAnimations` — Array of animation directives (see animation types below)
 - `fusionActions` — Array of Fusion API actions (only `highlight.body` and `prompt.selectEntity` are implemented; other types like `ui.openWorkspace` are defined in JSON but are no-ops)
-- `requires` — Context requirements (`{workspace, environment}`)
+- `requires` — Context requirements (`{workspace, environment}`); include on every step in test/tutorial manifests so context mismatch checks can run consistently
+- `requires.workspace` — Top-level Fusion workspace (e.g., `Design`, `Render`, `Manufacture`)
+- `requires.environment` — Active workspace tab/mode (e.g., `Solid`, `Sketch`, `Surface`, `Mesh`, `Sheet Metal`)
 - `visualStep` — `{image, highlights[], caption, useNavbar}` for UI reference images with positioned highlight overlays; highlights can use `component` references resolved via the UIComponents JSON files
 - `expandedContent` — `{whyThisMatters, tips, dimensions, parameters, referenceImage, nextSteps, skillsLearned}`
 - `captureViewport` — Boolean; auto-captures Fusion viewport screenshot on step load (read-only; does not control the camera)
