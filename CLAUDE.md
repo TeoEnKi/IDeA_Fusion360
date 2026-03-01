@@ -8,12 +8,12 @@ AI Tutorial Overlay for Autodesk Fusion 360 — an add-in that provides step-by-
 
 ## Architecture
 
-**Python backend** (`FusionTutorialOverlay.py` + `core/` modules) communicates with a **vanilla JS/HTML frontend** (`palette/`) through Fusion 360's palette bridge — no HTTP server, no external dependencies. No build system, linter, or test framework — the add-in runs directly as Python + HTML/JS.
+**Python backend** (`FusionTutorialOverlay.py` + `core/` modules) communicates with a **vanilla JS/HTML frontend** (`palette/`) through Fusion 360's palette bridge. No HTTP server is embedded in the add-in. Tutorial bootstrap currently depends on an outbound webhook fetch to n8n. No build system, linter, or test framework — the add-in runs directly as Python + HTML/JS.
 
 ### Communication Bridge
 - **JS -> Python:** `window.adsk.fusionSendData('cycleEvent', JSON.stringify(data))`
 - **Python -> JS:** `palette.sendInfoToHTML('response', JSON.stringify(data))`
-- All data passes as JSON strings. No REST endpoints or WebSockets.
+- All bridge data passes as JSON strings. The bridge itself has no REST endpoints or WebSockets.
 
 ### Key Modules
 
@@ -26,17 +26,18 @@ AI Tutorial Overlay for Autodesk Fusion 360 — an add-in that provides step-by-
 - **`core/redirect_templates.py`** — Generates redirect step data (animated instructions for switching workspaces/environments).
 - **`core/assets.py`** — `AssetManager` class for base64 data URL conversion with caching. **Not connected** — inline `base64.b64encode` is used instead.
 - **`core/tutorial_manager.py`** — More structured `TutorialManager` with validation. **Not connected** — the inline class in `FusionTutorialOverlay.py` is used at runtime.
+- **`core/tutorial_plugin_service.py`** — Cloud tutorial bootstrap loader. Fetches latest tutorial JSON from n8n webhook with timeout + normalized errors.
 - **`core/fusion_actions.py`** — More structured `FusionActionsRunner`. **Not connected** — the inline class in `FusionTutorialOverlay.py` is used at runtime.
 
 **JavaScript frontend (no module bundler — all globals on `window.*`, loaded in dependency order):**
-- **`palette/static/js/main.js`** — Bridge initialization, message routing, standalone test mode (IIFE pattern).
+- **`palette/static/js/main.js`** — Bridge initialization, message routing, and blocking error state for bridge/data-load failures (IIFE pattern).
 - **`palette/static/js/stepper.js`** — Step navigation controller (Next/Previous/GoToStep), redirect mode management.
 - **`palette/static/js/consentDialog.js`** — First-run consent dialog for AI guidance preference.
 - **`palette/static/js/renderers/`** — Strategy pattern: `BaseRenderer` → `AnimatedRenderer`, `StaticRenderer`, `RedirectRenderer`.
 
 **Data files:**
 - **`assets/UI Images/Solid/Solid_UIComponents.json`** and **`assets/UI Images/Sketch/Sketch_UIComponents.json`** — Per-environment UI component position maps (toolbar groups, environment tabs, navigation bar). Loaded by `BaseRenderer` at init. Each has corresponding screenshot PNGs (`Solid_0.png`..`Solid_2.png`, `Sketch_0.png`..`Sketch_3.png`) where the `imageIndex` field selects which screenshot to display (e.g., 0=base, 1=Create expanded, 2=Modify expanded).
-- **`test_data/mug_tutorial.json`** — Test tutorial (`mug_v2`, 10 steps). Used for both Fusion testing and standalone browser testing.
+- **`test_data/mug_tutorial.json`** — Legacy local tutorial fixture retained for reference only; bootstrap now uses cloud latest-tutorial endpoint.
 
 ### Data Flow
 ```
@@ -51,7 +52,7 @@ Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC upd
 | Action | Description |
 |---|---|
 | `ready` | Palette loaded, request initial tutorial |
-| `loadTutorial` | Load a specific tutorial by ID |
+| `loadTutorial` | Legacy action; disabled in cloud-only tutorial mode |
 | `next` | Navigate to next step |
 | `prev` | Navigate to previous step |
 | `goToStep` | Navigate to a specific step index |
@@ -88,7 +89,7 @@ Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC upd
 
 ### Context Warnings
 Context warnings are **non-blocking** — navigation always proceeds even if the user is in the wrong environment. A dismissible `#warningFooter` appears with configurable type (`warning`/`error`/`info`), optional action button with callback, and auto-dismiss after 5 seconds or when the context poller detects the user has switched to the correct environment.
-Workspace/environment mismatch validation during step navigation depends on each step including `requires.workspace` and `requires.environment`. These are **mandatory on every step** (not inherited). The current `test_data/mug_tutorial.json` includes explicit `requires` on all steps so mismatch warning/modal behavior can be tested on every navigation transition.
+Workspace/environment mismatch validation during step navigation depends on each step including `requires.workspace` and `requires.environment`. These are **mandatory on every step** (not inherited). The cloud webhook payload should include explicit `requires` on all steps so mismatch warning/modal behavior can run on every navigation transition.
 When launched from Add-Ins with `ToolsTab` active, initial tutorial load now performs best-effort context normalization before rendering step 1: collapse `ToolsTab` focus and activate required Design tab (e.g., `SolidTab`) using multiple fallback activation paths.
 
 ### QC Completion Detection
@@ -115,7 +116,7 @@ cd FusionTutorialOverlay.bundle/Contents
 python -m http.server 8000
 # Open http://localhost:8000/palette/tutorial_palette.html
 ```
-The palette auto-detects the missing Fusion bridge and enters standalone mode, loading `test_data/mug_tutorial.json`. Opening the HTML file directly via `file://` will hit CORS errors and fall back to inline placeholder data.
+The palette no longer loads local tutorial data in standalone mode. Without Fusion bridge + backend fetch, it will show a blocking error state with manual Retry.
 
 ### Full testing in Fusion 360
 1. Run `scripts/deploy_addin.ps1` from repo root (recommended deployment path)
@@ -143,7 +144,7 @@ The palette auto-detects the missing Fusion bridge and enters standalone mode, l
 `FusionTutorialOverlay.py` enforces runtime identity checks at startup to catch stale installed bundles. The check validates installed script path against the expected AddIns location and logs a deterministic header hash. If runtime identity fails, the add-in shows a deployment-fix message and blocks tutorial load to avoid misleading behavior diagnostics.
 
 ### Tutorial JSON format
-Test tutorials live in `test_data/`. The current test tutorial is `mug_tutorial.json` (tutorialId: `mug_v2`, 10 steps). The tutorial ID is hard-coded in `_handle_ready()` — changing which tutorial loads requires editing that method.
+Tutorial bootstrap is fetched from `GET https://narwhjorl.app.n8n.cloud/webhook/get-latest-tutorial` in `_handle_ready()` via `fetch_latest_tutorial(timeout_seconds=15)`. No local tutorial fallback is used in plugin/standalone path.
 
 **Step fields:**
 `requires.workspace` and `requires.environment` are **required on every step** for runtime context validation and mismatch feedback.

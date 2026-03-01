@@ -191,7 +191,7 @@
      * Wait for Fusion bridge to be available
      */
     function waitForBridge() {
-        const maxAttempts = 20;  // Reduced from 50 for faster fallback (2 seconds)
+        const maxAttempts = 20;
         let attempts = 0;
 
         function check() {
@@ -203,20 +203,16 @@
             } else if (attempts < maxAttempts) {
                 setTimeout(check, 100);
             } else {
-                // Bridge not available - run in standalone mode for testing
-                console.warn('Fusion bridge not available, running in standalone test mode');
-                runStandaloneMode();
+                console.warn('Fusion bridge not available');
+                showError('Fusion bridge unavailable. Open this palette from the Fusion 360 add-in and click Retry.');
             }
         }
 
         check();
     }
 
-    // Track if we've received a response from Python
+    // Track whether ready has received a response.
     let receivedResponse = false;
-    let readyRetryCount = 0;
-    const MAX_READY_RETRIES = 5;
-    const READY_RETRY_INTERVAL = 500; // ms
 
     /**
      * Called when Fusion bridge is ready
@@ -233,7 +229,7 @@
             }
         };
 
-        // Send ready message to Python with retry logic
+        // Send initial ready once; manual retries happen via Retry button.
         sendReadyWithRetry();
     }
 
@@ -241,20 +237,8 @@
      * Send ready message with retry logic
      */
     function sendReadyWithRetry() {
-        console.log('TutorialOverlay: Sending ready message to Python (attempt ' + (readyRetryCount + 1) + ')');
+        console.log('TutorialOverlay: Sending ready message to Python');
         sendToBridge({ action: 'ready' });
-
-        // Set up retry if no response received
-        setTimeout(() => {
-            if (!receivedResponse && readyRetryCount < MAX_READY_RETRIES) {
-                readyRetryCount++;
-                console.log('TutorialOverlay: No response received, retrying...');
-                sendReadyWithRetry();
-            } else if (!receivedResponse) {
-                console.warn('TutorialOverlay: No response after retries, falling back to standalone mode');
-                runStandaloneMode();
-            }
-        }, READY_RETRY_INTERVAL);
     }
 
     /**
@@ -974,6 +958,7 @@
     function retryLoad() {
         if (elements.errorState) elements.errorState.classList.add('hidden');
         if (elements.loadingState) elements.loadingState.classList.remove('hidden');
+        receivedResponse = false;
         sendToBridge({ action: 'ready' });
     }
 
@@ -981,73 +966,15 @@
      * Run in standalone mode for testing without Fusion
      */
     function runStandaloneMode() {
-        console.log('Running in standalone test mode');
-
-        // Hide loading immediately
-        if (elements.loadingState) {
-            elements.loadingState.classList.add('hidden');
-        }
-
-        // Try to fetch the real mug tutorial JSON
-        fetch('../test_data/mug_tutorial.json')
-            .then(response => {
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                return response.json();
-            })
-            .then(tutorial => {
-                console.log('Standalone: loaded', tutorial.title, '(' + tutorial.steps.length + ' steps)');
-                loadStandaloneTutorial(tutorial);
-            })
-            .catch(err => {
-                console.warn('Standalone: could not fetch tutorial JSON (' + err.message + '), using fallback');
-                loadStandaloneTutorial({
-                    tutorialId: 'fallback',
-                    title: 'Standalone Mode (No Tutorial Loaded)',
-                    steps: [{
-                        stepId: 'fallback-1',
-                        stepNumber: 1,
-                        title: 'No Tutorial Data',
-                        instruction: 'Could not load tutorial JSON. Serve from a local HTTP server to load the full tutorial.',
-                        detailedText: 'Run "python -m http.server" from the Contents/ directory, then open http://localhost:8000/palette/tutorial_palette.html',
-                        qcChecks: [{ symbol: '\u26A0\uFE0F', text: 'Fetch failed — likely a file:// CORS restriction' }],
-                        warnings: []
-                    }]
-                });
-            });
+        console.warn('Standalone mode disabled for cloud-only tutorial loading.');
+        showError('Standalone mode is disabled. Open from Fusion 360 add-in to fetch the latest tutorial.');
     }
 
     /**
      * Load a tutorial in standalone mode (no Fusion bridge)
      */
-    function loadStandaloneTutorial(tutorial) {
-        const steps = tutorial.steps;
-
-        // Override step change handler for standalone navigation
-        stepper.onStepChange = (action, index) => {
-            let newIndex = stepper.currentIndex;
-
-            if (action === 'next' && newIndex < steps.length - 1) {
-                newIndex++;
-            } else if (action === 'prev' && newIndex > 0) {
-                newIndex--;
-            } else if (action === 'goToStep') {
-                newIndex = index;
-            }
-
-            const step = steps[newIndex];
-            step.currentIndex = newIndex;
-            step.totalSteps = steps.length;
-            step.tutorialTitle = tutorial.title;
-            stepper.loadStep(step);
-        };
-
-        // Load first step
-        showTutorial();
-        const firstStep = steps[0];
-        firstStep.currentIndex = 0;
-        firstStep.totalSteps = steps.length;
-        firstStep.tutorialTitle = tutorial.title;
-        stepper.loadStep(firstStep);
+    function loadStandaloneTutorial() {
+        showError('Standalone mode is disabled. Open from Fusion 360 add-in to fetch the latest tutorial.');
     }
 
     // Expose functions globally for use by renderers

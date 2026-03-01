@@ -19,7 +19,7 @@ FusionTutorialOverlay.bundle/
     │           ├── main.js      # Entry point + bridge
     │           ├── stepper.js   # Step navigation
     │           └── renderers/   # UI renderers
-    ├── test_data/               # Test tutorials
+    ├── test_data/               # Legacy local fixtures (not used by runtime bootstrap)
     │   ├── test_tutorial.json
     │   └── existing_model_tutorial.json
     └── assets/                  # Images (cursor, icons)
@@ -29,20 +29,15 @@ FusionTutorialOverlay.bundle/
 
 ### Method 1: Standalone HTML Testing (No Fusion 360 Required)
 
-This is the quickest way to test the UI and animations without Fusion 360.
+Standalone now verifies shell/UI behavior only. Tutorial data bootstrap is cloud-only via plugin backend.
 
 1. Open the palette HTML directly in a browser:
    ```
    FusionTutorialOverlay.bundle/Contents/palette/tutorial_palette.html
    ```
 
-2. The palette will detect that Fusion is not available and automatically run in "standalone test mode"
-
-3. You'll see a test tutorial with 3 steps demonstrating:
-   - Basic step display
-   - Cursor animations (move, click, drag)
-   - QC checks and warnings
-   - Navigation controls
+2. Without Fusion bridge/backend, the palette shows a blocking error state.
+3. Use this mode only for static UI checks, not tutorial rendering.
 
 ### Method 2: Install in Fusion 360
 
@@ -102,7 +97,7 @@ A 7-step tutorial for understanding any existing 3D model:
 
 This tutorial works with ANY model you have open in Fusion 360.
 
-## Creating Custom Test Tutorials
+## Creating Custom Test Tutorials (Legacy Local Workflow)
 
 Create a new JSON file in `test_data/` following this structure:
 
@@ -160,10 +155,10 @@ Create a new JSON file in `test_data/` following this structure:
 }
 ```
 
-To load your custom tutorial:
-1. Save it as a JSON file in `test_data/` (e.g., `my_custom_tutorial.json`)
-2. Place it in the `test_data/` folder
-3. Modify `main.js` to load your tutorial ID, or update the Python code
+To test a custom tutorial now:
+1. Serve it from the cloud webhook source (`get-latest-tutorial` endpoint).
+2. Open the plugin inside Fusion 360 and let backend bootstrap load it.
+3. Use Retry in UI for manual re-fetch after endpoint updates.
 
 Notes:
 - `requires.workspace` and `requires.environment` are required on every step.

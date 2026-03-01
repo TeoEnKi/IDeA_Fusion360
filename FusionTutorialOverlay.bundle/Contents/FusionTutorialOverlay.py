@@ -11,7 +11,7 @@ import base64
 import time
 import hashlib
 
-BUILD_STAMP = "2026-02-26-initial-autoswitch-v3"
+BUILD_STAMP = "2026-03-01-cloud-latest-loader-v1"
 EXPECTED_INSTALL_FRAGMENT = "AppData/Roaming/Autodesk/Autodesk Fusion 360/API/AddIns/FusionTutorialOverlay.bundle/Contents/FusionTutorialOverlay.py"
 
 # Get the directory for logging BEFORE any other imports
@@ -79,6 +79,7 @@ try:
     from core.redirect_templates import RedirectTemplateLibrary
     from core.context_poller import ContextPollingManager
     from core.completion_detector import CompletionDetector, CompletionEvent, CompletionEventType
+    from core.tutorial_plugin_service import fetch_latest_tutorial
     CORE_MODULES_LOADED = True
     debug_log("Core modules loaded successfully")
 except Exception as e:
@@ -495,9 +496,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 response = self._handle_ready()
 
             elif action == "loadTutorial":
-                # Load a specific tutorial
-                tutorial_id = data.get("tutorialId", "test")
-                response = self._handle_load_tutorial(tutorial_id)
+                response = self._handle_load_tutorial(data.get("tutorialId", ""))
 
             elif action == "next":
                 response = self._handle_navigation("next")
@@ -569,8 +568,8 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         except Exception as e:
             debug_log(f" Failed to send runtimeInfo: {e}")
 
-        # Load tutorial first for fast startup (change "mug" to "test" for box tutorial)
-        response = self._handle_load_tutorial("mug")
+        # Load latest tutorial from cloud webhook.
+        response = self._handle_load_latest_tutorial()
         debug_log(f" Tutorial load response: {response.get('action', 'unknown')}")
 
         # Check if first run consent is needed (non-blocking, optional feature)
@@ -588,7 +587,15 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         return response
 
     def _handle_load_tutorial(self, tutorial_id: str) -> dict:
-        """Load a tutorial by ID."""
+        """Legacy loadTutorial route is disabled in cloud-only mode."""
+        return {
+            "action": "error",
+            "message": "Loading local tutorials by ID is disabled in cloud-only mode.",
+            "success": False
+        }
+
+    def _handle_load_latest_tutorial(self) -> dict:
+        """Load latest tutorial from cloud webhook and bootstrap step 1."""
         global _tutorial_manager, _runtime_identity_ok
 
         if not _runtime_identity_ok:
@@ -599,39 +606,50 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             }
 
         try:
-            # For testing, load from test_data folder
-            test_file = get_resource_path(f"test_data/{tutorial_id}_tutorial.json")
-            debug_log(f" Looking for tutorial at: {test_file}")
+            result = fetch_latest_tutorial(timeout_seconds=15)
+            if not result.get("ok"):
+                message = result.get("error", "Failed to load tutorial from cloud endpoint.")
+                debug_log(f" Cloud tutorial fetch failed: {message}")
+                return {"action": "error", "message": message, "success": False}
 
-            if os.path.exists(test_file):
-                debug_log(" Tutorial file found, loading...")
-                step = _tutorial_manager.load_from_file(test_file)
-                if step:
-                    self._ensure_initial_step_context(step)
-                    debug_log(" Tutorial loaded, executing fusion actions...")
-                    self._execute_fusion_actions(step)
-                    self._auto_capture_viewport(step)
-                    mismatch_feedback = self._build_workspace_mismatch_feedback(step)
-                    debug_log(" Returning tutorialLoaded response")
-                    response = {
-                        "action": "tutorialLoaded",
-                        "step": step,
-                        "success": True
-                    }
-                    if mismatch_feedback:
-                        response["workspaceMismatchFeedback"] = mismatch_feedback
-                    return response
+            tutorial_data = result.get("data")
+            if not isinstance(tutorial_data, dict):
+                return {
+                    "action": "error",
+                    "message": "Tutorial endpoint returned invalid tutorial payload.",
+                    "success": False
+                }
+            if not isinstance(tutorial_data.get("steps"), list) or len(tutorial_data.get("steps", [])) == 0:
+                return {
+                    "action": "error",
+                    "message": "Tutorial payload is missing a valid steps array.",
+                    "success": False
+                }
 
-            # If no file found, return error
-            debug_log(f" Tutorial file not found at {test_file}")
-            return {
-                "action": "error",
-                "message": f"Tutorial '{tutorial_id}' not found",
-                "success": False
+            step = _tutorial_manager.load_tutorial(tutorial_data)
+            if not step:
+                return {
+                    "action": "error",
+                    "message": "Unable to initialize tutorial from cloud payload.",
+                    "success": False
+                }
+
+            self._ensure_initial_step_context(step)
+            debug_log(" Tutorial loaded from cloud, executing fusion actions...")
+            self._execute_fusion_actions(step)
+            self._auto_capture_viewport(step)
+            mismatch_feedback = self._build_workspace_mismatch_feedback(step)
+            response = {
+                "action": "tutorialLoaded",
+                "step": step,
+                "success": True
             }
+            if mismatch_feedback:
+                response["workspaceMismatchFeedback"] = mismatch_feedback
+            return response
 
         except Exception as e:
-            debug_log(f" Error loading tutorial: {e}")
+            debug_log(f" Error loading cloud tutorial: {e}")
             return {
                 "action": "error",
                 "message": str(e),
