@@ -196,12 +196,6 @@ class Stepper {
             const isLast = this.currentIndex >= this.totalSteps - 1;
             // Disable next during redirect mode
             nextBtn.disabled = isLast || this.isRedirecting;
-
-            // Update button text for last step
-            const textSpan = nextBtn.querySelector('span:not(.btn-icon)');
-            if (textSpan) {
-                textSpan.textContent = isLast ? 'Done' : 'Next';
-            }
         }
 
     }

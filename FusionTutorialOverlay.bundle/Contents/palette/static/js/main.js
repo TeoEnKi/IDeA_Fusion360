@@ -20,7 +20,6 @@
         errorState: null,
         tutorialContent: null,
         navigation: null,
-        stepNavigator: null,
         errorMessage: null,
         prevBtn: null,
         nextBtn: null,
@@ -73,7 +72,6 @@
         elements.errorState = document.getElementById('errorState');
         elements.tutorialContent = document.getElementById('tutorialContent');
         elements.navigation = document.getElementById('navigation');
-        elements.stepNavigator = document.getElementById('stepNavigator');
         elements.errorMessage = document.getElementById('errorMessage');
         elements.prevBtn = document.getElementById('prevBtn');
         elements.nextBtn = document.getElementById('nextBtn');
@@ -938,7 +936,6 @@
         if (elements.errorState) elements.errorState.classList.add('hidden');
         if (elements.tutorialContent) elements.tutorialContent.classList.remove('hidden');
         if (elements.navigation) elements.navigation.classList.remove('hidden');
-        if (elements.stepNavigator) elements.stepNavigator.classList.remove('hidden');
     }
 
     /**

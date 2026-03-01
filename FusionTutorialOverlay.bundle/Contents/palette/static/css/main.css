@@ -501,6 +501,8 @@ body {
 /* Navigation */
 .navigation {
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: var(--spacing-md);
     padding: var(--spacing-md) 0;
     border-top: 1px solid var(--border);
@@ -545,29 +547,51 @@ body {
     background-color: var(--border);
 }
 
-.btn-nav {
-    flex: 1;
+.pager-arrow {
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s, opacity 0.2s;
 }
 
-.btn-icon {
-    font-size: var(--font-size-lg);
+.pager-arrow:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
 }
 
-/* Step Navigator */
-.step-navigator {
-    padding: var(--spacing-md) 0;
+.pager-arrow:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+.pager-arrow:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pager-arrow-icon {
+    font-size: 24px;
+    line-height: 1;
 }
 
 .step-dots {
     display: flex;
     justify-content: center;
-    gap: var(--spacing-sm);
+    align-items: center;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
 .step-dot {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background-color: var(--bg-tertiary);
     cursor: pointer;
@@ -1013,7 +1037,8 @@ body {
 }
 
 /* Redirect mode state - navigation disabled */
-.navigation.redirect-mode .btn-nav {
+.navigation.redirect-mode .pager-arrow,
+.navigation.redirect-mode .step-dot {
     opacity: 0.5;
     pointer-events: none;
 }
@@ -1436,15 +1461,15 @@ body {
     }
 
     .navigation {
-        flex-wrap: wrap;
+        gap: var(--spacing-sm);
     }
 
-    .btn-nav {
-        flex: 1 1 40%;
+    .pager-arrow {
+        width: 48px;
+        height: 48px;
     }
 
-    .btn-secondary {
-        flex: 1 1 100%;
-        order: -1;
+    .step-dots {
+        gap: 10px;
     }
 }
