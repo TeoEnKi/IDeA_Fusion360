@@ -733,21 +733,8 @@
             }
         });
 
-        // Non-blocking feedback when the user starts a command that doesn't match
-        // any expected command documented in the current step's qcChecks.
-        if (!matchedExpectedCommand && pendingExpectedCommands.length > 0) {
-            const ignorePrefix = ['Select', 'Pan', 'Orbit', 'Zoom'];
-            const shouldIgnore = ignorePrefix.some(prefix => commandId.startsWith(prefix));
-            if (!shouldIgnore) {
-                const expectedPreview = pendingExpectedCommands.slice(0, 3).join(', ');
-                const more = pendingExpectedCommands.length > 3 ? ` (+${pendingExpectedCommands.length - 3} more)` : '';
-                showWarningFooter(
-                    `This step expects command: ${expectedPreview}${more}. You started: ${commandId}.`,
-                    'warning',
-                    { autoHide: 5000 }
-                );
-            }
-        }
+        // Intentionally no warning for command mismatches.
+        // Non-matching commands are ignored silently.
     }
 
     /**
