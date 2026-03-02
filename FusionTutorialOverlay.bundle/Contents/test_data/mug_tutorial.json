@@ -1,7 +1,7 @@
 {
   "tutorialId": "mug_v2",
-  "title": "Create a Real Coffee Mug (Test Tutorial Data)",
-  "description": "Test tutorial JSON for the Fusion tutorial player: revolve + shell mug body, then sweep a handle on an offset plane.",
+  "title": "Create a Real Coffee Mug",
+  "description": "Fusion tutorial player: revolve + shell mug body, then sweep a handle on an offset plane.",
   "steps": [
     {
       "stepId": "mug-v2-step-1",
