@@ -11,7 +11,7 @@ import base64
 import time
 import hashlib
 
-BUILD_STAMP = "2026-03-01-cloud-latest-loader-v1"
+BUILD_STAMP = "2026-03-02-local-test-data-only-v1"
 EXPECTED_INSTALL_FRAGMENT = "AppData/Roaming/Autodesk/Autodesk Fusion 360/API/AddIns/FusionTutorialOverlay.bundle/Contents/FusionTutorialOverlay.py"
 
 # Get the directory for logging BEFORE any other imports
@@ -568,7 +568,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         except Exception as e:
             debug_log(f" Failed to send runtimeInfo: {e}")
 
-        # Load latest tutorial from cloud webhook.
+        # Load latest tutorial from configured data source.
         response = self._handle_load_latest_tutorial()
         debug_log(f" Tutorial load response: {response.get('action', 'unknown')}")
 
@@ -587,15 +587,15 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         return response
 
     def _handle_load_tutorial(self, tutorial_id: str) -> dict:
-        """Legacy loadTutorial route is disabled in cloud-only mode."""
+        """Legacy loadTutorial route is disabled in config-driven mode."""
         return {
             "action": "error",
-            "message": "Loading local tutorials by ID is disabled in cloud-only mode.",
+            "message": "Loading tutorials by ID is disabled. Tutorial source is controlled by config/tutorial_source.json.",
             "success": False
         }
 
     def _handle_load_latest_tutorial(self) -> dict:
-        """Load latest tutorial from cloud webhook and bootstrap step 1."""
+        """Load latest tutorial from local test data and bootstrap step 1."""
         global _tutorial_manager, _runtime_identity_ok
 
         if not _runtime_identity_ok:
@@ -608,8 +608,8 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         try:
             result = fetch_latest_tutorial(timeout_seconds=15)
             if not result.get("ok"):
-                message = result.get("error", "Failed to load tutorial from cloud endpoint.")
-                debug_log(f" Cloud tutorial fetch failed: {message}")
+                message = result.get("error", "Failed to load tutorial from local test data.")
+                debug_log(f" Local tutorial load failed: {message}")
                 return {"action": "error", "message": message, "success": False}
 
             tutorial_data = result.get("data")
@@ -630,12 +630,12 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             if not step:
                 return {
                     "action": "error",
-                    "message": "Unable to initialize tutorial from cloud payload.",
+                    "message": "Unable to initialize tutorial from local test tutorial payload.",
                     "success": False
                 }
 
             self._ensure_initial_step_context(step)
-            debug_log(" Tutorial loaded from cloud, executing fusion actions...")
+            debug_log(" Tutorial loaded from local test data, executing fusion actions...")
             self._execute_fusion_actions(step)
             self._auto_capture_viewport(step)
             mismatch_feedback = self._build_workspace_mismatch_feedback(step)
@@ -649,7 +649,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             return response
 
         except Exception as e:
-            debug_log(f" Error loading cloud tutorial: {e}")
+            debug_log(f" Error loading local tutorial: {e}")
             return {
                 "action": "error",
                 "message": str(e),

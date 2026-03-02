@@ -1,56 +1,65 @@
-"""Plugin tutorial loader service for fetching latest tutorial from webhook."""
+"""Plugin tutorial loader service (temporary local-only mode)."""
 
 import json
-import socket
-import urllib.error
-import urllib.request
+import os
+
+_DEFAULT_CONFIG = {
+    "localPath": "test_data/mug_tutorial.json"
+}
 
 
-WEBHOOK_URL = "https://narwhjorl.app.n8n.cloud/webhook/get-latest-tutorial"
+def _get_data_source_config(contents_dir):
+    """Load local tutorial config and return merged defaults."""
+    config = dict(_DEFAULT_CONFIG)
+    config_path = os.path.join(contents_dir, "config", "tutorial_source.json")
+
+    if not os.path.exists(config_path):
+        return config
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        loaded = json.load(f)
+    if isinstance(loaded, dict):
+        config.update(loaded)
+    return config
+
+
+def _load_local_tutorial(contents_dir, local_path):
+    """Load tutorial data from a local JSON path under Contents."""
+    safe_relative = str(local_path or _DEFAULT_CONFIG["localPath"]).replace("\\", "/").lstrip("/").strip()
+    local_file_path = os.path.normpath(os.path.join(contents_dir, safe_relative))
+    contents_root = os.path.normpath(contents_dir)
+
+    if os.path.commonpath([contents_root, local_file_path]) != contents_root:
+        return {"ok": False, "error": f"Local tutorial path is outside Contents: {safe_relative}"}
+
+    try:
+        with open(local_file_path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        return {"ok": True, "data": payload}
+    except FileNotFoundError:
+        return {"ok": False, "error": f"Local tutorial file not found: {safe_relative}"}
+    except json.JSONDecodeError as exc:
+        return {"ok": False, "error": f"Invalid JSON in local tutorial file {safe_relative}: {exc}"}
+    except Exception as exc:
+        return {"ok": False, "error": f"Unexpected error while loading local tutorial {safe_relative}: {exc}"}
 
 
 def fetch_latest_tutorial(timeout_seconds=15):
     """
-    Fetch latest tutorial manifest from cloud webhook.
+    Load tutorial manifest from local test data (temporary mode).
 
     Returns:
         {"ok": True, "data": <parsed_json>}
         or
         {"ok": False, "error": <message>}
     """
-    request = urllib.request.Request(
-        WEBHOOK_URL,
-        method="GET",
-        headers={"Accept": "application/json"},
-    )
-
+    _ = timeout_seconds  # Kept for call-site compatibility.
+    contents_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
-        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
-            status = getattr(response, "status", None) or response.getcode()
-            if status < 200 or status >= 300:
-                return {"ok": False, "error": f"Tutorial endpoint returned HTTP {status}"}
-
-            raw = response.read()
-            try:
-                text = raw.decode("utf-8")
-            except UnicodeDecodeError:
-                text = raw.decode("utf-8", errors="replace")
-
-            try:
-                payload = json.loads(text)
-            except Exception:
-                return {"ok": False, "error": "Invalid JSON response from tutorial endpoint"}
-
-            return {"ok": True, "data": payload}
-
-    except urllib.error.HTTPError as exc:
-        return {"ok": False, "error": f"Tutorial endpoint returned HTTP {exc.code}"}
-    except urllib.error.URLError as exc:
-        reason = getattr(exc, "reason", None)
-        if isinstance(reason, socket.timeout):
-            return {"ok": False, "error": f"Request timed out after {int(timeout_seconds)}s"}
-        return {"ok": False, "error": f"Network error while loading tutorial: {reason or 'unknown'}"}
-    except socket.timeout:
-        return {"ok": False, "error": f"Request timed out after {int(timeout_seconds)}s"}
+        config = _get_data_source_config(contents_dir)
+    except json.JSONDecodeError as exc:
+        return {"ok": False, "error": f"Invalid JSON in config/tutorial_source.json: {exc}"}
     except Exception as exc:
-        return {"ok": False, "error": f"Unexpected error while loading tutorial: {exc}"}
+        return {"ok": False, "error": f"Failed to read config/tutorial_source.json: {exc}"}
+
+    return _load_local_tutorial(contents_dir, config.get("localPath", _DEFAULT_CONFIG["localPath"]))

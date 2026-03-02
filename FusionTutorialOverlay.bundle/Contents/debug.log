@@ -1,0 +1,260 @@
+=== Module Loading ===
+Step 1: Basic imports done
+Step 2: adsk.core imported
+Step 3: adsk.fusion imported
+Step 4: json imported
+Step 5: All basic imports complete
+Build: 2026-03-02-local-test-data-only-v1
+Core modules loaded successfully
+=== run() called - add-in starting ===
+Runtime build stamp: 2026-03-02-local-test-data-only-v1
+ Basic initialization complete
+ Runtime script path: C:/Users/teoen/GitHub/IDeA_Fusion360/FusionTutorialOverlay.bundle/Contents/FusionTutorialOverlay.py
+ Runtime header hash: 8e960ff3decb
+ Completion detector initialized and started
+Add-in started successfully! Command should be in toolbar.
+CommandCreatedHandler.notify() called
+Execute handler added to command
+CommandExecutedHandler.notify() called
+Existing palette: False
+Palette HTML path: C:/Users/teoen/GitHub/IDeA_Fusion360/FusionTutorialOverlay.bundle/Contents/palette/tutorial_palette.html
+HTML file exists: True
+Palette created
+HTML event handler attached
+Palette made visible
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+ HTMLEventHandler - action: 'cycleEvent', data: '{"action":"ready"}'
+ Processing action: ready
+ _handle_ready called
+ Tutorial load response: error
+ Sending response to palette: error
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+ HTMLEventHandler - action: 'cycleEvent', data: '{"action":"ready"}'
+ Processing action: ready
+ _handle_ready called
+ Tutorial load response: error
+ Sending response to palette: error
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+ HTMLEventHandler - action: 'response', data: '{"data":"{\"status\": \"ok\"}"}'
+ Ignoring non-action message: {"data":"{\"status\": \"ok\"}"}
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ExchangeAppStoreCommand', info={'commandId': 'ExchangeAppStoreCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ExchangeAppStoreCommand', info={'commandId': 'ExchangeAppStoreCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='CloseDocumentCommand', info={'commandId': 'CloseDocumentCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='NewDocumentCommand', info={'commandId': 'NewDocumentCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='NewDocumentCommand', info={'commandId': 'NewDocumentCommand', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='CurrentlyOpenDocumentsCommand', info={'commandId': 'CurrentlyOpenDocumentsCommand', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ScriptsManagerCommand', info={'commandId': 'ScriptsManagerCommand', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='showTutorialPanelCmd', info={'commandId': 'showTutorialPanelCmd', 'mappedType': ''}
+ ==========================================
+ Error sending completion event to palette: 3 : Cannot send information to native palette.
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='ExitApplicationCommand', info={'commandId': 'ExitApplicationCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='CloseDocumentCommand', info={'commandId': 'CloseDocumentCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
+
+ === COMPLETION EVENT (Step ?: (no step loaded)) ===
+ USER'S CURRENT ACTIVITY: eventType='command_started', entityName='SelectCommand', info={'commandId': 'SelectCommand', 'mappedType': ''}
+ ==========================================
+ Completion event sent to palette: command_started
