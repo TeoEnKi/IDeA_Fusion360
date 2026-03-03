@@ -1,0 +1,247 @@
+{
+  "tutorialId": "cube_hole_test_v1",
+  "title": "Create a Cube with a Cylindrical Hole (Test Tutorial Data)",
+  "description": "Test tutorial JSON for the Fusion tutorial player: create a cube and cut a through-hole using Extrude Cut.",
+  "steps": [
+    {
+      "stepId": "cube-hole-step-1",
+      "stepNumber": 1,
+      "title": "Start Sketch and Draw the Square Base",
+      "instruction": "Create a new sketch on the XY plane. Draw a center rectangle and dimension it to 40 mm x 40 mm.",
+      "detailedText": "A center rectangle keeps the cube centered around the origin, making later edits and constraints easier.",
+      "expandedContent": {
+        "whyThisMatters": "Starting with a centered, dimensioned profile improves model stability and makes future parameter edits predictable."
+      },
+      "tips": [
+        "Use Center Rectangle so the profile stays symmetric about the origin.",
+        "Apply dimensions immediately to lock the sketch size."
+      ],
+      "qcChecks": [
+        {
+          "text": "Sketch started on XY plane",
+          "expectedCommand": "SketchCreate"
+        },
+        {
+          "text": "Rectangle tool used for base profile",
+          "expectedCommand": "ShapeRectangleTwoPoint"
+        }
+      ],
+      "fusionActions": [
+        {
+          "type": "ui.openPanel",
+          "panel": "browser"
+        },
+        {
+          "type": "ui.openWorkspace",
+          "workspace": "Design",
+          "environment": "Solid"
+        },
+        {
+          "type": "ui.enterMode",
+          "mode": "Sketch"
+        }
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Sketch/Sketch_0.png",
+            "caption": "Sketch workspace ready",
+            "highlights": [
+              {
+                "component": "environmentTabs.sketch",
+                "label": "SKETCH"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_1.png",
+            "caption": "Sketch Create tools menu",
+            "highlights": [
+              {
+                "component": "toolbar.create.2-point-rectangle",
+                "label": "2-Point Rectangle"
+              }
+            ]
+          }
+        ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
+      }
+    },
+    {
+      "stepId": "cube-hole-step-2",
+      "stepNumber": 2,
+      "title": "Finish Sketch and Extrude the Cube",
+      "instruction": "Click Finish Sketch. Use Extrude on the square profile and set distance to 40 mm. Operation: New Body.",
+      "detailedText": "This creates a 40 mm cube from the 40 mm square profile.",
+      "expandedContent": {
+        "whyThisMatters": "Using a parametric extrude from a fully constrained sketch creates a robust base solid for downstream operations."
+      },
+      "tips": [
+        "Select the shaded profile region before entering distance.",
+        "Keep operation as New Body for this first feature."
+      ],
+      "qcChecks": [
+        {
+          "text": "Sketch finished",
+          "expectedCommand": "SketchStop"
+        },
+        {
+          "text": "Cube body extruded",
+          "expectedCommand": "Extrude"
+        }
+      ],
+      "fusionActions": [
+        {
+          "type": "ui.openWorkspace",
+          "workspace": "Design",
+          "environment": "Solid"
+        },
+        {
+          "type": "ui.hint",
+          "text": "Extrude the square profile 40 mm as New Body."
+        }
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Solid/Solid_0.png",
+            "caption": "Solid workspace ready",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_1.png",
+            "caption": "Solid Create tools menu",
+            "highlights": [
+              {
+                "component": "toolbar.create.extrude",
+                "label": "Extrude"
+              }
+            ]
+          }
+        ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Sketch"
+      }
+    },
+    {
+      "stepId": "cube-hole-step-3",
+      "stepNumber": 3,
+      "title": "Sketch a Circle on the Top Face",
+      "instruction": "Start a new sketch on the top face of the cube. Draw a center-diameter circle at the face center with diameter 16 mm.",
+      "detailedText": "This circle defines the cylindrical hole profile.",
+      "expandedContent": {
+        "whyThisMatters": "Placing the circle at the center ensures the hole is aligned and symmetric through the cube."
+      },
+      "tips": [
+        "Use project/origin references if needed to snap to the face center.",
+        "Dimension the circle diameter to 16 mm for a repeatable result."
+      ],
+      "qcChecks": [
+        {
+          "text": "New sketch created on top face",
+          "expectedCommand": "SketchCreate"
+        },
+        {
+          "text": "Circle profile created",
+          "expectedCommand": "CircleCenterRadius"
+        }
+      ],
+      "fusionActions": [
+        {
+          "type": "ui.enterMode",
+          "mode": "Sketch"
+        },
+        {
+          "type": "ui.hint",
+          "text": "Create a 16 mm center circle on the cube top face."
+        }
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Sketch/Sketch_0.png",
+            "caption": "Sketch environment for hole profile",
+            "highlights": []
+          },
+          {
+            "image": "assets/UI Images/Sketch/Sketch_1.png",
+            "caption": "Create tools in Sketch",
+            "highlights": [
+              {
+                "component": "toolbar.create.center-diameter-circle",
+                "label": "Center Diameter Circle"
+              }
+            ]
+          }
+        ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Solid"
+      }
+    },
+    {
+      "stepId": "cube-hole-step-4",
+      "stepNumber": 4,
+      "title": "Extrude Cut the Hole Through the Cube",
+      "instruction": "Click Finish Sketch. Use Extrude on the circle profile. Set Operation to Cut and Extent to Through All.",
+      "detailedText": "Cutting through all ensures the cylindrical hole fully passes through the cube.",
+      "expandedContent": {
+        "whyThisMatters": "Extrude Cut with Through All is robust to future size changes, so the hole remains fully through if cube dimensions are edited later."
+      },
+      "tips": [
+        "Confirm Operation is Cut, not New Body.",
+        "Use Through All to avoid depth mismatch after edits."
+      ],
+      "qcChecks": [
+        {
+          "text": "Hole sketch finished",
+          "expectedCommand": "SketchStop"
+        },
+        {
+          "text": "Through-hole created using Extrude Cut",
+          "expectedCommand": "Extrude"
+        }
+      ],
+      "fusionActions": [
+        {
+          "type": "ui.openWorkspace",
+          "workspace": "Design",
+          "environment": "Solid"
+        },
+        {
+          "type": "ui.hint",
+          "text": "Extrude the circle as Cut, Extent: Through All."
+        }
+      ],
+      "visualStep": {
+        "images": [
+          {
+            "image": "assets/UI Images/Solid/Solid_1.png",
+            "caption": "Create menu with Extrude",
+            "highlights": [
+              {
+                "component": "toolbar.create.extrude",
+                "label": "Extrude"
+              }
+            ]
+          },
+          {
+            "image": "assets/UI Images/Solid/Solid_2.png",
+            "caption": "Modify tools and final feature flow",
+            "highlights": []
+          }
+        ]
+      },
+      "requires": {
+        "workspace": "Design",
+        "environment": "Sketch"
+      }
+    }
+  ]
+}

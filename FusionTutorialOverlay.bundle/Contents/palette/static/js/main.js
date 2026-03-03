@@ -13,6 +13,7 @@
     let bridgeReady = false;
     let pendingMessages = [];
     let loadedAssets = {};  // Store preloaded assets
+    let latchedMatchedCommandId = '';
 
     // DOM Elements
     const elements = {
@@ -259,6 +260,8 @@
                     clearContextWarnings();
                     // Clear viewport screenshot from previous step
                     clearViewportPreview();
+                    // Prevent cross-step inferred completion from stale command state.
+                    latchedMatchedCommandId = '';
                     showTutorial();
                     stepper.loadStep(payload.step);
                     if (payload.workspaceMismatchFeedback) {
@@ -697,6 +700,39 @@
     }
 
     /**
+     * Complete the first non-completed QC item matching a command ID.
+     * Returns true when an item was completed.
+     */
+    function completeFirstPendingQCByExpectedCommand(commandId, reason) {
+        const qcList = document.getElementById('qcList');
+        if (!qcList || !commandId) return false;
+
+        const items = qcList.querySelectorAll('li');
+        for (const item of items) {
+            if (item.classList.contains('completed')) continue;
+
+            const expectedCommand = item.dataset.expectedCommand;
+            if (expectedCommand !== commandId) continue;
+
+            item.classList.remove('pending', 'checking');
+            item.classList.add('completed');
+
+            const symbol = item.querySelector('.symbol');
+            if (symbol) {
+                symbol.textContent = '\u2705';
+                symbol.className = 'symbol symbol-success';
+            }
+
+            if (reason) {
+                console.log(`QC inferred completion: expectedCommand='${commandId}', reason='${reason}'`);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Mark QC check items as "checking" (in-progress) when a command starts.
      * Matches event's commandId to items' data-expected-command attribute.
      */
@@ -707,18 +743,27 @@
         const commandId = (event.additionalInfo && event.additionalInfo.commandId) || '';
         if (!commandId) return;
 
+        // A new command boundary implies the previous matched command is finished.
+        if (latchedMatchedCommandId && latchedMatchedCommandId !== commandId) {
+            const inferredCompleted = completeFirstPendingQCByExpectedCommand(
+                latchedMatchedCommandId,
+                'next_command_started'
+            );
+            if (inferredCompleted) {
+                event.additionalInfo = event.additionalInfo || {};
+                event.additionalInfo.inferredCompletionReason = 'next_command_started';
+                latchedMatchedCommandId = '';
+            }
+        }
+
         const items = qcList.querySelectorAll('li');
         let matchedExpectedCommand = false;
-        const pendingExpectedCommands = [];
 
         items.forEach(item => {
             // Only transition pending items
             if (!item.classList.contains('pending')) return;
 
             const expectedCommand = item.dataset.expectedCommand;
-            if (expectedCommand) {
-                pendingExpectedCommands.push(expectedCommand);
-            }
             if (expectedCommand && expectedCommand === commandId) {
                 matchedExpectedCommand = true;
                 item.classList.remove('pending');
@@ -732,6 +777,10 @@
                 }
             }
         });
+
+        if (matchedExpectedCommand) {
+            latchedMatchedCommandId = commandId;
+        }
 
         // Intentionally no warning for command mismatches.
         // Non-matching commands are ignored silently.
@@ -754,7 +803,7 @@
         // Map feature event types to the command IDs that produce them
         const eventToCommandMap = {
             'sketch_created': ['SketchCreate', 'SketchActivate'],
-            'sketch_finished': ['FinishSketch'],
+            'sketch_finished': ['FinishSketch', 'SketchStop'],
             'extrude_created': ['Extrude'],
             'fillet_created': ['FilletEdge'],
             'chamfer_created': ['ChamferEdge'],
@@ -768,6 +817,8 @@
         // complete the first pending/checking item whose expectedCommand matches
         const isCommandTerminated = event.eventType === 'command_terminated';
         let completedOneForTerminated = false;
+        let completedAny = false;
+        let completedLatchedViaCommandId = false;
 
         const items = qcList.querySelectorAll('li');
         items.forEach(item => {
@@ -810,8 +861,12 @@
             }
 
             if (shouldComplete) {
+                if (commandId && commandId === latchedMatchedCommandId) {
+                    completedLatchedViaCommandId = true;
+                }
                 item.classList.remove('pending', 'checking');
                 item.classList.add('completed');
+                completedAny = true;
 
                 // Update symbol to checkmark
                 const symbol = item.querySelector('.symbol');
@@ -825,6 +880,22 @@
                 }
             }
         });
+
+        if (completedLatchedViaCommandId) {
+            latchedMatchedCommandId = '';
+        }
+
+        if (isCommandTerminated && !completedAny && latchedMatchedCommandId) {
+            const inferredCompleted = completeFirstPendingQCByExpectedCommand(
+                latchedMatchedCommandId,
+                'command_terminated_boundary'
+            );
+            if (inferredCompleted) {
+                event.additionalInfo = event.additionalInfo || {};
+                event.additionalInfo.inferredCompletionReason = 'command_terminated_boundary';
+                latchedMatchedCommandId = '';
+            }
+        }
     }
 
     /**

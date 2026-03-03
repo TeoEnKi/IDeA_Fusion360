@@ -166,12 +166,11 @@ class TimelineEventHandler(adsk.core.ApplicationCommandEventHandler):
 
                 self._last_timeline_count = current_count
             else:
-                # No new timeline items — but if this was a recognized command
-                # (e.g. SketchLine, Sketch3PointArc), fire a command_terminated
-                # event so JS can still complete checklist items for sketch tools
-                # that don't create their own timeline entries.
-                if command_id in COMMAND_MAP:
-                    _debug_log(f"  No new timeline items, but '{command_id}' is a known command — firing command_terminated event")
+                # No new timeline items. Still emit command_terminated for
+                # non-empty commands (except SelectCommand) so JS can infer
+                # checklist completion boundaries from command transitions.
+                if command_id and command_id != 'SelectCommand':
+                    _debug_log(f"  No new timeline items, firing command_terminated for command '{command_id}'")
                     event = CompletionEvent(
                         event_type=CompletionEventType.COMMAND_TERMINATED,
                         entity_name=COMMAND_MAP.get(command_id, command_id),
@@ -181,8 +180,10 @@ class TimelineEventHandler(adsk.core.ApplicationCommandEventHandler):
                         }
                     )
                     self.on_completion(event)
+                elif command_id == 'SelectCommand':
+                    _debug_log("  No new timeline items (ignoring SelectCommand)")
                 else:
-                    _debug_log(f"  No new timeline items (command '{command_id}' is not a tracked command)")
+                    _debug_log("  No new timeline items and empty commandId")
 
         except Exception as e:
             _debug_log(f"ERROR in TimelineEventHandler.notify: {e}")

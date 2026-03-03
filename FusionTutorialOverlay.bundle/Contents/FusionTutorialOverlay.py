@@ -112,6 +112,8 @@ ADDIN_NAME = "AI Tutorial Overlay"
 PALETTE_ID = "TutorialOverlayPalette"
 PALETTE_NAME = "Tutorial Guide"
 COMMAND_ID = "showTutorialPanelCmd"
+STRICT_QC_COMMAND_VALIDATION = False
+_allowed_qc_command_ids_cache = None
 
 def get_resource_path(relative_path: str) -> str:
     """Get absolute path to a resource file."""
@@ -119,6 +121,146 @@ def get_resource_path(relative_path: str) -> str:
     full_path = os.path.join(this_dir, relative_path)
     # Normalize path separators for cross-platform compatibility
     return full_path.replace("\\", "/")
+
+
+def _collect_command_ids_from_json(node, output_set: set):
+    """Recursively collect commandId values from a nested JSON object."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == "commandId" and isinstance(value, str) and value.strip():
+                output_set.add(value.strip())
+            else:
+                _collect_command_ids_from_json(value, output_set)
+    elif isinstance(node, list):
+        for item in node:
+            _collect_command_ids_from_json(item, output_set)
+
+
+def get_allowed_qc_command_ids() -> set:
+    """Return allowed command IDs from Sketch/Solid UI components metadata."""
+    global _allowed_qc_command_ids_cache
+
+    if _allowed_qc_command_ids_cache is not None:
+        return _allowed_qc_command_ids_cache
+
+    allowed = set()
+    metadata_paths = [
+        get_resource_path("assets/UI Images/Sketch/Sketch_UIComponents.json"),
+        get_resource_path("assets/UI Images/Solid/Solid_UIComponents.json"),
+    ]
+
+    for path in metadata_paths:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            _collect_command_ids_from_json(payload, allowed)
+        except Exception as e:
+            debug_log(f" Failed to load commandId metadata from {path}: {e}")
+
+    _allowed_qc_command_ids_cache = allowed
+    return allowed
+
+
+def validate_tutorial_qc_checks(tutorial_data: dict, strict_command_id_check: bool = False) -> list:
+    """Validate qcChecks.expectedCommand fields. Returns a list of error strings."""
+    errors = []
+    steps = tutorial_data.get("steps", [])
+    allowed_ids = get_allowed_qc_command_ids() if strict_command_id_check else set()
+
+    for step_idx, step in enumerate(steps, start=1):
+        qc_checks = step.get("qcChecks", [])
+        if not isinstance(qc_checks, list):
+            errors.append(f"Step {step_idx}: qcChecks must be an array")
+            continue
+
+        for qc_idx, qc in enumerate(qc_checks, start=1):
+            if not isinstance(qc, dict):
+                errors.append(f"Step {step_idx} QC {qc_idx}: check must be an object")
+                continue
+
+            expected_command = str(qc.get("expectedCommand", "")).strip()
+            if not expected_command:
+                errors.append(f"Step {step_idx} QC {qc_idx}: missing expectedCommand")
+                continue
+
+            if strict_command_id_check and expected_command not in allowed_ids:
+                errors.append(
+                    f"Step {step_idx} QC {qc_idx}: expectedCommand '{expected_command}' is not in Sketch/Solid UIComponents commandId set"
+                )
+
+    return errors
+
+
+def _estimate_step_exit_context(step: dict, current_workspace: str, current_environment: str) -> tuple:
+    """Estimate workspace/environment after this step's fusionActions run."""
+    workspace = str(current_workspace or "").strip() or "Design"
+    environment = str(current_environment or "").strip() or "Solid"
+
+    actions = step.get("fusionActions", []) or []
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+
+        action_type = str(action.get("type", "")).strip()
+        if action_type == "ui.openWorkspace":
+            next_workspace = str(action.get("workspace", "")).strip()
+            next_environment = str(action.get("environment", "")).strip()
+            if next_workspace:
+                workspace = next_workspace
+            if next_environment:
+                environment = next_environment
+            continue
+
+        if action_type == "ui.enterMode":
+            mode = str(action.get("mode", "")).strip().lower()
+            if mode == "sketch":
+                environment = "Sketch"
+            continue
+
+        if action_type == "ui.exitMode":
+            mode = str(action.get("mode", "")).strip().lower()
+            if mode == "sketch":
+                environment = "Solid"
+
+    return workspace, environment
+
+
+def validate_tutorial_step_entry_contexts(tutorial_data: dict) -> list:
+    """Validate that requires.* represents context at the beginning of each step."""
+    warnings = []
+    steps = tutorial_data.get("steps", []) or []
+    if not steps:
+        return warnings
+
+    first_requires = steps[0].get("requires", {}) or {}
+    expected_workspace = str(first_requires.get("workspace", "")).strip() or "Design"
+    expected_environment = str(first_requires.get("environment", "")).strip() or "Solid"
+
+    for step_idx, step in enumerate(steps, start=1):
+        step_id = step.get("stepId", f"step-{step_idx}")
+        requires = step.get("requires", {}) or {}
+        declared_workspace = str(requires.get("workspace", "")).strip()
+        declared_environment = str(requires.get("environment", "")).strip()
+
+        if declared_workspace and declared_workspace.lower() != expected_workspace.lower():
+            warnings.append(
+                f"Step {step_idx} ({step_id}): requires.workspace='{declared_workspace}' "
+                f"but inferred step-entry workspace is '{expected_workspace}'"
+            )
+
+        if declared_environment and declared_environment.lower() != expected_environment.lower():
+            warnings.append(
+                f"Step {step_idx} ({step_id}): requires.environment='{declared_environment}' "
+                f"but inferred step-entry environment is '{expected_environment}'"
+            )
+
+        expected_workspace, expected_environment = _estimate_step_exit_context(
+            step,
+            expected_workspace,
+            expected_environment
+        )
+
+    return warnings
 
 
 def get_runtime_signature() -> dict:
@@ -412,8 +554,24 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         """Called when a completion event is detected."""
         global _palette, _tutorial_manager
 
-        # Log what the user actually did vs what the current step expects
         current_step = _tutorial_manager.get_current_step() if _tutorial_manager else None
+        qc_checks = current_step.get('qcChecks', []) if current_step else []
+        user_command_id = str((event.additional_info or {}).get('commandId', '')).strip()
+        is_command_event = event.event_type.value in ('command_started', 'command_terminated')
+
+        # Keep command boundary events flowing to JS so it can infer completion
+        # from command transitions, even when no direct expectedCommand match exists.
+        if is_command_event:
+            if user_command_id == 'SelectCommand':
+                return
+            if not user_command_id:
+                return
+            debug_log(
+                f" Boundary detection support: forwarding {event.event_type.value} "
+                f"for commandId='{user_command_id}'"
+            )
+
+        # Log what the user actually did vs what the current step expects
         step_title = current_step.get('title', '?') if current_step else '(no step loaded)'
         step_index = current_step.get('currentIndex', '?') if current_step else '?'
 
@@ -422,7 +580,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         debug_log(f" USER'S CURRENT ACTIVITY: eventType='{event.event_type.value}', entityName='{event.entity_name}', info={event.additional_info}")
 
         if current_step:
-            qc_checks = current_step.get('qcChecks', [])
             if qc_checks:
                 expected_commands = []
                 for qc in qc_checks:
@@ -432,7 +589,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 debug_log(f" EXPECTED ACTIVITY: {', '.join(expected_commands)}")
 
                 # Check if any expected command matches the user's actual activity
-                user_command_id = (event.additional_info or {}).get('commandId', '')
                 matched = False
                 for qc in qc_checks:
                     exp_cmd = qc.get('expectedCommand', '')
@@ -595,7 +751,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         }
 
     def _handle_load_latest_tutorial(self) -> dict:
-        """Load latest tutorial from cloud webhook and bootstrap step 1."""
+        """Load local test tutorial fixture and bootstrap step 1."""
         global _tutorial_manager, _runtime_identity_ok
 
         if not _runtime_identity_ok:
@@ -606,36 +762,50 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             }
 
         try:
-            result = fetch_latest_tutorial(timeout_seconds=15)
-            if not result.get("ok"):
-                message = result.get("error", "Failed to load tutorial from cloud endpoint.")
-                debug_log(f" Cloud tutorial fetch failed: {message}")
-                return {"action": "error", "message": message, "success": False}
+            fixture_path = get_resource_path("test_data/cube_hole_tutorial.json")
+            with open(fixture_path, "r", encoding="utf-8") as f:
+                tutorial_data = json.load(f)
 
-            tutorial_data = result.get("data")
             if not isinstance(tutorial_data, dict):
                 return {
                     "action": "error",
-                    "message": "Tutorial endpoint returned invalid tutorial payload.",
+                    "message": "Local test tutorial payload is invalid.",
                     "success": False
                 }
             if not isinstance(tutorial_data.get("steps"), list) or len(tutorial_data.get("steps", [])) == 0:
                 return {
                     "action": "error",
-                    "message": "Tutorial payload is missing a valid steps array.",
+                    "message": "Local test tutorial is missing a valid steps array.",
                     "success": False
                 }
+            qc_validation_errors = validate_tutorial_qc_checks(
+                tutorial_data,
+                strict_command_id_check=STRICT_QC_COMMAND_VALIDATION
+            )
+            if qc_validation_errors:
+                message = f"Tutorial QC validation failed: {qc_validation_errors[0]}"
+                debug_log(f" {message}")
+                return {
+                    "action": "error",
+                    "message": message,
+                    "success": False
+                }
+            step_context_warnings = validate_tutorial_step_entry_contexts(tutorial_data)
+            if step_context_warnings:
+                debug_log(" Tutorial step-entry context warnings (non-blocking):")
+                for warning in step_context_warnings:
+                    debug_log(f"  - {warning}")
 
             step = _tutorial_manager.load_tutorial(tutorial_data)
             if not step:
                 return {
                     "action": "error",
-                    "message": "Unable to initialize tutorial from cloud payload.",
+                    "message": "Unable to initialize tutorial from local test payload.",
                     "success": False
                 }
 
             self._ensure_initial_step_context(step)
-            debug_log(" Tutorial loaded from cloud, executing fusion actions...")
+            debug_log(" Tutorial loaded from local test fixture, executing fusion actions...")
             self._execute_fusion_actions(step)
             self._auto_capture_viewport(step)
             mismatch_feedback = self._build_workspace_mismatch_feedback(step)
