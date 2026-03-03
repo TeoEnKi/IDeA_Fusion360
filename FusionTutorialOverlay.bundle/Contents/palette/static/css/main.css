@@ -107,6 +107,53 @@ body {
     color: var(--text-secondary);
 }
 
+/* Bootstrap State */
+.bootstrap-state {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.bootstrap-card {
+    width: 100%;
+    max-width: 560px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.bootstrap-title {
+    font-size: clamp(20px, 4vw, 28px);
+    line-height: 1.2;
+}
+
+.bootstrap-description {
+    color: var(--text-secondary);
+}
+
+.bootstrap-btn {
+    width: 100%;
+}
+
+.bootstrap-status {
+    color: var(--text-secondary);
+    min-height: 22px;
+}
+
+.bootstrap-status-error {
+    color: var(--error);
+}
+
+.bootstrap-debug {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
 .spinner {
     width: 40px;
     height: 40px;

@@ -10,6 +10,7 @@ import traceback
 import base64
 import time
 import hashlib
+import importlib
 
 BUILD_STAMP = "2026-03-01-cloud-latest-loader-v1"
 EXPECTED_INSTALL_FRAGMENT = "AppData/Roaming/Autodesk/Autodesk Fusion 360/API/AddIns/FusionTutorialOverlay.bundle/Contents/FusionTutorialOverlay.py"
@@ -73,18 +74,85 @@ if ADDIN_DIR not in sys.path:
 # Import core modules with error handling
 CORE_MODULES_LOADED = False
 CORE_IMPORT_ERROR = ""
+WEBHOOK_MODULE_LOADED = False
+WEBHOOK_IMPORT_ERROR = ""
+WEBHOOK_MODULE_FILE = ""
+WEBHOOK_SYMBOLS = {
+    "start_scan": False,
+    "get_scan_status": False
+}
+start_scan = None
+get_scan_status = None
 try:
     from core.context_detector import FusionContextDetector
     from core.consent_manager import ConsentManager, AIGuidanceMode
     from core.redirect_templates import RedirectTemplateLibrary
     from core.context_poller import ContextPollingManager
     from core.completion_detector import CompletionDetector, CompletionEvent, CompletionEventType
-    from core.tutorial_plugin_service import fetch_latest_tutorial
     CORE_MODULES_LOADED = True
-    debug_log("Core modules loaded successfully")
+    debug_log("Core modules loaded successfully (non-webhook)")
 except Exception as e:
-    CORE_IMPORT_ERROR = str(e)
+    CORE_IMPORT_ERROR = traceback.format_exc()
     debug_log(f"Core module import failed: {e}")
+
+try:
+    import core.tutorial_plugin_service as tutorial_plugin_service
+    module_id_before = id(tutorial_plugin_service)
+    start_before = callable(getattr(tutorial_plugin_service, "start_scan", None))
+    status_before = callable(getattr(tutorial_plugin_service, "get_scan_status", None))
+    debug_log(
+        "Webhook import pre-reload: "
+        f"module_id={module_id_before}, "
+        f"start_scan={start_before}, get_scan_status={status_before}"
+    )
+
+    tutorial_plugin_service = importlib.reload(tutorial_plugin_service)
+    module_id_after = id(tutorial_plugin_service)
+    debug_log(
+        "Webhook import post-reload: "
+        f"module_id={module_id_after}, reload_executed=True"
+    )
+
+    WEBHOOK_MODULE_LOADED = True
+    WEBHOOK_MODULE_FILE = str(getattr(tutorial_plugin_service, "__file__", "") or "")
+    start_scan = getattr(tutorial_plugin_service, "start_scan", None)
+    get_scan_status = getattr(tutorial_plugin_service, "get_scan_status", None)
+    WEBHOOK_SYMBOLS["start_scan"] = callable(start_scan)
+    WEBHOOK_SYMBOLS["get_scan_status"] = callable(get_scan_status)
+
+    # Fallback: bust importer cache and force a fresh import when symbols are still missing.
+    if not WEBHOOK_SYMBOLS["start_scan"] or not WEBHOOK_SYMBOLS["get_scan_status"]:
+        debug_log("Webhook symbols missing after reload; running cache-busting re-import fallback")
+        sys.modules.pop("core.tutorial_plugin_service", None)
+        importlib.invalidate_caches()
+        tutorial_plugin_service = importlib.import_module("core.tutorial_plugin_service")
+        WEBHOOK_MODULE_FILE = str(getattr(tutorial_plugin_service, "__file__", "") or WEBHOOK_MODULE_FILE)
+        start_scan = getattr(tutorial_plugin_service, "start_scan", None)
+        get_scan_status = getattr(tutorial_plugin_service, "get_scan_status", None)
+        WEBHOOK_SYMBOLS["start_scan"] = callable(start_scan)
+        WEBHOOK_SYMBOLS["get_scan_status"] = callable(get_scan_status)
+        debug_log(
+            "Webhook import fallback result: "
+            f"module_id={id(tutorial_plugin_service)}, "
+            f"start_scan={WEBHOOK_SYMBOLS['start_scan']}, "
+            f"get_scan_status={WEBHOOK_SYMBOLS['get_scan_status']}"
+        )
+
+    debug_log(f"Webhook module loaded: {WEBHOOK_MODULE_FILE or '<unknown-file>'}")
+    debug_log(
+        "Webhook symbols: "
+        f"start_scan={WEBHOOK_SYMBOLS['start_scan']}, "
+        f"get_scan_status={WEBHOOK_SYMBOLS['get_scan_status']}"
+    )
+    if not WEBHOOK_SYMBOLS["start_scan"] or not WEBHOOK_SYMBOLS["get_scan_status"]:
+        sample_keys = sorted(list(getattr(tutorial_plugin_service, "__dict__", {}).keys()))[:30]
+        debug_log(f"Webhook module dict sample keys: {sample_keys}")
+except Exception as e:
+    WEBHOOK_IMPORT_ERROR = traceback.format_exc()
+    debug_log(f"Webhook module import failed: {e}")
+
+if not CORE_MODULES_LOADED and WEBHOOK_MODULE_LOADED:
+    debug_log("Degraded mode: webhook bootstrap enabled; redirect/completion modules unavailable.")
 
 # Global handlers to prevent garbage collection
 _handlers = []
@@ -280,8 +348,34 @@ def get_runtime_signature() -> dict:
         "scriptPath": script_path,
         "headerHash": header_hash,
         "pathMatchesExpected": path_matches_expected,
-        "coreModulesLoaded": CORE_MODULES_LOADED
+        "coreModulesLoaded": CORE_MODULES_LOADED,
+        "webhookModuleLoaded": WEBHOOK_MODULE_LOADED,
+        "webhookImportError": (WEBHOOK_IMPORT_ERROR or "").strip(),
+        "webhookModuleFile": WEBHOOK_MODULE_FILE,
+        "webhookSymbols": WEBHOOK_SYMBOLS.copy()
     }
+
+
+def _build_webhook_unavailable_message() -> str:
+    """Build explicit diagnostics when webhook bootstrap capability is unavailable."""
+    missing = []
+    if not WEBHOOK_SYMBOLS.get("start_scan", False):
+        missing.append("start_scan")
+    if not WEBHOOK_SYMBOLS.get("get_scan_status", False):
+        missing.append("get_scan_status")
+
+    parts = ["Webhook bootstrap unavailable."]
+    if WEBHOOK_MODULE_FILE:
+        parts.append(f"module={WEBHOOK_MODULE_FILE}")
+    if missing:
+        parts.append(f"missing_symbols={','.join(missing)}")
+    if WEBHOOK_IMPORT_ERROR:
+        parts.append(f"import_error={WEBHOOK_IMPORT_ERROR.strip()}")
+    elif CORE_IMPORT_ERROR and not CORE_MODULES_LOADED:
+        parts.append(f"non_webhook_core_error={CORE_IMPORT_ERROR.strip()}")
+
+    parts.append("Fix: redeploy add-in and restart Fusion.")
+    return " ".join(parts)
 
 
 def validate_runtime_identity() -> tuple:
@@ -648,11 +742,17 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             response = {"action": action, "success": False}
 
             if action == "ready":
-                # Palette is ready, send initial tutorial data
+                # Palette is ready, return bootstrap entry state
                 response = self._handle_ready()
 
             elif action == "loadTutorial":
                 response = self._handle_load_tutorial(data.get("tutorialId", ""))
+
+            elif action == "startTutorialFetch":
+                response = self._handle_start_tutorial_fetch()
+
+            elif action == "checkScanStatus":
+                response = self._handle_check_scan_status()
 
             elif action == "next":
                 response = self._handle_navigation("next")
@@ -709,8 +809,8 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 _palette.sendInfoToHTML("response", json.dumps(error_response))
 
     def _handle_ready(self) -> dict:
-        """Handle palette ready event - load tutorial immediately."""
-        global _consent_manager, _palette
+        """Handle palette ready event by returning bootstrap entry state."""
+        global _palette
 
         debug_log(" _handle_ready called")
 
@@ -724,23 +824,10 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         except Exception as e:
             debug_log(f" Failed to send runtimeInfo: {e}")
 
-        # Load latest tutorial from cloud webhook.
-        response = self._handle_load_latest_tutorial()
-        debug_log(f" Tutorial load response: {response.get('action', 'unknown')}")
-
-        # Check if first run consent is needed (non-blocking, optional feature)
-        try:
-            if _consent_manager and _consent_manager.is_first_run():
-                # Send consent required as a separate message after tutorial loads
-                if _palette:
-                    _palette.sendInfoToHTML("response", json.dumps({
-                        "action": "consentRequired",
-                        "firstRun": True
-                    }))
-        except Exception:
-            pass  # Consent is optional, don't block tutorial
-
-        return response
+        return {
+            "action": "bootstrapReady",
+            "success": True
+        }
 
     def _handle_load_tutorial(self, tutorial_id: str) -> dict:
         """Legacy loadTutorial route is disabled in cloud-only mode."""
@@ -750,34 +837,64 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             "success": False
         }
 
-    def _handle_load_latest_tutorial(self) -> dict:
-        """Load local test tutorial fixture and bootstrap step 1."""
-        global _tutorial_manager, _runtime_identity_ok
+    def _handle_start_tutorial_fetch(self) -> dict:
+        """Start scan webhook and load returned tutorial payload."""
+        global _tutorial_manager, _runtime_identity_ok, _consent_manager, _palette
+
+        if not WEBHOOK_MODULE_LOADED or not callable(start_scan):
+            diag = _build_webhook_unavailable_message()
+            debug_log(diag)
+            return {
+                "action": "error",
+                "phase": "start-scan",
+                "message": diag,
+                "success": False
+            }
 
         if not _runtime_identity_ok:
             return {
                 "action": "error",
+                "phase": "start-scan",
                 "message": "Runtime deployment mismatch detected. Re-deploy the add-in bundle and restart.",
                 "success": False
             }
 
         try:
-            fixture_path = get_resource_path("test_data/cube_hole_tutorial.json")
-            with open(fixture_path, "r", encoding="utf-8") as f:
-                tutorial_data = json.load(f)
+            if _palette:
+                _palette.sendInfoToHTML("response", json.dumps({
+                    "action": "scanStarted",
+                    "success": True,
+                    "message": "Starting tutorial scan..."
+                }))
+        except Exception as e:
+            debug_log(f" Failed to send scanStarted: {e}")
 
+        try:
+            scan_result = start_scan(username="ProtoGo", timeout_seconds=60)
+            if not scan_result.get("ok"):
+                return {
+                    "action": "error",
+                    "phase": "start-scan",
+                    "message": scan_result.get("error", "Failed to start tutorial scan."),
+                    "success": False
+                }
+
+            tutorial_data = scan_result.get("data")
             if not isinstance(tutorial_data, dict):
                 return {
                     "action": "error",
-                    "message": "Local test tutorial payload is invalid.",
+                    "phase": "start-scan",
+                    "message": "Tutorial payload is invalid.",
                     "success": False
                 }
             if not isinstance(tutorial_data.get("steps"), list) or len(tutorial_data.get("steps", [])) == 0:
                 return {
                     "action": "error",
-                    "message": "Local test tutorial is missing a valid steps array.",
+                    "phase": "start-scan",
+                    "message": "Tutorial payload is missing a valid steps array.",
                     "success": False
                 }
+
             qc_validation_errors = validate_tutorial_qc_checks(
                 tutorial_data,
                 strict_command_id_check=STRICT_QC_COMMAND_VALIDATION
@@ -787,9 +904,11 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 debug_log(f" {message}")
                 return {
                     "action": "error",
+                    "phase": "start-scan",
                     "message": message,
                     "success": False
                 }
+
             step_context_warnings = validate_tutorial_step_entry_contexts(tutorial_data)
             if step_context_warnings:
                 debug_log(" Tutorial step-entry context warnings (non-blocking):")
@@ -800,15 +919,28 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             if not step:
                 return {
                     "action": "error",
-                    "message": "Unable to initialize tutorial from local test payload.",
+                    "phase": "start-scan",
+                    "message": "Unable to initialize tutorial from webhook payload.",
                     "success": False
                 }
 
             self._ensure_initial_step_context(step)
-            debug_log(" Tutorial loaded from local test fixture, executing fusion actions...")
+            debug_log(" Tutorial loaded from start-scan payload, executing fusion actions...")
             self._execute_fusion_actions(step)
             self._auto_capture_viewport(step)
             mismatch_feedback = self._build_workspace_mismatch_feedback(step)
+
+            # Keep existing consent prompt behavior, now after successful load.
+            try:
+                if _consent_manager and _consent_manager.is_first_run():
+                    if _palette:
+                        _palette.sendInfoToHTML("response", json.dumps({
+                            "action": "consentRequired",
+                            "firstRun": True
+                        }))
+            except Exception:
+                pass
+
             response = {
                 "action": "tutorialLoaded",
                 "step": step,
@@ -817,11 +949,47 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             if mismatch_feedback:
                 response["workspaceMismatchFeedback"] = mismatch_feedback
             return response
-
         except Exception as e:
-            debug_log(f" Error loading cloud tutorial: {e}")
+            debug_log(f" Error loading tutorial from start-scan: {e}")
             return {
                 "action": "error",
+                "phase": "start-scan",
+                "message": str(e),
+                "success": False
+            }
+
+    def _handle_check_scan_status(self) -> dict:
+        """Return scan status for debug/progress display."""
+        if not WEBHOOK_MODULE_LOADED or not callable(get_scan_status):
+            diag = _build_webhook_unavailable_message()
+            debug_log(diag)
+            return {
+                "action": "error",
+                "phase": "scan-status",
+                "message": diag,
+                "success": False
+            }
+
+        try:
+            result = get_scan_status(timeout_seconds=10)
+            if not result.get("ok"):
+                return {
+                    "action": "error",
+                    "phase": "scan-status",
+                    "message": result.get("error", "Failed to fetch scan status."),
+                    "success": False
+                }
+
+            return {
+                "action": "scanStatus",
+                "statusCode": result.get("statusCode", -1),
+                "success": True
+            }
+        except Exception as e:
+            debug_log(f" Error checking scan status: {e}")
+            return {
+                "action": "error",
+                "phase": "scan-status",
                 "message": str(e),
                 "success": False
             }

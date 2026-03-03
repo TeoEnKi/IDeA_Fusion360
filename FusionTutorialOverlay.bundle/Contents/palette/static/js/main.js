@@ -14,10 +14,16 @@
     let pendingMessages = [];
     let loadedAssets = {};  // Store preloaded assets
     let latchedMatchedCommandId = '';
+    let statusPollTimer = null;
+    let isBootstrapFetching = false;
 
     // DOM Elements
     const elements = {
         loadingState: null,
+        bootstrapState: null,
+        getTutorialBtn: null,
+        bootstrapStatusText: null,
+        bootstrapDebugStatus: null,
         errorState: null,
         tutorialContent: null,
         navigation: null,
@@ -70,6 +76,10 @@
      */
     function cacheElements() {
         elements.loadingState = document.getElementById('loadingState');
+        elements.bootstrapState = document.getElementById('bootstrapState');
+        elements.getTutorialBtn = document.getElementById('getTutorialBtn');
+        elements.bootstrapStatusText = document.getElementById('bootstrapStatusText');
+        elements.bootstrapDebugStatus = document.getElementById('bootstrapDebugStatus');
         elements.errorState = document.getElementById('errorState');
         elements.tutorialContent = document.getElementById('tutorialContent');
         elements.navigation = document.getElementById('navigation');
@@ -141,6 +151,9 @@
         }
         if (elements.retryBtn) {
             elements.retryBtn.addEventListener('click', retryLoad);
+        }
+        if (elements.getTutorialBtn) {
+            elements.getTutorialBtn.addEventListener('click', startTutorialFetch);
         }
 
         // Warning footer dismiss button
@@ -250,8 +263,26 @@
             const payload = typeof data === 'string' ? JSON.parse(data) : data;
 
             switch (payload.action) {
+                case 'bootstrapReady':
+                    isBootstrapFetching = false;
+                    stopStatusPolling();
+                    showBootstrap();
+                    break;
+
+                case 'scanStarted':
+                    isBootstrapFetching = true;
+                    showBootstrapLoading(payload.message || 'Starting tutorial scan...');
+                    startStatusPolling();
+                    break;
+
+                case 'scanStatus':
+                    updateBootstrapStatus(payload.statusCode);
+                    break;
+
                 case 'tutorialLoaded':
                 case 'updateStep':
+                    isBootstrapFetching = false;
+                    stopStatusPolling();
                     // Exit redirect mode if active
                     if (stepper.isInRedirectMode()) {
                         stepper.exitRedirectMode();
@@ -272,7 +303,13 @@
                     break;
 
                 case 'error':
-                    showError(payload.message);
+                    if (payload.phase === 'start-scan' || payload.phase === 'scan-status' || isBootstrapFetching) {
+                        isBootstrapFetching = false;
+                        stopStatusPolling();
+                        showBootstrapError(payload.message || 'Failed to load tutorial from webhook.');
+                    } else {
+                        showError(payload.message);
+                    }
                     break;
 
                 case 'assets':
@@ -285,6 +322,10 @@
                         `build=${payload.buildStamp}`,
                         `path=${payload.scriptPath}`,
                         `coreModulesLoaded=${payload.coreModulesLoaded}`,
+                        `webhookModuleLoaded=${payload.webhookModuleLoaded}`,
+                        `webhookModuleFile=${payload.webhookModuleFile || 'n/a'}`,
+                        `webhookSymbols=${JSON.stringify(payload.webhookSymbols || {})}`,
+                        `webhookImportError=${payload.webhookImportError || 'n/a'}`,
                         `pathMatchesExpected=${payload.pathMatchesExpected}`,
                         `headerHash=${payload.headerHash || 'n/a'}`
                     );
@@ -986,11 +1027,108 @@
         // Could update UI indicators based on state
     }
 
+    function startTutorialFetch() {
+        isBootstrapFetching = true;
+        showBootstrapLoading('Requesting latest tutorial...');
+        startStatusPolling();
+        sendToBridge({ action: 'startTutorialFetch' });
+    }
+
+    function startStatusPolling() {
+        stopStatusPolling();
+        sendToBridge({ action: 'checkScanStatus' });
+        statusPollTimer = setInterval(() => {
+            sendToBridge({ action: 'checkScanStatus' });
+        }, 2000);
+    }
+
+    function stopStatusPolling() {
+        if (statusPollTimer) {
+            clearInterval(statusPollTimer);
+            statusPollTimer = null;
+        }
+    }
+
+    function showBootstrap() {
+        if (elements.loadingState) elements.loadingState.classList.add('hidden');
+        if (elements.errorState) elements.errorState.classList.add('hidden');
+        if (elements.tutorialContent) elements.tutorialContent.classList.add('hidden');
+        if (elements.navigation) elements.navigation.classList.add('hidden');
+        if (elements.bootstrapState) elements.bootstrapState.classList.remove('hidden');
+        if (elements.getTutorialBtn) {
+            elements.getTutorialBtn.disabled = false;
+            elements.getTutorialBtn.textContent = 'Get Tutorial';
+        }
+        if (elements.bootstrapStatusText) {
+            elements.bootstrapStatusText.textContent = 'Ready to start.';
+            elements.bootstrapStatusText.classList.remove('bootstrap-status-error');
+        }
+        if (elements.bootstrapDebugStatus) {
+            elements.bootstrapDebugStatus.textContent = 'Scan status: n/a';
+            elements.bootstrapDebugStatus.classList.add('hidden');
+        }
+    }
+
+    function showBootstrapLoading(message) {
+        showBootstrap();
+        if (elements.getTutorialBtn) {
+            elements.getTutorialBtn.disabled = true;
+            elements.getTutorialBtn.textContent = 'Getting Tutorial...';
+        }
+        if (elements.bootstrapStatusText) {
+            elements.bootstrapStatusText.textContent = message || 'Processing tutorial request...';
+            elements.bootstrapStatusText.classList.remove('bootstrap-status-error');
+        }
+    }
+
+    function showBootstrapError(message) {
+        showBootstrap();
+        let finalMessage = message || 'Failed to load tutorial.';
+        if (typeof finalMessage === 'string' && finalMessage.toLowerCase().includes('webhook bootstrap unavailable')) {
+            finalMessage = `${finalMessage} Installed add-in mismatch may be present; redeploy and restart Fusion.`;
+        }
+        if (elements.bootstrapStatusText) {
+            elements.bootstrapStatusText.textContent = finalMessage;
+            elements.bootstrapStatusText.classList.add('bootstrap-status-error');
+        }
+    }
+
+    function hideBootstrap() {
+        if (elements.bootstrapState) elements.bootstrapState.classList.add('hidden');
+    }
+
+    function updateBootstrapStatus(statusCode) {
+        const textMap = {
+            '-1': 'Idle',
+            '0': 'Processing',
+            '1': 'Finished'
+        };
+        const key = String(statusCode);
+        const statusText = textMap[key] || 'Unknown';
+
+        if (elements.bootstrapDebugStatus) {
+            elements.bootstrapDebugStatus.textContent = `Scan status: ${statusCode} (${statusText})`;
+            elements.bootstrapDebugStatus.classList.remove('hidden');
+        }
+
+        if (elements.bootstrapStatusText && isBootstrapFetching) {
+            if (key === '0') {
+                elements.bootstrapStatusText.textContent = 'Tutorial generation in progress...';
+            } else if (key === '1') {
+                elements.bootstrapStatusText.textContent = 'Scan finished. Waiting for tutorial payload...';
+            } else if (key === '-1') {
+                elements.bootstrapStatusText.textContent = 'Scan is idle. Waiting for start-scan response...';
+            }
+            elements.bootstrapStatusText.classList.remove('bootstrap-status-error');
+        }
+    }
+
     /**
      * Show tutorial content
      */
     function showTutorial() {
         if (elements.loadingState) elements.loadingState.classList.add('hidden');
+        hideBootstrap();
         if (elements.errorState) elements.errorState.classList.add('hidden');
         if (elements.tutorialContent) elements.tutorialContent.classList.remove('hidden');
         if (elements.navigation) elements.navigation.classList.remove('hidden');
@@ -1000,7 +1138,10 @@
      * Show error state
      */
     function showError(message) {
+        stopStatusPolling();
+        isBootstrapFetching = false;
         if (elements.loadingState) elements.loadingState.classList.add('hidden');
+        hideBootstrap();
         if (elements.tutorialContent) elements.tutorialContent.classList.add('hidden');
         if (elements.navigation) elements.navigation.classList.add('hidden');
         if (elements.errorState) elements.errorState.classList.remove('hidden');
@@ -1013,6 +1154,9 @@
     function retryLoad() {
         if (elements.errorState) elements.errorState.classList.add('hidden');
         if (elements.loadingState) elements.loadingState.classList.remove('hidden');
+        hideBootstrap();
+        stopStatusPolling();
+        isBootstrapFetching = false;
         receivedResponse = false;
         sendToBridge({ action: 'ready' });
     }
