@@ -1,0 +1,59 @@
+component_path,label,current_commandId,observed_commandId,status,methodContext,evidence_line,notes
+components.workspaceDropdown,DESIGN,SelectWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[1],Design,DesignWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[2],Generative Design,GenerativeDesignWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[3],Render,RenderWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[4],Animation,AnimationWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[5],Simulation,SimulationWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[6],Manufacture,ManufactureWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[7],Drawing,DrawingWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.solid,SOLID,SolidTab,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.surface,SURFACE,SurfaceTab,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.mesh,MESH,MeshTab,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.sheetMetal,SHEET METAL,SheetMetalTab,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[1],New Component,NewComponentCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[2],Create Sketch,SketchCreate,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[3],Extrude,Extrude,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[4],Revolve,Revolve,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[5],Sweep,Sweep,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[6],Loft,Loft,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[7],Hole,HoleCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[8],Rectangular Pattern,RectangularPatternCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[9],Mirror,MirrorCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[1],Press Pull,PressPull,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[2],Fillet,Fillet,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[3],Chamfer,Chamfer,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[4],Shell,Shell,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[5],Combine,Combine,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[6],Split Body,SplitBody,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[7],Move/Copy,Move,,missing,,,No captured command_started event at this sequence index.
+components.navigationBar.orbit,orbit,OrbitCommand,,missing,,,No captured command_started event at this sequence index.
+components.navigationBar.pan,pan,PanCommand,,missing,,,No captured command_started event at this sequence index.
+components.navigationBar.zoom,zoom,ZoomCommand,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown,DESIGN,SelectWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[1],Design,DesignWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[2],Generative Design,GenerativeDesignWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[3],Render,RenderWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[4],Animation,AnimationWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[5],Simulation,SimulationWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[6],Manufacture,ManufactureWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.workspaceDropdown.options[7],Drawing,DrawingWorkspace,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.solid,SOLID,SolidTab,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.surface,SURFACE,SurfaceTab,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.mesh,MESH,MeshTab,,missing,,,No captured command_started event at this sequence index.
+components.environmentTabs.sketch,SKETCH,SketchTab,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[1],Line,LineCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[2],2-Point Rectangle,TwoPointRectangleCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[3],Center Diameter Circle,CenterDiameterCircleCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[4],3-Point Arc,Arc3PointCommand,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[5],Mirror,SketchMirror,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.create.tools[6],Sketch Dimension,SketchDimension,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[1],Fillet,SketchFillet,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[2],Trim,SketchTrim,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[3],Extend,SketchExtend,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.modify.tools[4],Offset,SketchOffset,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.constraints.tools[1],Horizontal/Vertical,ConstraintHorizontalVertical,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.constraints.tools[2],Coincident,ConstraintCoincident,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.constraints.tools[3],Tangent,ConstraintTangent,,missing,,,No captured command_started event at this sequence index.
+components.toolbarGroups.constraints.tools[4],Equal,ConstraintEqual,,missing,,,No captured command_started event at this sequence index.
+components.finishSketch,FINISH SKETCH,SketchStop,,missing,,,No captured command_started event at this sequence index.

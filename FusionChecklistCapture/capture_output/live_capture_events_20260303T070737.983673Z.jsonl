@@ -1,0 +1,8 @@
+{"utcTimestamp": "2026-03-03T07:07:52.439862Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_started", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T07:07:52.442973Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_terminated", "commandId": "SelectCommand"}
+{"utcTimestamp": "2026-03-03T07:07:52.445198Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_terminated", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T07:07:52.447895Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_started", "commandId": "SelectCommand"}
+{"utcTimestamp": "2026-03-03T07:08:08.790944Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_started", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T07:08:08.792610Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_terminated", "commandId": "SelectCommand"}
+{"utcTimestamp": "2026-03-03T07:08:08.807714Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_terminated", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T07:08:08.809399Z", "sessionId": "20260303T070737.983673Z", "eventType": "command_started", "commandId": "SelectCommand"}

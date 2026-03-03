@@ -1,0 +1,13 @@
+﻿{
+    "autodeskProduct": "Fusion",
+    "type": "addin",
+    "id": "com.idea.checklistcapture",
+    "author": "IDeA",
+    "description": {
+        "": "Guided click-checklist capture tool for Fusion UI command IDs"
+    },
+    "version": "1.0.0",
+    "runOnStartup": false,
+    "supportedOS": "windows|mac",
+    "editEnabled": true
+}

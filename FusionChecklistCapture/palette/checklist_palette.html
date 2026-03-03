@@ -1,0 +1,186 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Checklist Capture</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 12px; color: #111; }
+    .row { margin-bottom: 8px; }
+    .meta { font-size: 12px; color: #555; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin: 10px 0; background: #fafafa; }
+    .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    button { border: 1px solid #444; background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+    button.primary { background: #0078d4; color: #fff; border-color: #0078d4; }
+    code { background: #f0f0f0; padding: 1px 4px; border-radius: 4px; }
+    .armed { color: #b00020; font-weight: 600; }
+    .ok { color: #0a7a1f; }
+    .warn { color: #b05700; font-weight: 600; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h3>Checklist Capture</h3>
+  <div id="message" class="meta"></div>
+
+  <div class="row meta">Session: <span id="sessionId">(none)</span></div>
+  <div class="row meta">Progress: <span id="progress">0 / 0</span></div>
+  <div class="row meta">State: <span id="armedState">idle</span></div>
+
+  <div class="card">
+    <div><strong>Current Target</strong></div>
+    <div class="row">Prompt: <span id="prompt" class="warn">Start a session to begin.</span></div>
+    <div class="row">Label: <span id="label">-</span></div>
+    <div class="row">Path: <code id="path">-</code></div>
+    <div class="row">Current commandId: <code id="currentCommand">-</code></div>
+    <div class="row">Last observed command: <code id="lastObservedCommand">-</code></div>
+    <div class="row">Last observed event: <code id="lastObservedEvent">-</code></div>
+    <div class="row">Last observed at: <code id="lastObservedAt">-</code></div>
+    <div class="row">Saved eventCalled: <code id="savedEventCalled">(not set)</code></div>
+    <div class="row">Saved source: <code id="savedSource">-</code></div>
+    <div class="row">Last saved: <code id="savedAt">-</code></div>
+  </div>
+
+  <div id="candidateCard" class="card hidden">
+    <div><strong>Captured Method</strong></div>
+    <div class="row">Method: <code id="candidateMethod">-</code></div>
+    <div class="row">Source: <code id="candidateSource">-</code></div>
+    <div class="row">Previous eventCalled: <code id="candidatePrevious">-</code></div>
+    <div class="btns">
+      <button id="discardBtn">Discard</button>
+      <button id="retryBtn">Retry Capture</button>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button id="startBtn" class="primary">Start Session</button>
+    <button id="armBtn">Arm Next Click</button>
+    <button id="saveBtn" class="primary">Save</button>
+    <button id="removeIntentBtn">Log Remove Component</button>
+    <button id="prevBtn">Prev</button>
+    <button id="nextBtn">Next</button>
+    <button id="exportBtn">Export Report</button>
+  </div>
+
+  <div class="card">
+    <div class="meta">Output directory</div>
+    <div><code id="outDir">-</code></div>
+    <div class="meta">Exports directory</div>
+    <div><code id="exportsDir">-</code></div>
+    <div class="meta">Source JSON</div>
+    <div><code id="sourcePath">-</code></div>
+    <div class="meta">Component Events JSON</div>
+    <div><code id="componentEventsJsonPath">-</code></div>
+    <div class="meta">Mapping CSV</div>
+    <div><code id="mappingPath">-</code></div>
+    <div class="meta">Report MD</div>
+    <div><code id="reportPath">-</code></div>
+  </div>
+
+  <script>
+    function send(action) {
+      if (!window.adsk) {
+        setText('message', 'Fusion bridge unavailable');
+        return;
+      }
+      setText('message', `Sent: ${action}`);
+      document.getElementById('message').className = 'meta';
+      window.adsk.fusionSendData('cycleEvent', JSON.stringify({ action }));
+    }
+
+    function setText(id, v) {
+      document.getElementById(id).textContent = v || '-';
+    }
+
+    function render(payload) {
+      setText('sessionId', payload.sessionId || '(none)');
+      setText('progress', `${payload.index || 0} / ${payload.total || 0}`);
+      const armed = payload.captureState || (payload.armed ? 'armed' : 'idle');
+      setText('armedState', armed);
+      document.getElementById('armedState').className = payload.armed ? 'armed' : 'meta';
+
+      const c = payload.current || {};
+      setText('label', c.label || '(complete)');
+      setText('path', c.component_path || '(complete)');
+      setText('currentCommand', c.current_commandId || '(none)');
+      setText('savedEventCalled', c.eventCalled || '(not set)');
+      setText('savedSource', c.captureSource || '-');
+      setText('savedAt', c.lastSavedAtUtc || '-');
+      setText('lastObservedCommand', payload.lastObservedCommand || '-');
+      setText('lastObservedEvent', payload.lastObservedEvent || '-');
+      setText('lastObservedAt', payload.lastObservedAtUtc || '-');
+
+      setText('outDir', payload.outputDir || '-');
+      setText('exportsDir', payload.exportsDir || '-');
+      setText('sourcePath', payload.sourcePath || '-');
+      setText('componentEventsJsonPath', payload.componentEventsJsonPath || '-');
+      setText('mappingPath', payload.mappingPath || '-');
+      setText('reportPath', payload.reportPath || '-');
+
+      const candidate = payload.pendingCandidate;
+      const candidateCard = document.getElementById('candidateCard');
+      if (candidate) {
+        candidateCard.classList.remove('hidden');
+        setText('candidateMethod', candidate.method || '-');
+        setText('candidateSource', candidate.source || '-');
+        setText('candidatePrevious', candidate.previousEventCalled || '(not set)');
+        setText('prompt', 'Method captured. Save, discard, or retry for this target.');
+      } else {
+        candidateCard.classList.add('hidden');
+        if (payload.armed) {
+          setText('prompt', 'Click this target in Fusion now.');
+        } else if (payload.sessionActive && payload.current) {
+          setText('prompt', 'Arm capture, then click the target button in Fusion.');
+        } else if (payload.sessionActive) {
+          setText('prompt', 'Checklist complete. You can export or go back to edit.');
+        } else {
+          setText('prompt', 'Start a session to begin.');
+        }
+      }
+
+      if (payload.message) {
+        setText('message', payload.message);
+        document.getElementById('message').className = 'ok';
+      }
+    }
+
+    function handleBridgeMessage(action, data) {
+      try {
+        const payload = typeof data === 'string' ? JSON.parse(data || '{}') : (data || {});
+        if (action === 'response' || payload.action === 'state') {
+          render(payload);
+        }
+      } catch (e) {
+        setText('message', 'Parse error: ' + e.message);
+      }
+      return JSON.stringify({ status: 'ok' });
+    }
+
+    function fusionJavaScriptHandler(msg) {
+      return handleBridgeMessage('response', msg);
+    }
+
+    fusionJavaScriptHandler.handle = function(action, data) {
+      return handleBridgeMessage(action, data);
+    };
+
+    window.fusionJavaScriptHandler = fusionJavaScriptHandler;
+
+    document.getElementById('startBtn').addEventListener('click', () => send('startSession'));
+    document.getElementById('armBtn').addEventListener('click', () => send('armNext'));
+    document.getElementById('prevBtn').addEventListener('click', () => send('prevRow'));
+    document.getElementById('nextBtn').addEventListener('click', () => send('nextRow'));
+    document.getElementById('exportBtn').addEventListener('click', () => send('export'));
+
+    document.getElementById('saveBtn').addEventListener('click', () => send('saveCapture'));
+    document.getElementById('removeIntentBtn').addEventListener('click', () => send('logRemoveComponent'));
+    document.getElementById('discardBtn').addEventListener('click', () => send('discardCapture'));
+    document.getElementById('retryBtn').addEventListener('click', () => send('retryCapture'));
+
+    if (window.adsk) {
+      send('ready');
+    } else {
+      setText('message', 'Waiting for Fusion bridge...');
+    }
+  </script>
+</body>
+</html>

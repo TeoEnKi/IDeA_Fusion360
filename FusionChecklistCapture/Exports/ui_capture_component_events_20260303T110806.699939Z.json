@@ -1,0 +1,315 @@
+{
+  "sessionId": "20260303T110806.699939Z",
+  "exportedAtUtc": "2026-03-03T11:36:00.741827Z",
+  "sourceSolidJsonPath": "C:\\Users\\teoen\\GitHub\\IDeA_Fusion360\\FusionTutorialOverlay.bundle\\Contents\\assets\\UI Images\\Solid\\Solid_UIComponents.json",
+  "sourceSketchJsonPath": "C:\\Users\\teoen\\GitHub\\IDeA_Fusion360\\FusionTutorialOverlay.bundle\\Contents\\assets\\UI Images\\Sketch\\Sketch_UIComponents.json",
+  "totalExportedComponents": 34,
+  "commands": {
+    "toolbarGroups_create_tools_2": {
+      "label": "Create Sketch",
+      "commandDefinition": "create-sketch",
+      "commandId": "SketchCreate",
+      "componentPath": "components.toolbarGroups.create.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:10:48.557697Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_3": {
+      "label": "Extrude",
+      "commandDefinition": "extrude",
+      "commandId": "Extrude",
+      "componentPath": "components.toolbarGroups.create.tools[3]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:12:28.798320Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_4": {
+      "label": "Revolve",
+      "commandDefinition": "revolve",
+      "commandId": "Revolve",
+      "componentPath": "components.toolbarGroups.create.tools[4]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:13:08.998598Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_5": {
+      "label": "Sweep",
+      "commandDefinition": "sweep",
+      "commandId": "Sweep",
+      "componentPath": "components.toolbarGroups.create.tools[5]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:13:42.378974Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_6": {
+      "label": "Loft",
+      "commandDefinition": "loft",
+      "commandId": "SolidLoft",
+      "componentPath": "components.toolbarGroups.create.tools[6]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:14:20.992359Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_7": {
+      "label": "Hole",
+      "commandDefinition": "hole",
+      "commandId": "FusionHoleCommand",
+      "componentPath": "components.toolbarGroups.create.tools[7]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:15:42.837412Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_8": {
+      "label": "Rectangular Pattern",
+      "commandDefinition": "pattern-rectangular",
+      "commandId": "PatternRectangular",
+      "componentPath": "components.toolbarGroups.create.tools[8]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:16:24.813874Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_9": {
+      "label": "Mirror",
+      "commandDefinition": "mirror",
+      "commandId": "MirrorCommand",
+      "componentPath": "components.toolbarGroups.create.tools[9]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:16:56.679166Z",
+      "status": "match"
+    },
+    "toolbarGroups_modify_tools_1": {
+      "label": "Press Pull",
+      "commandDefinition": "press-pull",
+      "commandId": "FusionPressPullCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:17:36.309650Z",
+      "status": "match"
+    },
+    "toolbarGroups_modify_tools_2": {
+      "label": "Fillet",
+      "commandDefinition": "fillet",
+      "commandId": "FusionFilletEdgesCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:17:51.895207Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_3": {
+      "label": "Chamfer",
+      "commandDefinition": "chamfer",
+      "commandId": "FusionChamferCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[3]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:18:10.625913Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_4": {
+      "label": "Shell",
+      "commandDefinition": "shell",
+      "commandId": "FusionShellBodyCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[4]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:18:28.641746Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_5": {
+      "label": "Combine",
+      "commandDefinition": "combine",
+      "commandId": "FusionCombineCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[5]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:18:54.374726Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_6": {
+      "label": "Split Body",
+      "commandDefinition": "split-body",
+      "commandId": "FusionSplitBodyCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[6]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:19:21.196991Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_7": {
+      "label": "Move/Copy",
+      "commandDefinition": "move-copy",
+      "commandId": "FusionMoveCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[7]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:19:53.057378Z",
+      "status": "replace"
+    },
+    "orbit": {
+      "label": "",
+      "commandDefinition": "nav-orbit",
+      "commandId": "ConstrainedOrbitCommand",
+      "componentPath": "components.navigationBar.orbit",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:24:49.438741Z",
+      "status": "match"
+    },
+    "workspaceDropdown_options_1": {
+      "label": "Design",
+      "commandDefinition": "ws-design",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[1]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:26:42.057259Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_3": {
+      "label": "Render",
+      "commandDefinition": "ws-render",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:26:58.200946Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_4": {
+      "label": "Animation",
+      "commandDefinition": "ws-animation",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[4]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:27:11.843429Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_1": {
+      "label": "New Component",
+      "commandDefinition": "new-component",
+      "commandId": "DrawPolyline",
+      "componentPath": "components.toolbarGroups.create.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:28:51.322155Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_2__45": {
+      "label": "Create Sketch",
+      "commandDefinition": "create-sketch",
+      "commandId": "ShapeRectangleTwoPoint",
+      "componentPath": "components.toolbarGroups.create.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:29:48.226626Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_3__46": {
+      "label": "Extrude",
+      "commandDefinition": "extrude",
+      "commandId": "CircleCenterRadius",
+      "componentPath": "components.toolbarGroups.create.tools[3]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:31:07.845468Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_4__47": {
+      "label": "Revolve",
+      "commandDefinition": "revolve",
+      "commandId": "ArcThreePoint",
+      "componentPath": "components.toolbarGroups.create.tools[4]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:32:00.854761Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_5__48": {
+      "label": "Sweep",
+      "commandDefinition": "sweep",
+      "commandId": "MirrorSketchCommand",
+      "componentPath": "components.toolbarGroups.create.tools[5]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:32:26.649992Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_6__49": {
+      "label": "Loft",
+      "commandDefinition": "loft",
+      "commandId": "SketchDimension",
+      "componentPath": "components.toolbarGroups.create.tools[6]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:32:40.289467Z",
+      "status": "match"
+    },
+    "toolbarGroups_modify_tools_1__50": {
+      "label": "Press Pull",
+      "commandDefinition": "press-pull",
+      "commandId": "FilletSketchCmd",
+      "componentPath": "components.toolbarGroups.modify.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:33:01.781642Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_2__51": {
+      "label": "Fillet",
+      "commandDefinition": "fillet",
+      "commandId": "TrimSketchCmd",
+      "componentPath": "components.toolbarGroups.modify.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:33:26.736763Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_3__52": {
+      "label": "Chamfer",
+      "commandDefinition": "chamfer",
+      "commandId": "ExtendSketchCmd",
+      "componentPath": "components.toolbarGroups.modify.tools[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:33:47.304354Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_4__53": {
+      "label": "Shell",
+      "commandDefinition": "shell",
+      "commandId": "Offset",
+      "componentPath": "components.toolbarGroups.modify.tools[4]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:34:03.462796Z",
+      "status": "replace"
+    },
+    "toolbarGroups_constraints_tools_1": {
+      "label": "Horizontal/Vertical",
+      "commandDefinition": "horizontal-vertical",
+      "commandId": "ConstraintHorizontalVertical",
+      "componentPath": "components.toolbarGroups.constraints.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:34:18.012141Z",
+      "status": "match"
+    },
+    "toolbarGroups_constraints_tools_2": {
+      "label": "Coincident",
+      "commandDefinition": "coincident",
+      "commandId": "ConstraintCoincident",
+      "componentPath": "components.toolbarGroups.constraints.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:35:17.738143Z",
+      "status": "match"
+    },
+    "toolbarGroups_constraints_tools_3": {
+      "label": "Tangent",
+      "commandDefinition": "tangent",
+      "commandId": "ConstraintTangent",
+      "componentPath": "components.toolbarGroups.constraints.tools[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:35:31.234218Z",
+      "status": "match"
+    },
+    "toolbarGroups_constraints_tools_4": {
+      "label": "Equal",
+      "commandDefinition": "equal",
+      "commandId": "ConstraintEqual",
+      "componentPath": "components.toolbarGroups.constraints.tools[4]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T11:35:37.322892Z",
+      "status": "match"
+    },
+    "finishSketch": {
+      "label": "FINISH SKETCH",
+      "commandDefinition": "finish-sketch-btn",
+      "commandId": "SketchStop",
+      "componentPath": "components.finishSketch",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T11:35:51.455768Z",
+      "status": "match"
+    }
+  }
+}

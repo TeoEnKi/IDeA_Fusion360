@@ -1,0 +1,10 @@
+{"utcTimestamp": "2026-03-03T11:05:17.749777Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_started", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T11:05:17.761068Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_terminated", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T11:05:32.880460Z", "sessionId": "20260303T110505.522477Z", "eventType": "user_intent_remove_component", "commandId": "components.workspaceDropdown.options[2]"}
+{"utcTimestamp": "2026-03-03T11:05:34.341599Z", "sessionId": "20260303T110505.522477Z", "eventType": "user_intent_remove_component", "commandId": "components.workspaceDropdown.options[2]"}
+{"utcTimestamp": "2026-03-03T11:05:38.976215Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_started", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T11:05:39.410311Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_terminated", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T11:07:50.730330Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_started", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T11:07:51.171615Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_terminated", "commandId": "ActivateEnvironmentCommand"}
+{"utcTimestamp": "2026-03-03T11:07:55.997555Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_started", "commandId": "ScriptsManagerCommand"}
+{"utcTimestamp": "2026-03-03T11:07:56.007621Z", "sessionId": "20260303T110505.522477Z", "eventType": "command_terminated", "commandId": "ScriptsManagerCommand"}

@@ -6,9 +6,11 @@ Uses Fusion 360's event system to track when actions are completed.
 import adsk.core
 import adsk.fusion
 import os
+import json
 from typing import Callable, Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+from datetime import datetime, timezone
 
 # Import debug_log from parent module, with fallback
 def _debug_log(message: str):
@@ -17,6 +19,30 @@ def _debug_log(message: str):
         print(f"[CompletionDetector] {message}")
     except:
         pass
+
+
+_LIVE_CAPTURE_LOG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "live_capture_events.jsonl"
+)
+_LIVE_CAPTURE_SESSION_ID = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+
+
+def _write_live_capture_event(event_type: str, command_id: str = "", mapped_type: str = "", extra: Dict = None):
+    """Append a structured live-capture event entry for offline mapping/reporting."""
+    try:
+        payload = {
+            "utcTimestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "sessionId": _LIVE_CAPTURE_SESSION_ID,
+            "eventType": event_type,
+            "commandId": command_id or "",
+            "mappedType": mapped_type or "",
+            "extra": extra or {}
+        }
+        with open(_LIVE_CAPTURE_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=True) + "\n")
+    except Exception as e:
+        _debug_log(f"ERROR writing live capture event: {e}")
     try:
         log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "debug.log")
         with open(log_path, "a", encoding="utf-8") as f:
@@ -99,6 +125,11 @@ class CommandStartingHandler(adsk.core.ApplicationCommandEventHandler):
             command_id = args.commandId
             mapped_type = COMMAND_MAP.get(command_id, '')
             _debug_log(f"USER ACTION: command_started -> commandId='{command_id}', mappedType='{mapped_type}'")
+            _write_live_capture_event(
+                event_type="command_started",
+                command_id=command_id,
+                mapped_type=mapped_type
+            )
             event = CompletionEvent(
                 event_type=CompletionEventType.COMMAND_STARTED,
                 entity_name=COMMAND_MAP.get(command_id, command_id),
@@ -132,6 +163,11 @@ class TimelineEventHandler(adsk.core.ApplicationCommandEventHandler):
             # Pass the command ID through in additional_info
             command_id = args.commandId if hasattr(args, 'commandId') else ''
             _debug_log(f"USER ACTION: command_terminated -> commandId='{command_id}'")
+            _write_live_capture_event(
+                event_type="command_terminated",
+                command_id=command_id,
+                mapped_type=COMMAND_MAP.get(command_id, '')
+            )
 
             # Check timeline for new features
             timeline = design.timeline

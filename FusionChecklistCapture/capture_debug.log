@@ -1,0 +1,697 @@
+=== Checklist Capture Add-in Started ===
+Runtime script path: C:/Users/teoen/GitHub/IDeA_Fusion360/FusionChecklistCapture/FusionChecklistCapture.py
+Command placed in panels: SolidScriptsAddinsPanel
+Opening palette HTML file: C:/Users/teoen/GitHub/IDeA_Fusion360/FusionChecklistCapture/palette/checklist_palette.html
+Opening palette HTML URI: file:///C:/Users/teoen/GitHub/IDeA_Fusion360/FusionChecklistCapture/palette/checklist_palette.html
+State sent to HTML
+Checklist Capture add-in started
+HTML action received: startSession
+Session started: 20260303T110806.699939Z rows=58
+Source JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_source_20260303T110806.699939Z.json
+Component events JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T110806.699939Z.json
+State sent to HTML: Session started
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: prevRow
+State sent to HTML: Moved to previous target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+State sent to HTML
+State sent to HTML
+State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: export
+Exported mapping: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_mapping_20260303T110806.699939Z.csv
+Exported report: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_report_20260303T110806.699939Z.md
+Exported component events JSON: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T110806.699939Z.json
+State sent to HTML: Export complete
