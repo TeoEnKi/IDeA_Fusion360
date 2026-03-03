@@ -100,19 +100,21 @@ def _write_json_atomic(path: str, payload):
 
 def _build_checklist_rows():
     overlay_contents = _overlay_contents_dir()
-    sketch_path = os.path.join(overlay_contents, "assets", "UI Images", "Sketch", "Sketch_UIComponents.json")
     solid_path = os.path.join(overlay_contents, "assets", "UI Images", "Solid", "Solid_UIComponents.json")
 
-    if not os.path.exists(sketch_path) or not os.path.exists(solid_path):
+    if not os.path.exists(solid_path):
         raise FileNotFoundError(
-            "Could not find FusionTutorialOverlay UI component JSON files. "
-            f"Expected:\n{solid_path}\n{sketch_path}"
+            "Could not find Solid UI component JSON file. "
+            f"Expected:\n{solid_path}"
         )
 
-    sketch = _read_json(sketch_path)
     solid = _read_json(solid_path)
 
     rows = []
+
+    def append_labeled_row(row: dict):
+        if (row.get("label", "") or "").strip():
+            rows.append(row)
 
     def add_from(config: dict, source_name: str, env: str):
         components = config.get("components", {})
@@ -120,7 +122,7 @@ def _build_checklist_rows():
         # Workspace and environment tabs are in scope (buttons + tabs).
         wd = components.get("workspaceDropdown")
         if wd:
-            rows.append({
+            append_labeled_row({
                 "environment": env,
                 "source_file": source_name,
                 "component_path": "components.workspaceDropdown",
@@ -129,7 +131,7 @@ def _build_checklist_rows():
                 "class": "tab_or_workspace",
             })
             for idx, opt in enumerate(wd.get("options", []), start=1):
-                rows.append({
+                append_labeled_row({
                     "environment": env,
                     "source_file": source_name,
                     "component_path": f"components.workspaceDropdown.options[{idx}]",
@@ -139,7 +141,7 @@ def _build_checklist_rows():
                 })
 
         for tab_key, tab in (components.get("environmentTabs", {}) or {}).items():
-            rows.append({
+            append_labeled_row({
                 "environment": env,
                 "source_file": source_name,
                 "component_path": f"components.environmentTabs.{tab_key}",
@@ -149,8 +151,16 @@ def _build_checklist_rows():
             })
 
         for group_key, group in (components.get("toolbarGroups", {}) or {}).items():
+            append_labeled_row({
+                "environment": env,
+                "source_file": source_name,
+                "component_path": f"components.toolbarGroups.{group_key}",
+                "label": group.get("label", ""),
+                "current_commandId": group.get("commandId", ""),
+                "class": "tool_button",
+            })
             for idx, tool in enumerate(group.get("tools", []) or [], start=1):
-                rows.append({
+                append_labeled_row({
                     "environment": env,
                     "source_file": source_name,
                     "component_path": f"components.toolbarGroups.{group_key}.tools[{idx}]",
@@ -159,9 +169,20 @@ def _build_checklist_rows():
                     "class": "tool_button",
                 })
 
+        browser = components.get("browser", {})
+        for item_key, item in (browser.get("items", {}) or {}).items():
+            append_labeled_row({
+                "environment": env,
+                "source_file": source_name,
+                "component_path": f"components.browser.items.{item_key}",
+                "label": item.get("label", ""),
+                "current_commandId": item.get("commandId", ""),
+                "class": "tool_button",
+            })
+
         finish = components.get("finishSketch")
         if finish:
-            rows.append({
+            append_labeled_row({
                 "environment": env,
                 "source_file": source_name,
                 "component_path": "components.finishSketch",
@@ -171,7 +192,7 @@ def _build_checklist_rows():
             })
 
         for nav_key, nav in (components.get("navigationBar", {}) or {}).items():
-            rows.append({
+            append_labeled_row({
                 "environment": env,
                 "source_file": source_name,
                 "component_path": f"components.navigationBar.{nav_key}",
@@ -181,7 +202,6 @@ def _build_checklist_rows():
             })
 
     add_from(solid, "Solid_UIComponents.json", "solid")
-    add_from(sketch, "Sketch_UIComponents.json", "sketch")
 
     for i, row in enumerate(rows, start=1):
         row["sequence"] = i
@@ -257,16 +277,16 @@ def _resolve_path_in_components(components_root: dict, component_path: str):
     return node
 
 
-def _resolve_component_metadata_from_path(component_path: str, solid_json: dict, sketch_json: dict) -> dict:
-    for source in (solid_json, sketch_json):
-        if not isinstance(source, dict):
-            continue
-        resolved = _resolve_path_in_components(source.get("components", {}), component_path)
-        if isinstance(resolved, dict):
-            return {
-                "id": resolved.get("id", "") or "",
-                "label": resolved.get("label", "") or "",
-            }
+def _resolve_component_metadata_from_path(component_path: str, source_json: dict) -> dict:
+    if not isinstance(source_json, dict):
+        return {"id": "", "label": ""}
+
+    resolved = _resolve_path_in_components(source_json.get("components", {}), component_path)
+    if isinstance(resolved, dict):
+        return {
+            "id": resolved.get("id", "") or "",
+            "label": resolved.get("label", "") or "",
+        }
     return {"id": "", "label": ""}
 
 
@@ -275,7 +295,6 @@ def _build_component_events_export(rows, exported_at_utc: str, session_id: str):
     source_solid_json_path = os.path.join(overlay_contents, "assets", "UI Images", "Solid", "Solid_UIComponents.json")
     source_sketch_json_path = os.path.join(overlay_contents, "assets", "UI Images", "Sketch", "Sketch_UIComponents.json")
     solid_json = _read_json(source_solid_json_path)
-    sketch_json = _read_json(source_sketch_json_path)
 
     commands = {}
     for row in rows:
@@ -288,7 +307,7 @@ def _build_component_events_export(rows, exported_at_utc: str, session_id: str):
 
         sequence = row.get("sequence", 0)
         component_path = row.get("component_path", "")
-        meta = _resolve_component_metadata_from_path(component_path, solid_json, sketch_json)
+        meta = _resolve_component_metadata_from_path(component_path, solid_json)
         if not meta.get("id") and not meta.get("label"):
             _log(f"WARN unresolved component metadata for path={component_path} sequence={sequence}")
 
@@ -299,7 +318,7 @@ def _build_component_events_export(rows, exported_at_utc: str, session_id: str):
 
         # Component-keyed upsert: each prompted component has one dictionary.
         commands[key] = {
-            "label": meta.get("label", ""),
+            "label": meta.get("label", "") or row.get("label", ""),
             "commandDefinition": meta.get("id", ""),
             "commandId": command_id,
             "componentPath": component_path,
@@ -311,6 +330,7 @@ def _build_component_events_export(rows, exported_at_utc: str, session_id: str):
     return {
         "sessionId": session_id,
         "exportedAtUtc": exported_at_utc,
+        "sourceMode": "solid",
         "sourceSolidJsonPath": source_solid_json_path,
         "sourceSketchJsonPath": source_sketch_json_path,
         "totalExportedComponents": len(commands),

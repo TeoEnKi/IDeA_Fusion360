@@ -1,0 +1,181 @@
+{
+  "sessionId": "20260303T145211.034146Z",
+  "exportedAtUtc": "2026-03-03T14:56:31.971783Z",
+  "sourceMode": "solid",
+  "sourceSolidJsonPath": "C:\\Users\\teoen\\GitHub\\IDeA_Fusion360\\FusionTutorialOverlay.bundle\\Contents\\assets\\UI Images\\Solid\\Solid_UIComponents.json",
+  "sourceSketchJsonPath": "C:\\Users\\teoen\\GitHub\\IDeA_Fusion360\\FusionTutorialOverlay.bundle\\Contents\\assets\\UI Images\\Sketch\\Sketch_UIComponents.json",
+  "totalExportedComponents": 19,
+  "commands": {
+    "workspaceDropdown_options_1": {
+      "label": "Design",
+      "commandDefinition": "ws-design",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[1]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:52:30.333902Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_3": {
+      "label": "Render",
+      "commandDefinition": "ws-render",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:52:50.940367Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_4": {
+      "label": "Animation",
+      "commandDefinition": "ws-animation",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[4]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:53:01.472885Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_5": {
+      "label": "Simulation",
+      "commandDefinition": "ws-simulation",
+      "commandId": "SimCreateSimCaseCommand",
+      "componentPath": "components.workspaceDropdown.options[5]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:53:16.423474Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_2": {
+      "label": "Create Sketch",
+      "commandDefinition": "create-sketch",
+      "commandId": "SketchCreate",
+      "componentPath": "components.toolbarGroups.create.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:53:38.445634Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_3": {
+      "label": "Extrude",
+      "commandDefinition": "extrude",
+      "commandId": "Extrude",
+      "componentPath": "components.toolbarGroups.create.tools[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:53:54.123234Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_4": {
+      "label": "Revolve",
+      "commandDefinition": "revolve",
+      "commandId": "Revolve",
+      "componentPath": "components.toolbarGroups.create.tools[4]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:54:06.804059Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_5": {
+      "label": "Sweep",
+      "commandDefinition": "sweep",
+      "commandId": "Sweep",
+      "componentPath": "components.toolbarGroups.create.tools[5]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:54:20.668747Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_6": {
+      "label": "Loft",
+      "commandDefinition": "loft",
+      "commandId": "SolidLoft",
+      "componentPath": "components.toolbarGroups.create.tools[6]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:54:28.922948Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_7": {
+      "label": "Hole",
+      "commandDefinition": "hole",
+      "commandId": "FusionHoleCommand",
+      "componentPath": "components.toolbarGroups.create.tools[7]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:54:34.732397Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_8": {
+      "label": "Rectangular Pattern",
+      "commandDefinition": "pattern-rectangular",
+      "commandId": "PatternRectangular",
+      "componentPath": "components.toolbarGroups.create.tools[8]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:54:44.722162Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_9": {
+      "label": "Mirror",
+      "commandDefinition": "mirror",
+      "commandId": "MirrorCommand",
+      "componentPath": "components.toolbarGroups.create.tools[9]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:54:53.573369Z",
+      "status": "match"
+    },
+    "toolbarGroups_modify_tools_1": {
+      "label": "Press Pull",
+      "commandDefinition": "press-pull",
+      "commandId": "FusionPressPullCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[1]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:55:06.257077Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_2": {
+      "label": "Fillet",
+      "commandDefinition": "fillet",
+      "commandId": "FusionFilletEdgesCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:55:28.919259Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_3": {
+      "label": "Chamfer",
+      "commandDefinition": "chamfer",
+      "commandId": "FusionChamferCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:55:39.477641Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_4": {
+      "label": "Shell",
+      "commandDefinition": "shell",
+      "commandId": "FusionShellBodyCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[4]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:55:49.701449Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_5": {
+      "label": "Combine",
+      "commandDefinition": "combine",
+      "commandId": "FusionCombineCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[5]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:56:01.910106Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_6": {
+      "label": "Split Body",
+      "commandDefinition": "split-body",
+      "commandId": "FusionSplitBodyCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[6]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:56:08.083831Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_7": {
+      "label": "Move/Copy",
+      "commandDefinition": "move-copy",
+      "commandId": "FusionMoveCommand",
+      "componentPath": "components.toolbarGroups.modify.tools[7]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:56:14.051024Z",
+      "status": "replace"
+    }
+  }
+}

@@ -156,7 +156,7 @@
                             "x": 10.5,
                             "y": 10.0
                         },
-                        "commandId": "LineCommand"
+                        "commandId": "DrawPolyline"
                     },
                     {
                         "id": "2-point-rectangle",
@@ -165,7 +165,7 @@
                             "x": 13.5,
                             "y": 10.0
                         },
-                        "commandId": "TwoPointRectangleCommand"
+                        "commandId": "ShapeRectangleTwoPoint"
                     },
                     {
                         "id": "center-diameter-circle",
@@ -174,7 +174,7 @@
                             "x": 16.5,
                             "y": 10.0
                         },
-                        "commandId": "CenterDiameterCircleCommand"
+                        "commandId": "CircleCenterRadius"
                     },
                     {
                         "id": "3-point-arc",
@@ -183,7 +183,7 @@
                             "x": 19.5,
                             "y": 10.0
                         },
-                        "commandId": "Arc3PointCommand"
+                        "commandId": "ArcThreePoint"
                     },
                     {
                         "id": "mirror",
@@ -192,7 +192,7 @@
                             "x": 31.5,
                             "y": 10.0
                         },
-                        "commandId": "SketchMirror"
+                        "commandId": "MirrorSketchCommand"
                     },
                     {
                         "id": "sketch-dimension",
@@ -224,7 +224,7 @@
                             "x": 38.0,
                             "y": 10.0
                         },
-                        "commandId": "SketchFillet"
+                        "commandId": "FilletSketchCmd"
                     },
                     {
                         "id": "trim",
@@ -233,7 +233,7 @@
                             "x": 38.0,
                             "y": 13.5
                         },
-                        "commandId": "SketchTrim"
+                        "commandId": "TrimSketchCmd"
                     },
                     {
                         "id": "extend",
@@ -242,7 +242,7 @@
                             "x": 38.0,
                             "y": 17.0
                         },
-                        "commandId": "SketchExtend"
+                        "commandId": "ExtendSketchCmd"
                     },
                     {
                         "id": "offset",
@@ -251,7 +251,7 @@
                             "x": 41.0,
                             "y": 10.0
                         },
-                        "commandId": "SketchOffset"
+                        "commandId": "Offset"
                     }
                 ]
             },

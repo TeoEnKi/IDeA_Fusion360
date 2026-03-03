@@ -1,0 +1,4 @@
+{"utcTimestamp": "2026-03-03T14:15:08.703942Z", "sessionId": "20260303T141502.132510Z", "eventType": "command_started", "commandId": "ScriptsManagerCommand"}
+{"utcTimestamp": "2026-03-03T14:15:08.711560Z", "sessionId": "20260303T141502.132510Z", "eventType": "command_terminated", "commandId": "ScriptsManagerCommand"}
+{"utcTimestamp": "2026-03-03T14:18:28.505891Z", "sessionId": "20260303T141502.132510Z", "eventType": "command_started", "commandId": "ScriptsManagerCommand"}
+{"utcTimestamp": "2026-03-03T14:18:28.512542Z", "sessionId": "20260303T141502.132510Z", "eventType": "command_terminated", "commandId": "ScriptsManagerCommand"}

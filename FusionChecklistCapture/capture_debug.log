@@ -6,48 +6,31 @@ Opening palette HTML URI: file:///C:/Users/teoen/GitHub/IDeA_Fusion360/FusionChe
 State sent to HTML
 Checklist Capture add-in started
 HTML action received: startSession
-Session started: 20260303T110806.699939Z rows=58
-Source JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_source_20260303T110806.699939Z.json
-Component events JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T110806.699939Z.json
+Session started: 20260303T145209.570495Z rows=33
+Source JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_source_20260303T145209.570495Z.json
+Component events JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T145209.570495Z.json
+State sent to HTML: Session started
+HTML action received: startSession
+Session started: 20260303T145211.034146Z rows=33
+Source JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_source_20260303T145211.034146Z.json
+Component events JSON path: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T145211.034146Z.json
 State sent to HTML: Session started
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
 State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
 State sent to HTML
@@ -56,10 +39,6 @@ HTML action received: nextRow
 State sent to HTML: Moved to next target
 HTML action received: prevRow
 State sent to HTML: Moved to previous target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
@@ -68,53 +47,6 @@ State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
@@ -129,17 +61,26 @@ State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
+HTML action received: nextRow
+State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
 State sent to HTML
@@ -160,89 +101,16 @@ State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-State sent to HTML
-State sent to HTML
-State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
@@ -257,7 +125,14 @@ State sent to HTML
 State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
 State sent to HTML
+State sent to HTML
+HTML action received: saveCapture
+State sent to HTML: Capture saved to commandId
+HTML action received: nextRow
+State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
 State sent to HTML
@@ -270,25 +145,12 @@ State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
@@ -299,51 +161,10 @@ HTML action received: nextRow
 State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
@@ -354,84 +175,12 @@ HTML action received: prevRow
 State sent to HTML: Moved to previous target
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
 State sent to HTML
 State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
 HTML action received: nextRow
 State sent to HTML: Moved to next target
 State sent to HTML
@@ -454,244 +203,20 @@ State sent to HTML
 State sent to HTML
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
 HTML action received: saveCapture
 State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
 State sent to HTML
 State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
-HTML action received: prevRow
-State sent to HTML: Moved to previous target
 HTML action received: nextRow
 State sent to HTML: Moved to next target
 HTML action received: nextRow
 State sent to HTML: Moved to next target
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
-HTML action received: nextRow
-State sent to HTML: Moved to next target
-State sent to HTML
-State sent to HTML
-State sent to HTML
-State sent to HTML
-HTML action received: saveCapture
-State sent to HTML: Capture saved to commandId
 HTML action received: nextRow
 State sent to HTML: Moved to next target
 HTML action received: export
-Exported mapping: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_mapping_20260303T110806.699939Z.csv
-Exported report: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_report_20260303T110806.699939Z.md
-Exported component events JSON: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T110806.699939Z.json
+Exported mapping: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_mapping_20260303T145211.034146Z.csv
+Exported report: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\capture_output\ui_capture_report_20260303T145211.034146Z.md
+Exported component events JSON: C:\Users\teoen\GitHub\IDeA_Fusion360\FusionChecklistCapture\Exports\ui_capture_component_events_20260303T145211.034146Z.json
 State sent to HTML: Export complete

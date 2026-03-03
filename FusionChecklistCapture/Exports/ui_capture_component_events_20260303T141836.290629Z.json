@@ -1,0 +1,171 @@
+{
+  "sessionId": "20260303T141836.290629Z",
+  "exportedAtUtc": "2026-03-03T14:30:51.728661Z",
+  "sourceSolidJsonPath": "C:\\Users\\teoen\\GitHub\\IDeA_Fusion360\\FusionTutorialOverlay.bundle\\Contents\\assets\\UI Images\\Solid\\Solid_UIComponents.json",
+  "sourceSketchJsonPath": "C:\\Users\\teoen\\GitHub\\IDeA_Fusion360\\FusionTutorialOverlay.bundle\\Contents\\assets\\UI Images\\Sketch\\Sketch_UIComponents.json",
+  "totalExportedComponents": 18,
+  "commands": {
+    "workspaceDropdown_options_1": {
+      "label": "Design",
+      "commandDefinition": "ws-design",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[1]",
+      "captureSource": "commandStarting",
+      "lastSavedAtUtc": "2026-03-03T14:19:22.044136Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_3": {
+      "label": "Render",
+      "commandDefinition": "ws-render",
+      "commandId": "ActivateEnvironmentCommand",
+      "componentPath": "components.workspaceDropdown.options[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:19:38.476267Z",
+      "status": "replace"
+    },
+    "workspaceDropdown_options_5": {
+      "label": "Simulation",
+      "commandDefinition": "ws-simulation",
+      "commandId": "SimCreateSimCaseCommand",
+      "componentPath": "components.workspaceDropdown.options[5]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:20:27.446250Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_1": {
+      "label": "New Component",
+      "commandDefinition": "new-component",
+      "commandId": "DrawPolyline",
+      "componentPath": "components.toolbarGroups.create.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:21:19.065360Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_2": {
+      "label": "Create Sketch",
+      "commandDefinition": "create-sketch",
+      "commandId": "ShapeRectangleTwoPoint",
+      "componentPath": "components.toolbarGroups.create.tools[2]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:22:10.092351Z",
+      "status": "match"
+    },
+    "toolbarGroups_create_tools_3": {
+      "label": "Extrude",
+      "commandDefinition": "extrude",
+      "commandId": "CircleCenterRadius",
+      "componentPath": "components.toolbarGroups.create.tools[3]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:22:43.773435Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_4": {
+      "label": "Revolve",
+      "commandDefinition": "revolve",
+      "commandId": "ArcThreePoint",
+      "componentPath": "components.toolbarGroups.create.tools[4]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:23:53.049517Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_5": {
+      "label": "Sweep",
+      "commandDefinition": "sweep",
+      "commandId": "MirrorSketchCommand",
+      "componentPath": "components.toolbarGroups.create.tools[5]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:24:08.461089Z",
+      "status": "replace"
+    },
+    "toolbarGroups_create_tools_6": {
+      "label": "Loft",
+      "commandDefinition": "loft",
+      "commandId": "SketchDimension",
+      "componentPath": "components.toolbarGroups.create.tools[6]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:24:55.691082Z",
+      "status": "match"
+    },
+    "toolbarGroups_modify_tools_1": {
+      "label": "Press Pull",
+      "commandDefinition": "press-pull",
+      "commandId": "FilletSketchCmd",
+      "componentPath": "components.toolbarGroups.modify.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:26:10.402383Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_2": {
+      "label": "Fillet",
+      "commandDefinition": "fillet",
+      "commandId": "FilletSketchCmd",
+      "componentPath": "components.toolbarGroups.modify.tools[2]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:26:21.656138Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_3": {
+      "label": "Chamfer",
+      "commandDefinition": "chamfer",
+      "commandId": "ExtendSketchCmd",
+      "componentPath": "components.toolbarGroups.modify.tools[3]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:27:02.383273Z",
+      "status": "replace"
+    },
+    "toolbarGroups_modify_tools_4": {
+      "label": "Shell",
+      "commandDefinition": "shell",
+      "commandId": "Offset",
+      "componentPath": "components.toolbarGroups.modify.tools[4]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:27:16.834431Z",
+      "status": "replace"
+    },
+    "toolbarGroups_constraints_tools_1": {
+      "label": "Horizontal/Vertical",
+      "commandDefinition": "horizontal-vertical",
+      "commandId": "ConstraintHorizontalVertical",
+      "componentPath": "components.toolbarGroups.constraints.tools[1]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:27:51.518824Z",
+      "status": "match"
+    },
+    "toolbarGroups_constraints_tools_2": {
+      "label": "Coincident",
+      "commandDefinition": "coincident",
+      "commandId": "ConstraintCoincident",
+      "componentPath": "components.toolbarGroups.constraints.tools[2]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:29:06.896281Z",
+      "status": "match"
+    },
+    "toolbarGroups_constraints_tools_3": {
+      "label": "Tangent",
+      "commandDefinition": "tangent",
+      "commandId": "ConstraintTangent",
+      "componentPath": "components.toolbarGroups.constraints.tools[3]",
+      "captureSource": "command_started",
+      "lastSavedAtUtc": "2026-03-03T14:29:12.348577Z",
+      "status": "match"
+    },
+    "toolbarGroups_constraints_tools_4": {
+      "label": "Equal",
+      "commandDefinition": "equal",
+      "commandId": "ConstraintEqual",
+      "componentPath": "components.toolbarGroups.constraints.tools[4]",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:29:26.415789Z",
+      "status": "match"
+    },
+    "finishSketch": {
+      "label": "FINISH SKETCH",
+      "commandDefinition": "finish-sketch-btn",
+      "commandId": "SketchStop",
+      "componentPath": "components.finishSketch",
+      "captureSource": "command_terminated",
+      "lastSavedAtUtc": "2026-03-03T14:30:41.551663Z",
+      "status": "match"
+    }
+  }
+}

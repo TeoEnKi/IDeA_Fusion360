@@ -11,49 +11,24 @@ sequence,environment,source_file,component_path,label,current_commandId,class
 10,solid,Solid_UIComponents.json,components.environmentTabs.surface,SURFACE,SurfaceTab,tab_or_workspace
 11,solid,Solid_UIComponents.json,components.environmentTabs.mesh,MESH,MeshTab,tab_or_workspace
 12,solid,Solid_UIComponents.json,components.environmentTabs.sheetMetal,SHEET METAL,SheetMetalTab,tab_or_workspace
-13,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[1],New Component,NewComponentCommand,tool_button
-14,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[2],Create Sketch,SketchCreate,tool_button
-15,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[3],Extrude,Extrude,tool_button
-16,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[4],Revolve,Revolve,tool_button
-17,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[5],Sweep,Sweep,tool_button
-18,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[6],Loft,Loft,tool_button
-19,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[7],Hole,HoleCommand,tool_button
-20,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[8],Rectangular Pattern,RectangularPatternCommand,tool_button
-21,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[9],Mirror,MirrorCommand,tool_button
-22,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[1],Press Pull,PressPull,tool_button
-23,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[2],Fillet,Fillet,tool_button
-24,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[3],Chamfer,Chamfer,tool_button
-25,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[4],Shell,Shell,tool_button
-26,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[5],Combine,Combine,tool_button
-27,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[6],Split Body,SplitBody,tool_button
-28,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[7],Move/Copy,Move,tool_button
-29,solid,Solid_UIComponents.json,components.navigationBar.orbit,orbit,OrbitCommand,tool_button
-30,solid,Solid_UIComponents.json,components.navigationBar.pan,pan,PanCommand,tool_button
-31,solid,Solid_UIComponents.json,components.navigationBar.zoom,zoom,ZoomCommand,tool_button
-32,sketch,Sketch_UIComponents.json,components.workspaceDropdown,DESIGN,SelectWorkspace,tab_or_workspace
-33,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[1],Design,DesignWorkspace,tab_or_workspace
-34,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[2],Generative Design,GenerativeDesignWorkspace,tab_or_workspace
-35,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[3],Render,RenderWorkspace,tab_or_workspace
-36,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[4],Animation,AnimationWorkspace,tab_or_workspace
-37,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[5],Simulation,SimulationWorkspace,tab_or_workspace
-38,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[6],Manufacture,ManufactureWorkspace,tab_or_workspace
-39,sketch,Sketch_UIComponents.json,components.workspaceDropdown.options[7],Drawing,DrawingWorkspace,tab_or_workspace
-40,sketch,Sketch_UIComponents.json,components.environmentTabs.solid,SOLID,SolidTab,tab_or_workspace
-41,sketch,Sketch_UIComponents.json,components.environmentTabs.surface,SURFACE,SurfaceTab,tab_or_workspace
-42,sketch,Sketch_UIComponents.json,components.environmentTabs.mesh,MESH,MeshTab,tab_or_workspace
-43,sketch,Sketch_UIComponents.json,components.environmentTabs.sketch,SKETCH,SketchTab,tab_or_workspace
-44,sketch,Sketch_UIComponents.json,components.toolbarGroups.create.tools[1],Line,LineCommand,tool_button
-45,sketch,Sketch_UIComponents.json,components.toolbarGroups.create.tools[2],2-Point Rectangle,TwoPointRectangleCommand,tool_button
-46,sketch,Sketch_UIComponents.json,components.toolbarGroups.create.tools[3],Center Diameter Circle,CenterDiameterCircleCommand,tool_button
-47,sketch,Sketch_UIComponents.json,components.toolbarGroups.create.tools[4],3-Point Arc,Arc3PointCommand,tool_button
-48,sketch,Sketch_UIComponents.json,components.toolbarGroups.create.tools[5],Mirror,SketchMirror,tool_button
-49,sketch,Sketch_UIComponents.json,components.toolbarGroups.create.tools[6],Sketch Dimension,SketchDimension,tool_button
-50,sketch,Sketch_UIComponents.json,components.toolbarGroups.modify.tools[1],Fillet,SketchFillet,tool_button
-51,sketch,Sketch_UIComponents.json,components.toolbarGroups.modify.tools[2],Trim,SketchTrim,tool_button
-52,sketch,Sketch_UIComponents.json,components.toolbarGroups.modify.tools[3],Extend,SketchExtend,tool_button
-53,sketch,Sketch_UIComponents.json,components.toolbarGroups.modify.tools[4],Offset,SketchOffset,tool_button
-54,sketch,Sketch_UIComponents.json,components.toolbarGroups.constraints.tools[1],Horizontal/Vertical,ConstraintHorizontalVertical,tool_button
-55,sketch,Sketch_UIComponents.json,components.toolbarGroups.constraints.tools[2],Coincident,ConstraintCoincident,tool_button
-56,sketch,Sketch_UIComponents.json,components.toolbarGroups.constraints.tools[3],Tangent,ConstraintTangent,tool_button
-57,sketch,Sketch_UIComponents.json,components.toolbarGroups.constraints.tools[4],Equal,ConstraintEqual,tool_button
-58,sketch,Sketch_UIComponents.json,components.finishSketch,FINISH SKETCH,SketchStop,tool_button
+13,solid,Solid_UIComponents.json,components.toolbarGroups.create,CREATE,SolidCreatePanel,tool_button
+14,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[1],New Component,NewComponentCommand,tool_button
+15,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[2],Create Sketch,SketchCreate,tool_button
+16,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[3],Extrude,Extrude,tool_button
+17,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[4],Revolve,Revolve,tool_button
+18,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[5],Sweep,Sweep,tool_button
+19,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[6],Loft,Loft,tool_button
+20,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[7],Hole,HoleCommand,tool_button
+21,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[8],Rectangular Pattern,RectangularPatternCommand,tool_button
+22,solid,Solid_UIComponents.json,components.toolbarGroups.create.tools[9],Mirror,MirrorCommand,tool_button
+23,solid,Solid_UIComponents.json,components.toolbarGroups.modify,MODIFY,SolidModifyPanel,tool_button
+24,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[1],Press Pull,PressPull,tool_button
+25,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[2],Fillet,Fillet,tool_button
+26,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[3],Chamfer,Chamfer,tool_button
+27,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[4],Shell,Shell,tool_button
+28,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[5],Combine,Combine,tool_button
+29,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[6],Split Body,SplitBody,tool_button
+30,solid,Solid_UIComponents.json,components.toolbarGroups.modify.tools[7],Move/Copy,Move,tool_button
+31,solid,Solid_UIComponents.json,components.navigationBar.orbit,orbit,OrbitCommand,tool_button
+32,solid,Solid_UIComponents.json,components.navigationBar.pan,pan,PanCommand,tool_button
+33,solid,Solid_UIComponents.json,components.navigationBar.zoom,zoom,ZoomCommand,tool_button

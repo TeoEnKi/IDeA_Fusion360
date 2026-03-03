@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate deterministic click checklist rows from Sketch/Solid UI component JSONs."""
+"""Generate deterministic click checklist rows from Solid UI component JSON."""
 
 from __future__ import annotations
 
@@ -17,11 +17,13 @@ def _read_json(path: Path) -> Dict:
 
 def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, str]]:
     components = config.get("components", {})
+    def has_label(value: str) -> bool:
+        return bool((value or "").strip())
 
     # Workspace dropdown and options
     wd = components.get("workspaceDropdown")
     if wd:
-        yield {
+        row = {
             "environment": env,
             "source_file": source_name,
             "component_path": "components.workspaceDropdown",
@@ -29,8 +31,10 @@ def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, s
             "current_commandId": wd.get("commandId", ""),
             "class": "tab_or_workspace",
         }
+        if has_label(row["label"]):
+            yield row
         for idx, opt in enumerate(wd.get("options", []), start=1):
-            yield {
+            row = {
                 "environment": env,
                 "source_file": source_name,
                 "component_path": f"components.workspaceDropdown.options[{idx}]",
@@ -38,10 +42,12 @@ def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, s
                 "current_commandId": opt.get("commandId", ""),
                 "class": "tab_or_workspace",
             }
+            if has_label(row["label"]):
+                yield row
 
     # Environment tabs
     for tab_key, tab in (components.get("environmentTabs", {}) or {}).items():
-        yield {
+        row = {
             "environment": env,
             "source_file": source_name,
             "component_path": f"components.environmentTabs.{tab_key}",
@@ -49,12 +55,25 @@ def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, s
             "current_commandId": tab.get("commandId", ""),
             "class": "tab_or_workspace",
         }
+        if has_label(row["label"]):
+            yield row
 
-    # Toolbar tools (primary button clicks)
+    # Toolbar groups and tools
     for group_key, group in (components.get("toolbarGroups", {}) or {}).items():
+        row = {
+            "environment": env,
+            "source_file": source_name,
+            "component_path": f"components.toolbarGroups.{group_key}",
+            "label": group.get("label", ""),
+            "current_commandId": group.get("commandId", ""),
+            "class": "tool_button",
+        }
+        if has_label(row["label"]):
+            yield row
+
         tools = group.get("tools", []) or []
         for idx, tool in enumerate(tools, start=1):
-            yield {
+            row = {
                 "environment": env,
                 "source_file": source_name,
                 "component_path": f"components.toolbarGroups.{group_key}.tools[{idx}]",
@@ -62,11 +81,27 @@ def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, s
                 "current_commandId": tool.get("commandId", ""),
                 "class": "tool_button",
             }
+            if has_label(row["label"]):
+                yield row
 
-    # Sketch-only finish sketch button
+    # Browser items
+    browser = components.get("browser", {})
+    for item_key, item in (browser.get("items", {}) or {}).items():
+        row = {
+            "environment": env,
+            "source_file": source_name,
+            "component_path": f"components.browser.items.{item_key}",
+            "label": item.get("label", ""),
+            "current_commandId": item.get("commandId", ""),
+            "class": "tool_button",
+        }
+        if has_label(row["label"]):
+            yield row
+
+    # Sketch-only finish sketch button (not present in Solid)
     fs = components.get("finishSketch")
     if fs:
-        yield {
+        row = {
             "environment": env,
             "source_file": source_name,
             "component_path": "components.finishSketch",
@@ -74,10 +109,12 @@ def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, s
             "current_commandId": fs.get("commandId", ""),
             "class": "tool_button",
         }
+        if has_label(row["label"]):
+            yield row
 
     # Navigation controls (if present)
     for nav_key, nav in (components.get("navigationBar", {}) or {}).items():
-        yield {
+        row = {
             "environment": env,
             "source_file": source_name,
             "component_path": f"components.navigationBar.{nav_key}",
@@ -85,6 +122,8 @@ def _iter_rows(config: Dict, source_name: str, env: str) -> Iterable[Dict[str, s
             "current_commandId": nav.get("commandId", ""),
             "class": "tool_button",
         }
+        if has_label(row["label"]):
+            yield row
 
 
 def main() -> int:
@@ -105,15 +144,11 @@ def main() -> int:
     out_dir = (root / args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    sketch_path = root / "FusionTutorialOverlay.bundle/Contents/assets/UI Images/Sketch/Sketch_UIComponents.json"
     solid_path = root / "FusionTutorialOverlay.bundle/Contents/assets/UI Images/Solid/Solid_UIComponents.json"
-
-    sketch = _read_json(sketch_path)
     solid = _read_json(solid_path)
 
     rows: List[Dict[str, str]] = []
     rows.extend(_iter_rows(solid, "Solid_UIComponents.json", "solid"))
-    rows.extend(_iter_rows(sketch, "Sketch_UIComponents.json", "sketch"))
 
     for i, row in enumerate(rows, start=1):
         row["sequence"] = str(i)
