@@ -175,12 +175,6 @@
             });
         }
 
-        // Viewport screenshot refresh button
-        const refreshViewportBtn = document.getElementById('refreshViewportBtn');
-        if (refreshViewportBtn) {
-            refreshViewportBtn.addEventListener('click', requestViewportCapture);
-        }
-
         // Keyboard navigation (when palette has focus)
         document.addEventListener('keydown', handleKeydown);
     }
@@ -289,8 +283,6 @@
                     }
                     // Clear any context warnings from previous navigation attempts
                     clearContextWarnings();
-                    // Clear viewport screenshot from previous step
-                    clearViewportPreview();
                     // Prevent cross-step inferred completion from stale command state.
                     latchedMatchedCommandId = '';
                     showTutorial();
@@ -369,10 +361,6 @@
 
                 case 'completionEvent':
                     handleCompletionEvent(payload.event);
-                    break;
-
-                case 'viewportCaptured':
-                    handleViewportCaptured(payload);
                     break;
 
                 case 'qcResults':
@@ -730,14 +718,6 @@
             updateQCChecksFromEvent(event);
         }
 
-        // Request viewport capture for visual feedback on feature completion
-        const captureEvents = [
-            'extrude_created', 'fillet_created', 'sketch_finished',
-            'chamfer_created', 'revolve_created', 'shell_created', 'sweep_created'
-        ];
-        if (captureEvents.includes(event.eventType)) {
-            requestViewportCapture();
-        }
     }
 
     /**
@@ -940,64 +920,6 @@
     }
 
     /**
-     * Request viewport screenshot capture
-     */
-    function requestViewportCapture() {
-        const timestamp = Date.now();
-        sendToBridge({
-            action: 'captureViewport',
-            filename: `viewport_${timestamp}.png`
-        });
-    }
-
-    /**
-     * Handle viewport captured response
-     */
-    function handleViewportCaptured(payload) {
-        if (payload.success && payload.imageData) {
-            console.log('Viewport captured with base64 data');
-            updateViewportPreview(payload.imageData);
-        } else if (payload.success && payload.path) {
-            // Fallback for file path (may not work in Qt WebEngine sandbox)
-            console.log('Viewport captured:', payload.path);
-            updateViewportPreview('../' + payload.path + '?' + Date.now());
-        }
-    }
-
-    /**
-     * Update viewport preview in visual step area using base64 data URL
-     */
-    function updateViewportPreview(imageDataUrl) {
-        const container = document.getElementById('viewportScreenshot');
-        const img = document.getElementById('viewportScreenshotImg');
-        const visualArea = document.getElementById('visualStepArea');
-
-        if (container && img) {
-            img.src = imageDataUrl;
-            container.classList.remove('hidden');
-        }
-
-        if (visualArea) {
-            visualArea.classList.remove('hidden');
-        }
-    }
-
-    /**
-     * Clear viewport preview (called on step change)
-     */
-    function clearViewportPreview() {
-        const container = document.getElementById('viewportScreenshot');
-        const img = document.getElementById('viewportScreenshotImg');
-
-        if (container) {
-            container.classList.add('hidden');
-        }
-        if (img) {
-            img.src = '';
-        }
-    }
-
-    /**
      * Handle QC results from bridge
      */
     function handleQCResults(results) {
@@ -1178,7 +1100,6 @@
 
     // Expose functions globally for use by renderers
     window.sendToBridge = sendToBridge;
-    window.requestViewportCapture = requestViewportCapture;
     window.showWarningFooter = showWarningFooter;
     window.hideWarningFooter = hideWarningFooter;
     window.showWorkspaceMismatchModal = showWorkspaceMismatchModal;

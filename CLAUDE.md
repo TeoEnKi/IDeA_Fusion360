@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI Tutorial Overlay for Autodesk Fusion 360 — an add-in that provides step-by-step interactive tutorials with animated cursor guidance and real 3D viewport interaction. Packaged as a `.bundle` for the Autodesk App Store.
+AI Tutorial Overlay for Autodesk Fusion 360 - an add-in that provides step-by-step interactive tutorials with animated cursor guidance and real 3D viewport interaction. Packaged as a `.bundle` for the Autodesk App Store.
 
 ## Architecture
 
-**Python backend** (`FusionTutorialOverlay.py` + `core/` modules) communicates with a **vanilla JS/HTML frontend** (`palette/`) through Fusion 360's palette bridge. No HTTP server is embedded in the add-in. Tutorial bootstrap currently depends on an outbound webhook fetch to n8n. No build system, linter, or test framework — the add-in runs directly as Python + HTML/JS.
+**Python backend** (`FusionTutorialOverlay.py` + `core/` modules) communicates with a **vanilla JS/HTML frontend** (`palette/`) through Fusion 360's palette bridge. No HTTP server is embedded in the add-in. Tutorial bootstrap depends on outbound webhook calls to n8n (`start-scan` and `scan-status`). No build system, linter, or test framework - the add-in runs directly as Python + HTML/JS.
 
 ### Communication Bridge
 - **JS -> Python:** `window.adsk.fusionSendData('cycleEvent', JSON.stringify(data))`
@@ -18,41 +18,43 @@ AI Tutorial Overlay for Autodesk Fusion 360 — an add-in that provides step-by-
 ### Key Modules
 
 **Python backend:**
-- **`FusionTutorialOverlay.py`** — Entry point (~1200 lines). Registers toolbar commands, creates the HTML palette, routes bridge messages to action handlers via `PaletteHTMLEventHandler.notify()`. Contains **inline** `TutorialManager` and `FusionActionsRunner` classes that are used at runtime.
-- **`core/completion_detector.py`** — Monitors Fusion API events (commandStarting, commandTerminated) to detect step completion. Fires `completionEvent` messages to JS for QC check toggling. Contains `COMMAND_MAP` for mapping Fusion command IDs to event types.
-- **`core/context_detector.py`** — Detects current workspace/environment (toolbar tab is primary signal, active sketch is secondary).
-- **`core/context_poller.py`** — Polls context periodically during redirect steps and after non-blocking context warnings; fires `contextResolved` when the user switches to the correct environment.
-- **`core/consent_manager.py`** — Manages user consent for AI-guided redirect help (ON/ASK/OFF modes), persists preference to disk.
-- **`core/redirect_templates.py`** — Generates redirect step data (animated instructions for switching workspaces/environments).
-- **`core/assets.py`** — `AssetManager` class for base64 data URL conversion with caching. **Not connected** — inline `base64.b64encode` is used instead.
-- **`core/tutorial_manager.py`** — More structured `TutorialManager` with validation. **Not connected** — the inline class in `FusionTutorialOverlay.py` is used at runtime.
-- **`core/tutorial_plugin_service.py`** — Cloud tutorial bootstrap loader. Fetches latest tutorial JSON from n8n webhook with timeout + normalized errors.
-- **`core/fusion_actions.py`** — More structured `FusionActionsRunner`. **Not connected** — the inline class in `FusionTutorialOverlay.py` is used at runtime.
+- **`FusionTutorialOverlay.py`** - Entry point (~1200 lines). Registers toolbar commands, creates the HTML palette, routes bridge messages to action handlers via `PaletteHTMLEventHandler.notify()`. Contains **inline** `TutorialManager` and `FusionActionsRunner` classes that are used at runtime.
+- **`core/completion_detector.py`** - Monitors Fusion API events (commandStarting, commandTerminated) to detect step completion. Fires `completionEvent` messages to JS for QC check toggling. Contains `COMMAND_MAP` for mapping Fusion command IDs to event types.
+- **`core/context_detector.py`** - Detects current workspace/environment (toolbar tab is primary signal, active sketch is secondary).
+- **`core/context_poller.py`** - Polls context periodically during redirect steps and after non-blocking context warnings; fires `contextResolved` when the user switches to the correct environment.
+- **`core/consent_manager.py`** - Manages user consent for AI-guided redirect help (ON/ASK/OFF modes), persists preference to disk.
+- **`core/redirect_templates.py`** - Generates redirect step data (animated instructions for switching workspaces/environments).
+- **`core/assets.py`** - `AssetManager` class for base64 data URL conversion with caching. **Not connected** - inline `base64.b64encode` is used instead.
+- **`core/tutorial_manager.py`** - More structured `TutorialManager` with validation. **Not connected** - the inline class in `FusionTutorialOverlay.py` is used at runtime.
+- **`core/tutorial_plugin_service.py`** - Cloud tutorial bootstrap service for n8n webhooks: `POST /webhook/start-scan` and `GET /webhook/scan-status`.
+- **`core/fusion_actions.py`** - More structured `FusionActionsRunner`. **Not connected** - the inline class in `FusionTutorialOverlay.py` is used at runtime.
 
-**JavaScript frontend (no module bundler — all globals on `window.*`, loaded in dependency order):**
-- **`palette/static/js/main.js`** — Bridge initialization, message routing, and blocking error state for bridge/data-load failures (IIFE pattern).
-- **`palette/static/js/stepper.js`** — Step navigation controller (Next/Previous/GoToStep), redirect mode management.
-- **`palette/static/js/consentDialog.js`** — First-run consent dialog for AI guidance preference.
-- **`palette/static/js/renderers/`** — Strategy pattern: `BaseRenderer` → `AnimatedRenderer`, `StaticRenderer`, `RedirectRenderer`.
+**JavaScript frontend (no module bundler - all globals on `window.*`, loaded in dependency order):**
+- **`palette/static/js/main.js`** - Bridge initialization, bootstrap state handling, message routing, and blocking error state for bridge/data-load failures (IIFE pattern).
+- **`palette/static/js/stepper.js`** - Step navigation controller (Next/Previous/GoToStep), redirect mode management.
+- **`palette/static/js/consentDialog.js`** - First-run consent dialog for AI guidance preference.
+- **`palette/static/js/renderers/`** - Strategy pattern: `BaseRenderer` -> `AnimatedRenderer`, `StaticRenderer`, `RedirectRenderer`.
 
 **Data files:**
-- **`assets/UI Images/Solid/Solid_UIComponents.json`** and **`assets/UI Images/Sketch/Sketch_UIComponents.json`** — Per-environment UI component position maps (toolbar groups, environment tabs, navigation bar). Loaded by `BaseRenderer` at init. Each has corresponding screenshot PNGs (`Solid_0.png`..`Solid_2.png`, `Sketch_0.png`..`Sketch_3.png`) where the `imageIndex` field selects which screenshot to display (e.g., 0=base, 1=Create expanded, 2=Modify expanded).
-- **`test_data/mug_tutorial.json`** — Legacy local tutorial fixture retained for reference only; bootstrap now uses cloud latest-tutorial endpoint.
+- **`assets/UI Images/Solid/Solid_UIComponents.json`** and **`assets/UI Images/Sketch/Sketch_UIComponents.json`** - Per-environment UI component position maps (toolbar groups, environment tabs, navigation bar). Loaded by `BaseRenderer` at init. Each has corresponding screenshot PNGs (`Solid_0.png`..`Solid_2.png`, `Sketch_0.png`..`Sketch_3.png`) where the `imageIndex` field selects which screenshot to display (for example, 0=base, 1=Create expanded, 2=Modify expanded).
+- **`test_data/mug_tutorial.json`** - Legacy local tutorial fixture retained for reference only; runtime bootstrap uses webhook-first flow.
 
 ### Data Flow
 ```
-Tutorial JSON → Python TutorialManager → Bridge → JS Stepper/Renderer → DOM
-User Action → JS Bridge Event → Python Handler → Fusion API → Result back to JS
-Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC update
+Tutorial JSON -> Python TutorialManager -> Bridge -> JS Stepper/Renderer -> DOM
+User Action -> JS Bridge Event -> Python Handler -> Fusion API -> Result back to JS
+Fusion API Event -> CompletionDetector -> Bridge completionEvent -> JS QC update
 ```
 
 ### Bridge Message Reference
 
-**JS → Python actions** (sent via `fusionSendData`):
+**JS -> Python actions** (sent via `fusionSendData`):
 | Action | Description |
 |---|---|
-| `ready` | Palette loaded, request initial tutorial |
+| `ready` | Palette loaded, request bootstrap entry state |
 | `loadTutorial` | Legacy action; disabled in cloud-only tutorial mode |
+| `startTutorialFetch` | Trigger tutorial fetch via `start-scan` webhook |
+| `checkScanStatus` | Poll webhook status for progress/debug visibility |
 | `next` | Navigate to next step |
 | `prev` | Navigate to previous step |
 | `goToStep` | Navigate to a specific step index |
@@ -61,15 +63,17 @@ Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC upd
 | `showRedirectHelp` | User wants redirect guidance |
 | `skipRedirectHelp` | User declined redirect guidance |
 | `skipRedirect` | Skip active redirect animation |
-| `captureViewport` | Capture viewport as screenshot |
 | `checkQCConditions` | Check QC conditions against design state |
 | `getDesignState` | Query current design state |
 | `resetTracking` | Reset completion tracking for new step |
 
-**Python → JS response types** (sent via `sendInfoToHTML`):
+**Python -> JS response types** (sent via `sendInfoToHTML`):
 | Action | Description |
 |---|---|
-| `runtimeInfo` | Runtime identity payload (`buildStamp`, `scriptPath`, `headerHash`, `pathMatchesExpected`, `coreModulesLoaded`) for stale-bundle detection |
+| `runtimeInfo` | Runtime identity payload (`buildStamp`, `scriptPath`, `headerHash`, `pathMatchesExpected`, `coreModulesLoaded`, `webhookModuleLoaded`, `webhookModuleFile`, `webhookSymbols`, `webhookImportError`) for stale-bundle detection |
+| `bootstrapReady` | Palette bootstrap state is ready; wait for user to click Get Tutorial |
+| `scanStarted` | Tutorial scan request started |
+| `scanStatus` | Scan status response (`statusCode`: `-1`, `0`, `1`) |
 | `tutorialLoaded` | Tutorial loaded with first step data |
 | `updateStep` | Step data after navigation |
 | `error` | Error message |
@@ -77,35 +81,35 @@ Fusion API Event → CompletionDetector → Bridge completionEvent → JS QC upd
 | `consentRequired` | First-run consent dialog trigger |
 | `consentSet` | Consent mode acknowledgment |
 | `contextWarning` | Non-blocking environment mismatch warning |
-| `contextResolved` | Environment now matches — dismiss warning |
+| `contextResolved` | Environment now matches - dismiss warning |
 | `askRedirect` | Ask user about redirect guidance |
 | `redirectStep` | Redirect step animation data |
 | `redirectComplete` | Redirect resolved, auto-advance |
 | `redirectSkipped` | Redirect was skipped |
 | `completionEvent` | QC completion event from Fusion API |
-| `viewportCaptured` | Viewport screenshot as base64 data URL |
 | `qcResults` | QC condition check results |
 | `designState` | Current design state snapshot |
+| `trackingReset` | Completion tracking reset acknowledgment |
 
 ### Context Warnings
-Context warnings are **non-blocking** — navigation always proceeds even if the user is in the wrong environment. A dismissible `#warningFooter` appears with configurable type (`warning`/`error`/`info`), optional action button with callback, and auto-dismiss after 5 seconds or when the context poller detects the user has switched to the correct environment.
+Context warnings are **non-blocking** - navigation always proceeds even if the user is in the wrong environment. A dismissible `#warningFooter` appears with configurable type (`warning`/`error`/`info`), optional action button with callback, and auto-dismiss after 5 seconds or when the context poller detects the user has switched to the correct environment.
 Workspace/environment mismatch validation during step navigation depends on each step including `requires.workspace` and `requires.environment`. These are **mandatory on every step** (not inherited). The cloud webhook payload should include explicit `requires` on all steps so mismatch warning/modal behavior can run on every navigation transition.
-When launched from Add-Ins with `ToolsTab` active, initial tutorial load now performs best-effort context normalization before rendering step 1: collapse `ToolsTab` focus and activate required Design tab (e.g., `SolidTab`) using multiple fallback activation paths.
+When launched from Add-Ins with `ToolsTab` active, initial tutorial load now performs best-effort context normalization before rendering step 1: collapse `ToolsTab` focus and activate required Design tab (for example, `SolidTab`) using multiple fallback activation paths.
 
 ### QC Completion Detection
-Tutorial steps can include `qcChecks` with an `expectedCommand` field matching a Fusion 360 command ID (e.g., `"expectedCommand": "SketchLine"`). The completion detector monitors Fusion API events and sends `completionEvent` messages to JS.
+Tutorial steps can include `qcChecks` with an `expectedCommand` field matching a Fusion 360 command ID (for example, `"expectedCommand": "SketchLine"`). The completion detector monitors Fusion API events and sends `completionEvent` messages to JS.
 
 **Three-tier matching in JS:**
 1. **Primary:** `data-expected-command` attribute on QC list item matches `event.additionalInfo.commandId` directly.
-2. **Secondary:** `eventToCommandMap` maps feature event types (e.g., `extrude_created`) to the command IDs that produce them (e.g., `Extrude`).
-3. **Fallback:** Text-based matching for items without `expectedCommand` (e.g., item text contains "fillet" and event is `fillet_created`).
+2. **Secondary:** `eventToCommandMap` maps feature event types (for example, `extrude_created`) to the command IDs that produce them (for example, `Extrude`).
+3. **Fallback:** Text-based matching for items without `expectedCommand` (for example, item text contains "fillet" and event is `fillet_created`).
 
-**Visual states:** `pending` (empty circle) → `checking` (filled circle, pulsing) → `completed` (checkmark).
+**Visual states:** `pending` (empty circle) -> `checking` (filled circle, pulsing) -> `completed` (checkmark).
 
-Sketch tools (SketchLine, Sketch3PointArc, etc.) don't create timeline items — `TimelineEventHandler` fires `command_terminated` events for these so JS can still complete checks. Feature tools (Extrude, Fillet, Revolve) DO create timeline items and emit specific event types like `extrude_created`. For `command_terminated` events, JS completes one QC check at a time for progressive feedback.
+Sketch tools (SketchLine, Sketch3PointArc, etc.) do not create timeline items - `TimelineEventHandler` fires `command_terminated` events for these so JS can still complete checks. Feature tools (Extrude, Fillet, Revolve) do create timeline items and emit specific event types like `extrude_created`. For `command_terminated` events, JS completes one QC check at a time for progressive feedback.
 
 ### Target Resolution System
-`BaseRenderer.resolveTarget(path)` is the single unified system for resolving dot-separated target paths (e.g., `"toolbar.create.extrude"`) to positions in the UI component maps. Both `visualStep.highlights` and cursor animations in `AnimatedRenderer` use this same system. Resolution uses a 9-strategy cascade: direct lookup → stripped segments → progressive path shortening → wildcard matching → camelCase conversion → substring match → browser fallback → bare segment. Targets starting with `canvas.*` or `dialog.*` return null (these are viewport/dialog references, not toolbar targets).
+`BaseRenderer.resolveTarget(path)` is the single unified system for resolving dot-separated target paths (for example, `"toolbar.create.extrude"`) to positions in the UI component maps. Both `visualStep.highlights` and cursor animations in `AnimatedRenderer` use this same system. Resolution uses a strategy cascade (direct lookup -> stripped segments -> progressive path shortening -> wildcard matching -> camelCase conversion -> substring match -> browser fallback -> bare segment). Targets starting with `canvas.*` or `dialog.*` return null (these are viewport/dialog references, not toolbar targets).
 
 ## Development Workflow
 
@@ -124,56 +128,59 @@ The palette no longer loads local tutorial data in standalone mode. Without Fusi
 3. Button appears in Tools > Utilities panel
 4. Python errors: View > Python Console
 5. JS errors: F12 (Qt WebEngine DevTools)
-6. Debug log: `FusionTutorialOverlay.bundle/Contents/debug.log`
-7. Confirm runtime identity in logs and JS console:
-   - `Build: <BUILD_STAMP>`
-   - `Runtime build stamp: <BUILD_STAMP>`
-   - `Runtime script path: .../API/AddIns/FusionTutorialOverlay.bundle/...`
-   - `runtimeInfo` message in JS console
+6. Confirm runtime identity and webhook readiness via `runtimeInfo` in the JS console:
+   - `buildStamp`
+   - `scriptPath` under `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns\FusionTutorialOverlay.bundle`
+   - `pathMatchesExpected`
+   - `webhookModuleLoaded`, `webhookSymbols`, `webhookImportError`
 
 **Supported deploy workflow (required for reliable debugging):**
 1. Run `scripts/deploy_addin.ps1`
 2. Restart add-in in Fusion
-3. Verify startup logs include:
-   - `Build: <BUILD_STAMP>`
-   - `Runtime build stamp: <BUILD_STAMP>`
-   - runtime script path under `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns\FusionTutorialOverlay.bundle`
-4. If those lines are missing, stop behavior debugging and fix deployment first.
+3. Verify deploy script output includes current `BUILD_STAMP` and file hashes (`FusionTutorialOverlay.py` and `core/tutorial_plugin_service.py`)
+4. Verify runtime `scriptPath` and `pathMatchesExpected` from `runtimeInfo`
+5. If deploy/runtime identity checks fail, stop behavior debugging and fix deployment first
 
 ### Runtime Identity Enforcement
-`FusionTutorialOverlay.py` enforces runtime identity checks at startup to catch stale installed bundles. The check validates installed script path against the expected AddIns location and logs a deterministic header hash. If runtime identity fails, the add-in shows a deployment-fix message and blocks tutorial load to avoid misleading behavior diagnostics.
+`FusionTutorialOverlay.py` enforces runtime identity checks at startup to catch stale installed bundles. The check validates installed script path against the expected AddIns location and computes a deterministic header hash for diagnostics. If runtime identity fails, the add-in shows a deployment-fix message and blocks tutorial load to avoid misleading behavior diagnostics.
 
 ### Tutorial JSON format
-Tutorial bootstrap is fetched from `GET https://narwhjorl.app.n8n.cloud/webhook/get-latest-tutorial` in `_handle_ready()` via `fetch_latest_tutorial(timeout_seconds=15)`. No local tutorial fallback is used in plugin/standalone path.
+Tutorial bootstrap is webhook-first and user-triggered:
+1. `_handle_ready()` responds with `bootstrapReady` (no tutorial fetch yet)
+2. UI sends `startTutorialFetch` after the user clicks **Get Tutorial**
+3. Plugin calls `POST https://narwhjorl.app.n8n.cloud/webhook/start-scan` with body `{ "username": "ProtoGo" }`
+4. Plugin/UI can poll `GET https://narwhjorl.app.n8n.cloud/webhook/scan-status` via `checkScanStatus`
+
+No local tutorial fallback is used in plugin/standalone path.
 
 **Step fields:**
 `requires.workspace` and `requires.environment` are **required on every step** for runtime context validation and mismatch feedback.
-- `stepId`, `stepNumber`, `title` — Step identification
-- `instruction` — Primary instruction text
-- `detailedText` — Secondary explanation text
-- `tips` — Array of tip strings or `{symbol, text}` objects
-- `qcChecks` — Array of `{text, expectedCommand}` for completion detection
-- `warnings` — Array of `{symbol, text}` for step warnings
-- `uiAnimations` — Array of animation directives (see animation types below)
-- `fusionActions` — Array of Fusion API actions (only `highlight.body` and `prompt.selectEntity` are implemented; other types like `ui.openWorkspace` are defined in JSON but are no-ops)
-- `requires` — Context requirements (`{workspace, environment}`); include on every step in test/tutorial manifests so context mismatch checks can run consistently
-- `requires.workspace` — Top-level Fusion workspace (e.g., `Design`, `Render`, `Manufacture`)
-- `requires.environment` — Active workspace tab/mode (e.g., `Solid`, `Sketch`, `Surface`, `Mesh`, `Sheet Metal`)
-- `visualStep` — `{image, highlights[], caption, useNavbar}` for UI reference images with positioned highlight overlays; highlights can use `component` references resolved via the UIComponents JSON files
-- `expandedContent` — `{whyThisMatters, tips, dimensions, parameters, referenceImage, nextSteps, skillsLearned}`
-- `captureViewport` — Boolean; auto-captures Fusion viewport screenshot on step load (read-only; does not control the camera)
+- `stepId`, `stepNumber`, `title` - Step identification
+- `instruction` - Primary instruction text
+- `detailedText` - Secondary explanation text
+- `tips` - Array of tip strings or `{symbol, text}` objects
+- `qcChecks` - Array of `{text, expectedCommand}` for completion detection
+- `warnings` - Array of `{symbol, text}` for step warnings
+- `uiAnimations` - Array of animation directives (see animation types below)
+- `fusionActions` - Array of Fusion API actions (only `highlight.body` and `prompt.selectEntity` are implemented; other types like `ui.openWorkspace` are defined in JSON but are no-ops)
+- `requires` - Context requirements (`{workspace, environment}`); include on every step in test/tutorial manifests so context mismatch checks can run consistently
+- `requires.workspace` - Top-level Fusion workspace (for example, `Design`, `Render`, `Manufacture`)
+- `requires.environment` - Active workspace tab/mode (for example, `Solid`, `Sketch`, `Surface`, `Mesh`, `Sheet Metal`)
+- `visualStep` - `{image, highlights[], caption, useNavbar}` for UI reference images with positioned highlight overlays; highlights can use `component` references resolved via the UIComponents JSON files
+- `expandedContent` - `{whyThisMatters, tips, dimensions, parameters, referenceImage, nextSteps, skillsLearned}`
 
-**Animation types:** `move`, `click`, `drag`, `pause`, `highlight`, `tooltip`, `arrow`. Coordinates in `move`/`click`/`drag` are percentages (0–100) relative to the animation area. `highlight`/`tooltip`/`arrow` use `target` strings (e.g., `"toolbar.create.extrude"`) resolved via `BaseRenderer.resolveTarget()`.
+**Animation types:** `move`, `click`, `drag`, `pause`, `highlight`, `tooltip`, `arrow`. Coordinates in `move`/`click`/`drag` are percentages (`0-100`) relative to the animation area. `highlight`/`tooltip`/`arrow` use `target` strings (for example, `"toolbar.create.extrude"`) resolved via `BaseRenderer.resolveTarget()`.
 
 ## Important Conventions
 
 - **Python handlers must be retained** in the `_handlers` list to prevent garbage collection by Fusion's API. `CompletionDetector` manages its own internal `_handlers` list separately.
-- **Optional modules degrade gracefully** — core tutorial playback works even if context detection or completion detection fails to load.
-- **Assets are base64 data URLs** — viewport screenshots and images are encoded at runtime, never served via HTTP.
-- **Fusion destroys palettes on workspace switch** — the add-in recreates them as needed.
+- **Optional modules degrade gracefully** - core tutorial playback works even if context detection or completion detection fails to load.
+- **Assets are base64 data URLs** - images are encoded at runtime, never served via HTTP.
+- **Fusion destroys palettes on workspace switch** - the add-in recreates them as needed.
 - **JS must wait for `window.adsk`** before calling bridge methods (`waitForBridge()` in main.js).
-- **Duplicate classes exist** — `TutorialManager` and `FusionActionsRunner` have inline versions in `FusionTutorialOverlay.py` (used at runtime) and more structured versions in `core/` (not yet connected). Edits to the `core/` versions have no effect on runtime behavior.
+- **Duplicate classes exist** - `TutorialManager` and `FusionActionsRunner` have inline versions in `FusionTutorialOverlay.py` (used at runtime) and more structured versions in `core/` (not yet connected). Edits to the `core/` versions have no effect on runtime behavior.
+- **`debug_log()` is currently a no-op** - do not rely on `FusionTutorialOverlay.bundle/Contents/debug.log` as the primary runtime diagnostic source.
 - Python: `snake_case` functions, `PascalCase` classes, `UPPER_SNAKE_CASE` constants.
 - JavaScript: `camelCase` functions/variables, `PascalCase` classes.
 - QC feedback uses symbols (checkmark, warning, stop) rather than colors for accessibility.
-- **`Fusion360_AI_Tutorial_Software_ArchitecturePlan.md` describes target state**, not always current behavior (e.g., it says `warnings` field was removed from the schema, but the code still renders it).
+- **`Fusion360_AI_Tutorial_Software_ArchitecturePlan.md` describes target state**, not always current behavior (for example, it says `warnings` field was removed from the schema, but the code still renders it).

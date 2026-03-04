@@ -7,7 +7,6 @@ Main add-in entry point
 import os
 import sys
 import traceback
-import base64
 import time
 import hashlib
 import importlib
@@ -151,7 +150,6 @@ _pending_step_index = None
 
 # Completion detection system
 _completion_detector = None
-_screenshot_dir = None
 _workspace_feedback_template = None
 _environment_feedback_templates = {}
 _runtime_identity_ok = True
@@ -764,10 +762,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             elif action == "skipRedirect":
                 response = self._handle_skip_redirect()
 
-            # Completion detection and screenshot actions
-            elif action == "captureViewport":
-                response = self._handle_capture_viewport(data.get("filename", "viewport.png"))
-
+            # Completion detection actions
             elif action == "checkQCConditions":
                 conditions = data.get("conditions", [])
                 response = self._handle_check_qc(conditions)
@@ -908,7 +903,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             self._ensure_initial_step_context(step)
             debug_log(" Tutorial loaded from start-scan payload, executing fusion actions...")
             self._execute_fusion_actions(step)
-            self._auto_capture_viewport(step)
             mismatch_feedback = self._build_workspace_mismatch_feedback(step)
 
             # Keep existing consent prompt behavior, now after successful load.
@@ -1275,43 +1269,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         return False
 
-    def _auto_capture_viewport(self, step: dict):
-        """Auto-capture viewport screenshot if the step requests it."""
-        global _completion_detector, _screenshot_dir, _palette
-
-        if not step.get("captureViewport"):
-            return
-
-        if not CORE_MODULES_LOADED or not _completion_detector or not _palette:
-            return
-
-        try:
-            # Brief delay so Fusion renders camera changes first
-            time.sleep(0.3)
-
-            if not _screenshot_dir:
-                _screenshot_dir = get_resource_path("screenshots")
-                os.makedirs(_screenshot_dir, exist_ok=True)
-
-            filename = f"viewport_auto_{int(time.time() * 1000)}.png"
-            output_path = os.path.join(_screenshot_dir, filename)
-
-            success = _completion_detector.capture_viewport_screenshot(output_path)
-            if success:
-                with open(output_path, 'rb') as f:
-                    image_data = base64.b64encode(f.read()).decode('utf-8')
-
-                capture_response = {
-                    "action": "viewportCaptured",
-                    "success": True,
-                    "imageData": f"data:image/png;base64,{image_data}",
-                    "path": f"screenshots/{filename}"
-                }
-                _palette.sendInfoToHTML("response", json.dumps(capture_response))
-                debug_log(f" Auto-captured viewport for step: {step.get('stepId', 'unknown')}")
-        except Exception as e:
-            debug_log(f" Auto-capture viewport failed: {e}")
-
     def _build_workspace_mismatch_feedback(self, step: dict) -> dict:
         """Create payload for a non-blocking workspace/environment mismatch modal."""
         global _context_detector
@@ -1465,7 +1422,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         if step:
             self._execute_fusion_actions(step)
-            self._auto_capture_viewport(step)
             response = {"action": "updateStep", "step": step, "success": True}
             mismatch_feedback = self._build_workspace_mismatch_feedback(step)
             if mismatch_feedback:
@@ -1705,43 +1661,6 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
 
         return {"action": "redirectSkipped", "success": True}
 
-    def _handle_capture_viewport(self, filename: str) -> dict:
-        """Capture the current viewport as an image and return as base64 data URL."""
-        global _completion_detector, _screenshot_dir
-
-        if not CORE_MODULES_LOADED or not _completion_detector:
-            return {"action": "viewportCaptured", "success": False, "message": "Completion detector not available"}
-
-        try:
-            # Ensure screenshot directory exists
-            if not _screenshot_dir:
-                _screenshot_dir = get_resource_path("screenshots")
-                os.makedirs(_screenshot_dir, exist_ok=True)
-
-            # Generate full path
-            output_path = os.path.join(_screenshot_dir, filename)
-
-            # Capture the viewport
-            success = _completion_detector.capture_viewport_screenshot(output_path)
-
-            if success:
-                # Read and encode as base64 for reliable display in Qt WebEngine
-                with open(output_path, 'rb') as f:
-                    image_data = base64.b64encode(f.read()).decode('utf-8')
-
-                return {
-                    "action": "viewportCaptured",
-                    "success": True,
-                    "imageData": f"data:image/png;base64,{image_data}",
-                    "path": f"screenshots/{filename}",
-                    "fullPath": output_path
-                }
-            else:
-                return {"action": "viewportCaptured", "success": False, "message": "Failed to capture viewport"}
-
-        except Exception as e:
-            return {"action": "viewportCaptured", "success": False, "message": str(e)}
-
     def _handle_check_qc(self, conditions: list) -> dict:
         """Check QC conditions against current design state."""
         global _completion_detector
@@ -1891,7 +1810,7 @@ def run(context):
     """Add-in entry point - called when add-in is started."""
     global _app, _ui, _tutorial_manager, _handlers
     global _context_detector, _consent_manager, _context_poller
-    global _completion_detector, _screenshot_dir
+    global _completion_detector
     global _runtime_identity_ok
 
     debug_log("=== run() called - add-in starting ===")
@@ -1930,9 +1849,6 @@ def run(context):
                 _completion_detector.start()
                 debug_log(" Completion detector initialized and started")
 
-                # Screenshot directory
-                _screenshot_dir = get_resource_path("screenshots")
-                os.makedirs(_screenshot_dir, exist_ok=True)
             except Exception as e:
                 # Log but continue - basic tutorial functionality will still work
                 debug_log(f"Warning: Could not initialize redirect modules: {e}")
@@ -1980,7 +1896,7 @@ def stop(context):
     """Add-in cleanup - called when add-in is stopped."""
     global _app, _ui, _palette, _handlers
     global _context_detector, _consent_manager, _context_poller, _is_redirecting
-    global _completion_detector, _screenshot_dir
+    global _completion_detector
 
     try:
         # Stop completion detector if active
@@ -2002,7 +1918,6 @@ def stop(context):
         _context_detector = None
         _consent_manager = None
         _is_redirecting = False
-        _screenshot_dir = None
 
         # Remove palette
         if _palette:

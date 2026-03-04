@@ -339,28 +339,6 @@ class CompletionDetector:
             except Exception as e:
                 _debug_log(f"ERROR in completion callback: {e}")
 
-    def capture_viewport_screenshot(self, output_path: str) -> bool:
-        """
-        Capture the current viewport as an image.
-
-        Args:
-            output_path: Full path where the image should be saved (e.g., "C:/temp/screenshot.png")
-
-        Returns:
-            True if successful, False otherwise
-        """
-        try:
-            viewport = self._app.activeViewport
-            if not viewport:
-                return False
-
-            # Save the viewport as an image
-            success = viewport.saveAsImageFile(output_path, 0, 0)
-            return success
-
-        except Exception as e:
-            return False
-
     def get_current_state(self) -> Dict:
         """Get the current state of the design for QC checks."""
         state = {

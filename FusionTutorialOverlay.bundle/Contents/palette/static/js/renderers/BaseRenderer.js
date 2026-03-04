@@ -329,11 +329,6 @@ class BaseRenderer {
         this.renderQCChecks(step);
         this.renderWarnings(step);
 
-        // Request viewport capture if step wants it
-        if (step.captureViewport && window.requestViewportCapture) {
-            setTimeout(() => window.requestViewportCapture(), 500);
-        }
-
         // Reset tracking for new step
         if (window.sendToBridge) {
             window.sendToBridge({ action: 'resetTracking' });
