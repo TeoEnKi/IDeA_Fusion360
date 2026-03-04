@@ -5,24 +5,13 @@ Uses Fusion 360's event system to track when actions are completed.
 
 import adsk.core
 import adsk.fusion
-import os
 from typing import Callable, Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-# Import debug_log from parent module, with fallback
 def _debug_log(message: str):
-    """Write debug message to both print and log file."""
-    try:
-        print(f"[CompletionDetector] {message}")
-    except:
-        pass
-    try:
-        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "debug.log")
-        with open(log_path, "a", encoding="utf-8") as f:
-            f.write(f"[CompletionDetector] {message}\n")
-    except:
-        pass
+    """No-op: debug logging is intentionally disabled."""
+    return
 
 
 class CompletionEventType(Enum):

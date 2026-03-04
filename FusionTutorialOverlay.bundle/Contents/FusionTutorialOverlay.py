@@ -15,29 +15,10 @@ import importlib
 BUILD_STAMP = "2026-03-01-cloud-latest-loader-v1"
 EXPECTED_INSTALL_FRAGMENT = "AppData/Roaming/Autodesk/Autodesk Fusion 360/API/AddIns/FusionTutorialOverlay.bundle/Contents/FusionTutorialOverlay.py"
 
-# Get the directory for logging BEFORE any other imports
-_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-_LOG_PATH = os.path.join(_THIS_DIR, "debug.log")
-
-# Debug helper - writes to file since Text Commands may not show
+# Debug logging disabled for production plugin behavior.
 def debug_log(message: str):
-    """Write debug message to both print and a log file."""
-    try:
-        print(f"[TutorialOverlay] {message}")
-    except:
-        pass
-    try:
-        with open(_LOG_PATH, "a", encoding="utf-8") as f:
-            f.write(f"{message}\n")
-    except:
-        pass
-
-# Clear log and start fresh
-try:
-    with open(_LOG_PATH, "w", encoding="utf-8") as f:
-        f.write("=== Module Loading ===\n")
-except:
-    pass
+    """No-op: debug logging is intentionally disabled."""
+    return
 
 debug_log("Step 1: Basic imports done")
 

@@ -115,7 +115,7 @@ class ContextPollingManager:
             self._poll_thread.start()
 
         except Exception as e:
-            print(f"Error starting Fusion polling: {e}")
+            pass
             # Fallback to thread polling
             self._start_thread_polling()
 
@@ -127,7 +127,7 @@ class ContextPollingManager:
                 # but we can check it here and fire callback
                 self._check_context()
             except Exception as e:
-                print(f"Polling error: {e}")
+                pass
 
             time.sleep(self._poll_interval)
 
@@ -157,7 +157,7 @@ class ContextPollingManager:
                 try:
                     self._on_poll_tick(context_dict)
                 except Exception as e:
-                    print(f"Poll tick callback error: {e}")
+                    pass
 
             # Check if context matches requirements
             if self.context_detector.matches_requirements(self._required_context):
@@ -167,10 +167,10 @@ class ContextPollingManager:
                     try:
                         self._on_context_matched(context_dict)
                     except Exception as e:
-                        print(f"Context matched callback error: {e}")
+                        pass
 
         except Exception as e:
-            print(f"Context check error: {e}")
+            pass
 
     @property
     def is_polling(self) -> bool:
@@ -241,7 +241,7 @@ class FusionEventPollingHandler:
             self._handlers.append(workspace_activated_handler)
 
         except Exception as e:
-            print(f"Error setting up event watching: {e}")
+            pass
 
     def stop_watching(self):
         """Stop watching for context changes."""

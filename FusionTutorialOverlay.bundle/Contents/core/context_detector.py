@@ -60,11 +60,8 @@ class FusionContext:
 
 
 def _debug_log(message: str):
-    """Debug logging for context detector."""
-    try:
-        print(f"[ContextDetector] {message}")
-    except:
-        pass
+    """No-op: debug logging is intentionally disabled."""
+    return
 
 
 class FusionContextDetector:

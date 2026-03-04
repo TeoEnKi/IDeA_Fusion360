@@ -227,6 +227,13 @@
         </div>
     </div>
 
+    <!-- Disable debug console logs in plugin palette -->
+    <script>
+        if (window.console && typeof window.console.log === 'function') {
+            window.console.log = function () {};
+        }
+    </script>
+
     <!-- Scripts -->
     <script src="static/js/renderers/BaseRenderer.js"></script>
     <script src="static/js/renderers/StaticRenderer.js"></script>
