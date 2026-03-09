@@ -1,6 +1,6 @@
 {
   "tutorialId": "cube_hole_test_v1",
-  "title": "Create a Cube with a Cylindrical Hole (Test Tutorial Data)",
+  "title": "Create a Cube with a Cylindrical Hole",
   "description": "Test tutorial JSON for the Fusion tutorial player: create a cube and cut a through-hole using Extrude Cut.",
   "steps": [
     {

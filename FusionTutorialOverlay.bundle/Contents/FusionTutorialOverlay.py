@@ -161,6 +161,7 @@ PALETTE_NAME = "Tutorial Guide"
 COMMAND_ID = "showTutorialPanelCmd"
 STRICT_QC_COMMAND_VALIDATION = False
 _allowed_qc_command_ids_cache = None
+TEST_TUTORIAL_RELATIVE_PATH = "test_data/cube_hole_tutorial.json"
 
 def get_resource_path(relative_path: str) -> str:
     """Get absolute path to a resource file."""
@@ -814,59 +815,41 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
         }
 
     def _handle_start_tutorial_fetch(self) -> dict:
-        """Start scan webhook and load returned tutorial payload."""
+        """Load tutorial payload from local test data."""
         global _tutorial_manager, _runtime_identity_ok, _consent_manager, _palette
-
-        if not WEBHOOK_MODULE_LOADED or not callable(start_scan):
-            diag = _build_webhook_unavailable_message()
-            debug_log(diag)
-            return {
-                "action": "error",
-                "phase": "start-scan",
-                "message": diag,
-                "success": False
-            }
 
         if not _runtime_identity_ok:
             return {
                 "action": "error",
-                "phase": "start-scan",
+                "phase": "load-test-data",
                 "message": "Runtime deployment mismatch detected. Re-deploy the add-in bundle and restart.",
                 "success": False
             }
 
         try:
-            if _palette:
-                _palette.sendInfoToHTML("response", json.dumps({
-                    "action": "scanStarted",
-                    "success": True,
-                    "message": "Starting tutorial scan..."
-                }))
-        except Exception as e:
-            debug_log(f" Failed to send scanStarted: {e}")
-
-        try:
-            scan_result = start_scan(username="ProtoGo", timeout_seconds=60)
-            if not scan_result.get("ok"):
+            test_tutorial_file = get_resource_path(TEST_TUTORIAL_RELATIVE_PATH)
+            if not os.path.exists(test_tutorial_file):
                 return {
                     "action": "error",
-                    "phase": "start-scan",
-                    "message": scan_result.get("error", "Failed to start tutorial scan."),
+                    "phase": "load-test-data",
+                    "message": f"Test tutorial file not found: {test_tutorial_file}",
                     "success": False
                 }
 
-            tutorial_data = scan_result.get("data")
+            with open(test_tutorial_file, "r", encoding="utf-8") as f:
+                tutorial_data = json.load(f)
+
             if not isinstance(tutorial_data, dict):
                 return {
                     "action": "error",
-                    "phase": "start-scan",
+                    "phase": "load-test-data",
                     "message": "Tutorial payload is invalid.",
                     "success": False
                 }
             if not isinstance(tutorial_data.get("steps"), list) or len(tutorial_data.get("steps", [])) == 0:
                 return {
                     "action": "error",
-                    "phase": "start-scan",
+                    "phase": "load-test-data",
                     "message": "Tutorial payload is missing a valid steps array.",
                     "success": False
                 }
@@ -880,7 +863,7 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 debug_log(f" {message}")
                 return {
                     "action": "error",
-                    "phase": "start-scan",
+                    "phase": "load-test-data",
                     "message": message,
                     "success": False
                 }
@@ -895,13 +878,13 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
             if not step:
                 return {
                     "action": "error",
-                    "phase": "start-scan",
-                    "message": "Unable to initialize tutorial from webhook payload.",
+                    "phase": "load-test-data",
+                    "message": "Unable to initialize tutorial from test data payload.",
                     "success": False
                 }
 
             self._ensure_initial_step_context(step)
-            debug_log(" Tutorial loaded from start-scan payload, executing fusion actions...")
+            debug_log(" Tutorial loaded from local test data payload, executing fusion actions...")
             self._execute_fusion_actions(step)
             mismatch_feedback = self._build_workspace_mismatch_feedback(step)
 
@@ -925,10 +908,10 @@ class PaletteHTMLEventHandler(adsk.core.HTMLEventHandler):
                 response["workspaceMismatchFeedback"] = mismatch_feedback
             return response
         except Exception as e:
-            debug_log(f" Error loading tutorial from start-scan: {e}")
+            debug_log(f" Error loading tutorial from local test data: {e}")
             return {
                 "action": "error",
-                "phase": "start-scan",
+                "phase": "load-test-data",
                 "message": str(e),
                 "success": False
             }

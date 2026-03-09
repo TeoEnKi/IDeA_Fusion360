@@ -265,12 +265,11 @@
 
                 case 'scanStarted':
                     isBootstrapFetching = true;
-                    showBootstrapLoading(payload.message || 'Starting tutorial scan...');
-                    startStatusPolling();
+                    showBootstrapLoading(payload.message || 'Loading tutorial...');
                     break;
 
                 case 'scanStatus':
-                    updateBootstrapStatus(payload.statusCode);
+                    // Scan status is unused in local test-data mode.
                     break;
 
                 case 'tutorialLoaded':
@@ -295,10 +294,10 @@
                     break;
 
                 case 'error':
-                    if (payload.phase === 'start-scan' || payload.phase === 'scan-status' || isBootstrapFetching) {
+                    if (payload.phase === 'start-scan' || payload.phase === 'scan-status' || payload.phase === 'load-test-data' || isBootstrapFetching) {
                         isBootstrapFetching = false;
                         stopStatusPolling();
-                        showBootstrapError(payload.message || 'Failed to load tutorial from webhook.');
+                        showBootstrapError(payload.message || 'Failed to load tutorial from test data.');
                     } else {
                         showError(payload.message);
                     }
@@ -951,8 +950,7 @@
 
     function startTutorialFetch() {
         isBootstrapFetching = true;
-        showBootstrapLoading('Requesting latest tutorial...');
-        startStatusPolling();
+        showBootstrapLoading('Loading local test tutorial...');
         sendToBridge({ action: 'startTutorialFetch' });
     }
 
@@ -979,14 +977,13 @@
         if (elements.bootstrapState) elements.bootstrapState.classList.remove('hidden');
         if (elements.getTutorialBtn) {
             elements.getTutorialBtn.disabled = false;
-            elements.getTutorialBtn.textContent = 'Get Tutorial';
+            elements.getTutorialBtn.textContent = 'Load Test Tutorial';
         }
         if (elements.bootstrapStatusText) {
             elements.bootstrapStatusText.textContent = 'Ready to start.';
             elements.bootstrapStatusText.classList.remove('bootstrap-status-error');
         }
         if (elements.bootstrapDebugStatus) {
-            elements.bootstrapDebugStatus.textContent = 'Scan status: n/a';
             elements.bootstrapDebugStatus.classList.add('hidden');
         }
     }
@@ -995,10 +992,10 @@
         showBootstrap();
         if (elements.getTutorialBtn) {
             elements.getTutorialBtn.disabled = true;
-            elements.getTutorialBtn.textContent = 'Getting Tutorial...';
+            elements.getTutorialBtn.textContent = 'Loading...';
         }
         if (elements.bootstrapStatusText) {
-            elements.bootstrapStatusText.textContent = message || 'Processing tutorial request...';
+            elements.bootstrapStatusText.textContent = message || 'Loading tutorial...';
             elements.bootstrapStatusText.classList.remove('bootstrap-status-error');
         }
     }
